@@ -1,0 +1,106 @@
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.form-input,
+.form-select,
+.form-textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+  font-size: 1rem;
+  transition: var(--transition);
+}
+
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.form-input:disabled,
+.form-select:disabled,
+.form-textarea:disabled {
+  background: rgba(255, 255, 255, 0.02);
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.form-error {
+  font-size: 0.75rem;
+  color: var(--error);
+  margin-top: 0.25rem;
+}
+
+.form-error-input {
+  border-color: var(--error) !important;
+}
+
+.form-error-input:focus {
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+}
+
+.form-hint {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-top: 0.25rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.form-actions button {
+  flex: 1;
+  padding: 0.75rem;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  transition: var(--transition);
+}
+
+.form-actions .btn-secondary {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+}
+
+.form-actions .btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.form-actions .btn-primary {
+  background: var(--primary);
+  color: white;
+}
+
+.form-actions .btn-primary:hover {
+  opacity: 0.9;
+}
+
+.form-actions .btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
