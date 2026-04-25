@@ -8,6 +8,7 @@ export interface Bill {
   location_id: string;
   category: string;
   status: BillStatus;
+  is_recurring?: boolean;
   created_at?: string;
 }
 
@@ -18,6 +19,7 @@ export interface CreateBillInput {
   location_id: string;
   category: string;
   status?: BillStatus;
+  is_recurring?: boolean;
 }
 
 export interface UpdateBillInput {
@@ -27,4 +29,5 @@ export interface UpdateBillInput {
   location_id?: string;
   category?: string;
   status?: BillStatus;
+  is_recurring?: boolean;
 }

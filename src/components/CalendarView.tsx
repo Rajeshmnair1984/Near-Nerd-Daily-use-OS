@@ -135,8 +135,8 @@ function CalendarView({ bills, loading }: CalendarViewProps) {
               border: '1px solid var(--border)',
               borderRadius: '0.75rem',
               background: isCurrentMonth
-                ? 'rgba(30, 41, 59, 0.7)'
-                : 'rgba(30, 41, 59, 0.3)',
+                ? 'rgba(255, 255, 255, 0.92)'
+                : 'rgba(249, 250, 251, 0.7)',
               opacity: isCurrentMonth ? 1 : 0.5,
             }}
           >
@@ -196,17 +196,20 @@ function CalendarView({ bills, loading }: CalendarViewProps) {
   );
 
   return (
-    <div style={{ padding: '2rem 0', minHeight: '100vh' }}>
-      <header style={{ marginBottom: '2.5rem', padding: '0 2rem' }}>
-        <h1 style={{ fontSize: '2rem', fontWeight: 800, marginBottom: '0.5rem' }}>
+    <div style={{ padding: '2.5rem 0', minHeight: '100vh' }}>
+      <header className="page-hero" style={{ padding: '0 2.5rem' }}>
+        <div>
+        <p className="eyebrow">Schedule</p>
+        <h1>
           Calendar
         </h1>
-        <p style={{ color: 'var(--text-secondary)' }}>
+        <p>
           View your bills and due dates in a calendar format.
         </p>
+        </div>
       </header>
 
-      <div className="glass-card" style={{ margin: '2rem', padding: '2rem' }}>
+      <div className="panel" style={{ margin: '2rem', padding: '2rem' }}>
         {loading ? (
           <div style={{ padding: '4rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
             Loading calendar...

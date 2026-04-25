@@ -22,6 +22,7 @@ const initialBillValues: CreateBillInput = {
   location_id: '',
   category: 'Rent',
   status: 'Pending',
+  is_recurring: false,
 };
 
 export function BillForm({
@@ -130,6 +131,34 @@ export function BillForm({
         error={errors.status}
         touched={touched.status}
       />
+
+      <label
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '1rem',
+          padding: '0.95rem 1rem',
+          border: '1px solid var(--border)',
+          borderRadius: 'var(--radius-md)',
+          background: 'var(--surface-soft)',
+          cursor: 'pointer',
+        }}
+      >
+        <span>
+          <span style={{ display: 'block', fontWeight: 700 }}>Monthly recurring</span>
+          <span style={{ display: 'block', color: 'var(--text-secondary)', fontSize: '0.82rem' }}>
+            Create the next payment when this one is marked paid.
+          </span>
+        </span>
+        <input
+          type="checkbox"
+          name="is_recurring"
+          checked={Boolean(values.is_recurring)}
+          onChange={handleChange}
+          style={{ width: '20px', height: '20px', accentColor: 'var(--primary)' }}
+        />
+      </label>
 
       <div className="form-actions">
         <Button

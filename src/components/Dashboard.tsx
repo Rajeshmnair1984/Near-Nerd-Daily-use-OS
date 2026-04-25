@@ -106,14 +106,17 @@ function Dashboard({ stats, bills, loading }: DashboardProps) {
   ];
 
   return (
-    <div style={{ padding: '2rem' }}>
-      <header style={{ marginBottom: '2.5rem' }}>
-        <h1 style={{ fontSize: '2rem', fontWeight: 800, marginBottom: '0.5rem' }}>
+    <div className="page-shell">
+      <header className="page-hero">
+        <div>
+        <p className="eyebrow">NearNerd</p>
+        <h1>
           Operational Overview
         </h1>
-        <p style={{ color: 'var(--text-secondary)' }}>
+        <p>
           Welcome back! Here's what's happening across your locations today.
         </p>
+        </div>
       </header>
 
       {loading ? (
@@ -185,11 +188,11 @@ function Dashboard({ stats, bills, loading }: DashboardProps) {
                 />
                 <Tooltip
                   contentStyle={{
-                    background: '#1e293b',
+                    background: '#ffffff',
                     border: '1px solid var(--border)',
                     borderRadius: '8px',
                   }}
-                  itemStyle={{ color: 'white' }}
+                  itemStyle={{ color: 'var(--text-primary)' }}
                 />
                 <Bar dataKey="value" radius={[4, 4, 0, 0]}>
                   {chartData.map((entry, index) => (

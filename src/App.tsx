@@ -157,8 +157,8 @@ function AppContent() {
             padding: '0 2rem',
             position: 'sticky',
             top: 0,
-            background: 'rgba(15, 23, 42, 0.8)',
-            backdropFilter: 'blur(8px)',
+            background: 'rgba(255, 255, 255, 0.72)',
+            backdropFilter: 'blur(22px)',
             zIndex: 10,
           }}
         >
@@ -188,7 +188,7 @@ function AppContent() {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    border: '2px solid var(--bg-main)',
+                    border: '2px solid white',
                   }}
                 >
                   {stats.overdueCount}
@@ -213,7 +213,7 @@ function AppContent() {
                   width: '40px',
                   height: '40px',
                   borderRadius: '12px',
-                  background: 'linear-gradient(135deg, var(--primary), #818cf8)',
+                  background: 'linear-gradient(135deg, var(--primary), #64d2ff)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',

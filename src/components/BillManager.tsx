@@ -1,202 +1,101 @@
-import React, { useState, memo } from 'react';
-import { 
-  Plus, 
-  Search, 
-  Receipt, 
-  Trash2, 
-  Edit2,
-  X,
-  Calendar as CalendarIcon
-} from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { memo, useMemo, useState } from 'react';
+import { Plus, Search, Receipt, Trash2, CalendarDays, Repeat2 } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Bill, BillStatus, CreateBillInput } from '@/types/bill';
+import { Location } from '@/types/location';
+import { BillForm } from './BillForm';
+import { Modal } from './ui/Modal';
 
-const BillManager = ({ bills, locations, onUpdateStatus, onAddBill, onDeleteBill }) => {
+interface BillManagerProps {
+  bills: Bill[];
+  locations: Location[];
+  onUpdateStatus: (id: string, status: BillStatus) => Promise<void>;
+  onAddBill: (bill: CreateBillInput) => Promise<void>;
+  onDeleteBill: (id: string) => Promise<void>;
+  loading?: boolean;
+}
+
+const statusOptions: Array<BillStatus | 'All'> = ['All', 'Paid', 'Pending', 'Overdue'];
+
+function BillManager({
+  bills,
+  locations,
+  onUpdateStatus,
+  onAddBill,
+  onDeleteBill,
+  loading,
+}: BillManagerProps) {
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState('All');
+  const [filterStatus, setFilterStatus] = useState<BillStatus | 'All'>('All');
   const [showModal, setShowModal] = useState(false);
-  const [newBill, setNewBill] = useState({
-    charge_name: '',
-    amount: '',
-    date: '',
-    location_id: '',
-    category: 'Rent',
-    status: 'Pending',
-    is_recurring: false
-  });
 
-  const filteredBills = bills.filter(bill => {
-    const location = locations.find(l => l.id === bill.location_id);
-    const matchesSearch = bill.charge_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         location?.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = filterStatus === 'All' || bill.status === filterStatus;
-    return matchesSearch && matchesStatus;
-  });
+  const locationById = useMemo(
+    () => new Map(locations.map((location) => [location.id, location])),
+    [locations]
+  );
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      await onAddBill({
-        ...newBill,
-        amount: parseFloat(newBill.amount)
-      });
-      setShowModal(false);
-      setNewBill({ charge_name: '', amount: '', date: '', location_id: '', category: 'Rent', status: 'Pending', is_recurring: false });
-    } catch (err) {
-      alert('Failed to add bill: ' + err.message);
-    }
+  const filteredBills = useMemo(
+    () =>
+      bills.filter((bill) => {
+        const location = locationById.get(bill.location_id);
+        const query = searchTerm.trim().toLowerCase();
+        const matchesSearch =
+          query.length === 0 ||
+          bill.charge_name.toLowerCase().includes(query) ||
+          bill.category.toLowerCase().includes(query) ||
+          location?.name.toLowerCase().includes(query);
+        const matchesStatus = filterStatus === 'All' || bill.status === filterStatus;
+        return matchesSearch && matchesStatus;
+      }),
+    [bills, filterStatus, locationById, searchTerm]
+  );
+
+  const handleAddBill = async (bill: CreateBillInput) => {
+    await onAddBill(bill);
+    setShowModal(false);
   };
 
   return (
-    <div style={{ padding: '2rem' }}>
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2.5rem' }}>
+    <div className="page-shell">
+      <header className="page-hero">
         <div>
-          <h1 style={{ fontSize: '2rem', fontWeight: 800, marginBottom: '0.5rem' }}>Bill Management</h1>
-          <p style={{ color: 'var(--text-secondary)' }}>Track and manage all your business expenses and recurring payments.</p>
+          <p className="eyebrow">Operations</p>
+          <h1>Bill Management</h1>
+          <p>Track commitments, recurring payments, and location expenses in one focused workspace.</p>
         </div>
         <button className="button-primary" onClick={() => setShowModal(true)}>
-          <Plus size={20} />
+          <Plus size={19} />
           <span>New Bill</span>
         </button>
       </header>
 
-      {/* New Bill Modal */}
-      <AnimatePresence>
-        {showModal && (
-          <div style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0,0,0,0.8)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 100,
-            padding: '1rem'
-          }}>
-            <motion.div 
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="glass-card" 
-              style={{ width: '100%', maxWidth: '500px', padding: '2rem', position: 'relative' }}
-            >
-              <button 
-                onClick={() => setShowModal(false)}
-                style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}
-              >
-                <X size={24} />
-              </button>
-              <h2 style={{ marginBottom: '1.5rem' }}>Add New Bill</h2>
-              <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Bill Name</label>
-                  <input 
-                    required
-                    className="glass-card"
-                    style={{ width: '100%', background: 'rgba(255,255,255,0.05)', padding: '0.75rem', border: '1px solid var(--border)', color: 'white' }}
-                    value={newBill.charge_name}
-                    onChange={e => setNewBill({...newBill, charge_name: e.target.value})}
-                  />
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                  <div>
-                    <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Amount ($)</label>
-                    <input 
-                      required
-                      type="number"
-                      step="0.01"
-                      className="glass-card"
-                      style={{ width: '100%', background: 'rgba(255,255,255,0.05)', padding: '0.75rem', border: '1px solid var(--border)', color: 'white' }}
-                      value={newBill.amount}
-                      onChange={e => setNewBill({...newBill, amount: e.target.value})}
-                    />
-                  </div>
-                  <div>
-                    <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Due Date</label>
-                    <input 
-                      required
-                      type="date"
-                      className="glass-card"
-                      style={{ width: '100%', background: 'rgba(255,255,255,0.05)', padding: '0.75rem', border: '1px solid var(--border)', color: 'white' }}
-                      value={newBill.date}
-                      onChange={e => setNewBill({...newBill, date: e.target.value})}
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Location</label>
-                  <select 
-                    required
-                    className="glass-card"
-                    style={{ width: '100%', background: 'rgba(255,255,255,0.05)', padding: '0.75rem', border: '1px solid var(--border)', color: 'white' }}
-                    value={newBill.location_id}
-                    onChange={e => setNewBill({...newBill, location_id: e.target.value})}
-                  >
-                    <option value="">Select Location</option>
-                    {locations.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
-                  </select>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem' }}>
-                  <input 
-                    type="checkbox" 
-                    id="is_recurring"
-                    checked={newBill.is_recurring}
-                    onChange={e => setNewBill({...newBill, is_recurring: e.target.checked})}
-                    style={{ width: '18px', height: '18px', cursor: 'pointer' }}
-                  />
-                  <label htmlFor="is_recurring" style={{ fontSize: '0.875rem', cursor: 'pointer' }}>Monthly Recurring Bill</label>
-                </div>
-                <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-                  <button type="button" onClick={() => setShowModal(false)} className="glass-card" style={{ flex: 1, padding: '0.75rem', cursor: 'pointer' }}>Cancel</button>
-                  <button type="submit" className="button-primary" style={{ flex: 1 }}>Save Bill</button>
-                </div>
-              </form>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+      <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="Add New Bill">
+        <BillForm
+          locations={locations}
+          onSubmit={handleAddBill}
+          onCancel={() => setShowModal(false)}
+          submitLabel="Save Bill"
+        />
+      </Modal>
 
-      <div className="glass-card" style={{ padding: '1.5rem', marginBottom: '2rem' }}>
-        <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem' }}>
-          <div style={{ 
-            flex: 1, 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: '0.75rem', 
-            background: 'rgba(255,255,255,0.03)',
-            padding: '0.75rem 1rem',
-            borderRadius: '0.75rem',
-            border: '1px solid var(--border)'
-          }}>
-            <Search size={20} color="var(--text-secondary)" />
-            <input 
-              type="text" 
-              placeholder="Search bills, locations..." 
+      <section className="panel bill-panel">
+        <div className="bill-toolbar">
+          <label className="search-field">
+            <Search size={19} />
+            <input
+              type="text"
+              placeholder="Search bills, locations, categories"
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              style={{ 
-                background: 'transparent', 
-                border: 'none', 
-                color: 'white', 
-                outline: 'none',
-                width: '100%' 
-              }}
+              onChange={(event) => setSearchTerm(event.target.value)}
             />
-          </div>
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
-            {['All', 'Paid', 'Pending', 'Overdue'].map(status => (
+          </label>
+
+          <div className="segmented-control" aria-label="Filter by status">
+            {statusOptions.map((status) => (
               <button
                 key={status}
                 onClick={() => setFilterStatus(status)}
-                style={{
-                  padding: '0.75rem 1.25rem',
-                  borderRadius: '0.75rem',
-                  border: '1px solid var(--border)',
-                  background: filterStatus === status ? 'var(--primary)' : 'rgba(255,255,255,0.03)',
-                  color: filterStatus === status ? 'white' : 'var(--text-secondary)',
-                  cursor: 'pointer',
-                  fontWeight: 600,
-                  transition: 'var(--transition)'
-                }}
+                className={filterStatus === status ? 'active' : ''}
               >
                 {status}
               </button>
@@ -204,95 +103,93 @@ const BillManager = ({ bills, locations, onUpdateStatus, onAddBill, onDeleteBill
           </div>
         </div>
 
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                <th style={{ textAlign: 'left', padding: '1rem', color: 'var(--text-secondary)', fontWeight: 500, fontSize: '0.875rem' }}>BILL DETAILS</th>
-                <th style={{ textAlign: 'left', padding: '1rem', color: 'var(--text-secondary)', fontWeight: 500, fontSize: '0.875rem' }}>LOCATION</th>
-                <th style={{ textAlign: 'left', padding: '1rem', color: 'var(--text-secondary)', fontWeight: 500, fontSize: '0.875rem' }}>AMOUNT</th>
-                <th style={{ textAlign: 'left', padding: '1rem', color: 'var(--text-secondary)', fontWeight: 500, fontSize: '0.875rem' }}>DUE DATE</th>
-                <th style={{ textAlign: 'left', padding: '1rem', color: 'var(--text-secondary)', fontWeight: 500, fontSize: '0.875rem' }}>STATUS</th>
-                <th style={{ textAlign: 'right', padding: '1rem', color: 'var(--text-secondary)', fontWeight: 500, fontSize: '0.875rem' }}>ACTIONS</th>
-              </tr>
-            </thead>
-            <tbody>
-              <AnimatePresence>
+        {loading ? (
+          <div className="empty-state">Loading bills...</div>
+        ) : (
+          <div className="table-wrap">
+            <table className="premium-table">
+              <thead>
+                <tr>
+                  <th>Bill</th>
+                  <th>Location</th>
+                  <th>Amount</th>
+                  <th>Due Date</th>
+                  <th>Status</th>
+                  <th aria-label="Actions" />
+                </tr>
+              </thead>
+              <tbody>
                 {filteredBills.map((bill) => {
-                  const location = locations.find(l => l.id === bill.location_id);
+                  const location = locationById.get(bill.location_id);
                   return (
-                    <motion.tr 
-                      key={bill.id}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      style={{ borderBottom: '1px solid var(--border)', transition: 'var(--transition)' }}
-                    >
-                      <td style={{ padding: '1.25rem 1rem' }}>
-                        <div>
-                          <p style={{ fontWeight: 600 }}>{bill.charge_name}</p>
-                          <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-                            {bill.category} {bill.is_recurring && '• Recurring'}
-                          </p>
+                    <motion.tr key={bill.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                      <td>
+                        <div className="bill-title">
+                          <span className="bill-icon">
+                            <Receipt size={18} />
+                          </span>
+                          <span>
+                            <strong>{bill.charge_name}</strong>
+                            <small>
+                              {bill.category}
+                              {bill.is_recurring && (
+                                <span className="recurring-label">
+                                  <Repeat2 size={12} /> Recurring
+                                </span>
+                              )}
+                            </small>
+                          </span>
                         </div>
                       </td>
-                      <td style={{ padding: '1.25rem 1rem', color: 'var(--text-secondary)' }}>
-                        {location?.name || 'Unknown'}
+                      <td>{location?.name || 'Unassigned'}</td>
+                      <td className="money">${Number(bill.amount).toLocaleString()}</td>
+                      <td>
+                        <span className="date-pill">
+                          <CalendarDays size={14} />
+                          {bill.date}
+                        </span>
                       </td>
-                      <td style={{ padding: '1.25rem 1rem', fontWeight: 700 }}>
-                        ${parseFloat(bill.amount).toLocaleString()}
-                      </td>
-                      <td style={{ padding: '1.25rem 1rem', color: 'var(--text-secondary)' }}>
-                        {bill.date}
-                      </td>
-                      <td style={{ padding: '1.25rem 1rem' }}>
-                        <select 
+                      <td>
+                        <select
                           value={bill.status}
-                          onChange={(e) => onUpdateStatus(bill.id, e.target.value)}
+                          onChange={(event) => onUpdateStatus(bill.id, event.target.value as BillStatus)}
                           className={`status-badge status-${bill.status.toLowerCase()}`}
-                          style={{ border: 'none', background: 'transparent', cursor: 'pointer', outline: 'none', fontWeight: 600 }}
                         >
                           <option value="Paid">Paid</option>
                           <option value="Pending">Pending</option>
                           <option value="Overdue">Overdue</option>
                         </select>
                       </td>
-                      <td style={{ padding: '1.25rem 1rem', textAlign: 'right' }}>
-                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
-                          <button 
-                            onClick={() => {
-                              if(window.confirm('Delete this bill?')) onDeleteBill(bill.id);
-                            }}
-                            style={{ 
-                              background: 'transparent', 
-                              border: 'none', 
-                              color: 'var(--status-overdue)', 
-                              cursor: 'pointer',
-                              padding: '0.5rem',
-                              opacity: 0.6,
-                              transition: 'var(--transition)'
-                            }}
-                          >
-                            <Trash2 size={18} />
-                          </button>
-                        </div>
+                      <td>
+                        <button
+                          className="icon-button danger"
+                          aria-label={`Delete ${bill.charge_name}`}
+                          onClick={() => {
+                            if (window.confirm('Delete this bill?')) {
+                              onDeleteBill(bill.id);
+                            }
+                          }}
+                        >
+                          <Trash2 size={17} />
+                        </button>
                       </td>
                     </motion.tr>
                   );
                 })}
-              </AnimatePresence>
-            </tbody>
-          </table>
-          {filteredBills.length === 0 && (
-            <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--text-secondary)' }}>
-              <Receipt size={48} style={{ marginBottom: '1rem', opacity: 0.2 }} />
-              <p>No bills found matching your criteria.</p>
-            </div>
-          )}
-        </div>
-      </div>
+              </tbody>
+            </table>
+
+            {filteredBills.length === 0 && (
+              <div className="empty-state">
+                <Receipt size={44} />
+                <p>No bills found.</p>
+              </div>
+            )}
+          </div>
+        )}
+      </section>
     </div>
   );
-};
+}
 
 export default memo(BillManager);

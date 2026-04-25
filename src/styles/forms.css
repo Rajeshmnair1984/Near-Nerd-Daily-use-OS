@@ -7,7 +7,7 @@
 .form-label {
   display: block;
   font-size: 0.875rem;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--text-primary);
 }
 
@@ -15,11 +15,11 @@
 .form-select,
 .form-textarea {
   width: 100%;
-  padding: 0.75rem;
+  padding: 0.85rem 0.9rem;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  background: rgba(255, 255, 255, 0.05);
-  color: white;
+  background: var(--surface-soft);
+  color: var(--text-primary);
   font-size: 1rem;
   transition: var(--transition);
 }
@@ -29,14 +29,14 @@
 .form-textarea:focus {
   outline: none;
   border-color: var(--primary);
-  background: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  background: var(--surface);
+  box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.12);
 }
 
 .form-input:disabled,
 .form-select:disabled,
 .form-textarea:disabled {
-  background: rgba(255, 255, 255, 0.02);
+  background: #f1f5f9;
   cursor: not-allowed;
   opacity: 0.5;
 }
@@ -82,13 +82,13 @@
 }
 
 .form-actions .btn-secondary {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--surface);
   border: 1px solid var(--border);
   color: var(--text-primary);
 }
 
 .form-actions .btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--surface-soft);
 }
 
 .form-actions .btn-primary {
