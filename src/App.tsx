@@ -3,11 +3,13 @@ import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
 import BillManager from './components/BillManager';
 import CalendarView from './components/CalendarView';
+import VendorManager from './components/VendorManager';
 import { dataService } from './services/dataService';
-import { Bell, Menu, RefreshCcw } from 'lucide-react';
+import { Bell, Menu } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bill, CreateBillInput, UpdateBillInput } from '@/types/bill';
 import { Location } from '@/types/location';
+import { CreateVendorInput, Vendor } from '@/types/vendor';
 import { DashboardStats } from '@/types/common';
 import { useUser } from '@/context/UserContext';
 import { useToast } from '@/context/ToastContext';
@@ -16,9 +18,9 @@ function AppContent() {
   const [activeView, setActiveView] = useState<string>('dashboard');
   const [bills, setBills] = useState<Bill[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
+  const [vendors, setVendors] = useState<Vendor[]>([]);
   const [stats, setStats] = useState<DashboardStats>({ totalPaid: 0, totalPending: 0, totalOverdue: 0, overdueCount: 0 });
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const { user } = useUser();
@@ -26,23 +28,26 @@ function AppContent() {
 
   const loadData = useCallback(async () => {
     setLoading(true);
-    setError(null);
     try {
-      const [loadedBills, loadedLocations] = await Promise.all([
+      const [loadedBills, loadedLocations, loadedVendors] = await Promise.all([
         dataService.getBills(),
         dataService.getLocations(),
+        dataService.getVendors(),
       ]);
       setBills(loadedBills);
       setLocations(loadedLocations);
+      setVendors(loadedVendors);
       setStats(dataService.getDashboardStats(loadedBills));
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to load data';
-      setError(errorMessage);
-      addToast(errorMessage, 'error');
+      console.warn('Starting with an empty workspace because data could not be loaded.', err);
+      setBills([]);
+      setLocations([]);
+      setVendors([]);
+      setStats(dataService.getDashboardStats([]));
     } finally {
       setLoading(false);
     }
-  }, [addToast]);
+  }, []);
 
   useEffect(() => {
     loadData();
@@ -101,6 +106,29 @@ function AppContent() {
     }
   };
 
+  const handleAddVendor = async (newVendor: CreateVendorInput) => {
+    try {
+      const added = await dataService.addVendor(newVendor);
+      setVendors((current) => [...current, added].sort((a, b) => a.name.localeCompare(b.name)));
+      addToast('Vendor added successfully', 'success');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to add vendor';
+      addToast(errorMessage, 'error');
+      throw err;
+    }
+  };
+
+  const handleDeleteVendor = async (id: string) => {
+    try {
+      await dataService.deleteVendor(id);
+      setVendors((current) => current.filter((vendor) => vendor.id !== id));
+      addToast('Vendor deleted successfully', 'success');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to delete vendor';
+      addToast(errorMessage, 'error');
+    }
+  };
+
   const renderContent = () => {
     switch (activeView) {
       case 'dashboard':
@@ -119,6 +147,15 @@ function AppContent() {
         );
       case 'calendar':
         return <CalendarView bills={bills} loading={loading} />;
+      case 'vendors':
+        return (
+          <VendorManager
+            vendors={vendors}
+            onAddVendor={handleAddVendor}
+            onDeleteVendor={handleDeleteVendor}
+            loading={loading}
+          />
+        );
       default:
         return (
           <div style={{ padding: '4rem', textAlign: 'center' }}>
@@ -225,32 +262,6 @@ function AppContent() {
             </div>
           </div>
         </header>
-
-        {error && (
-          <div
-            className="error-banner"
-            style={{
-              padding: '1rem 2rem',
-              background: 'rgba(239, 68, 68, 0.1)',
-              borderBottom: '1px solid var(--error)',
-            }}
-          >
-            <p style={{ color: 'var(--error)', fontSize: '0.875rem' }}>{error}</p>
-            <button
-              onClick={loadData}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                color: 'var(--text-primary)',
-                fontWeight: 600,
-              }}
-            >
-              <RefreshCcw size={16} />
-              Retry
-            </button>
-          </div>
-        )}
 
         <AnimatePresence mode="wait">
           <motion.div

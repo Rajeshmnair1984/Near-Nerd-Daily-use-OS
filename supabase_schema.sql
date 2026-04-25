@@ -1,3 +1,6 @@
+-- Enable uuid-ossp extension for uuid_generate_v4()
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
 -- Create Locations Table
 CREATE TABLE locations (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -20,8 +23,33 @@ CREATE TABLE bills (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- Enable uuid-ossp extension for uuid_generate_v4()
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+-- Create Vendors Table
+CREATE TABLE vendors (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name TEXT NOT NULL,
+    category TEXT NOT NULL,
+    contact_name TEXT,
+    email TEXT,
+    phone TEXT,
+    website TEXT,
+    notes TEXT,
+    status TEXT CHECK (status IN ('Active', 'Paused')) DEFAULT 'Active',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
 
 -- Existing projects can run this safely to support recurring bills.
 ALTER TABLE bills ADD COLUMN IF NOT EXISTS is_recurring BOOLEAN DEFAULT false;
+
+-- Existing projects can run this safely to support the Vendors screen.
+CREATE TABLE IF NOT EXISTS vendors (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name TEXT NOT NULL,
+    category TEXT NOT NULL,
+    contact_name TEXT,
+    email TEXT,
+    phone TEXT,
+    website TEXT,
+    notes TEXT,
+    status TEXT CHECK (status IN ('Active', 'Paused')) DEFAULT 'Active',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);

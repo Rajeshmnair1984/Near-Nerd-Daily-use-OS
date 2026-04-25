@@ -1,6 +1,7 @@
 import { isSupabaseConfigured, supabase } from './supabaseClient';
 import { Bill, CreateBillInput, UpdateBillInput } from '@/types/bill';
 import { Location, CreateLocationInput } from '@/types/location';
+import { CreateVendorInput, UpdateVendorInput, Vendor } from '@/types/vendor';
 import { DashboardStats, ApiError } from '@/types/common';
 
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
@@ -13,6 +14,7 @@ interface CacheEntry<T> {
 class DataService {
   private billsCache: CacheEntry<Bill[]> | null = null;
   private locationsCache: CacheEntry<Location[]> | null = null;
+  private vendorsCache: CacheEntry<Vendor[]> | null = null;
 
   private isCacheValid<T>(cache: CacheEntry<T> | null): boolean {
     if (!cache) return false;
@@ -117,6 +119,44 @@ class DataService {
     }
   }
 
+  async getVendors(): Promise<Vendor[]> {
+    if (this.isCacheValid(this.vendorsCache)) {
+      return this.vendorsCache!.data;
+    }
+
+    const cached = this.getFromLocalStorage<Vendor[]>('vendors_cache');
+    if (cached) {
+      this.vendorsCache = { data: cached, timestamp: Date.now() };
+      return cached;
+    }
+
+    if (!isSupabaseConfigured) {
+      return [];
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('vendors')
+        .select('*')
+        .order('name', { ascending: true });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      this.vendorsCache = { data: data || [], timestamp: Date.now() };
+      this.saveToLocalStorage('vendors_cache', data || []);
+      return data || [];
+    } catch (error) {
+      const cached = this.getFromLocalStorage<Vendor[]>('vendors_cache');
+      if (cached) {
+        console.warn('Failed to fetch vendors, using cached data');
+        return cached;
+      }
+      throw this.handleError(error, 'Failed to fetch vendors');
+    }
+  }
+
   async addBill(bill: CreateBillInput): Promise<Bill> {
     if (!isSupabaseConfigured) {
       throw new Error('Supabase credentials are missing. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to .env to save bills.');
@@ -139,6 +179,78 @@ class DataService {
       return newBill;
     } catch (error) {
       throw this.handleError(error, 'Failed to add bill');
+    }
+  }
+
+  async addVendor(vendor: CreateVendorInput): Promise<Vendor> {
+    if (!isSupabaseConfigured) {
+      throw new Error('Supabase credentials are missing. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to .env to save vendors.');
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('vendors')
+        .insert([{ ...vendor, status: vendor.status || 'Active' }])
+        .select();
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      const newVendor = data?.[0];
+      if (newVendor) {
+        this.invalidateCache();
+      }
+      return newVendor;
+    } catch (error) {
+      throw this.handleError(error, 'Failed to add vendor');
+    }
+  }
+
+  async updateVendor(id: string, vendor: UpdateVendorInput): Promise<Vendor> {
+    if (!isSupabaseConfigured) {
+      throw new Error('Supabase credentials are missing. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to .env to update vendors.');
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('vendors')
+        .update(vendor)
+        .eq('id', id)
+        .select();
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      const updatedVendor = data?.[0];
+      if (updatedVendor) {
+        this.invalidateCache();
+      }
+      return updatedVendor;
+    } catch (error) {
+      throw this.handleError(error, 'Failed to update vendor');
+    }
+  }
+
+  async deleteVendor(id: string): Promise<void> {
+    if (!isSupabaseConfigured) {
+      throw new Error('Supabase credentials are missing. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to .env to delete vendors.');
+    }
+
+    try {
+      const { error } = await supabase
+        .from('vendors')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      this.invalidateCache();
+    } catch (error) {
+      throw this.handleError(error, 'Failed to delete vendor');
     }
   }
 
@@ -281,8 +393,10 @@ class DataService {
   private invalidateCache(): void {
     this.billsCache = null;
     this.locationsCache = null;
+    this.vendorsCache = null;
     localStorage.removeItem('bills_cache');
     localStorage.removeItem('locations_cache');
+    localStorage.removeItem('vendors_cache');
   }
 
   private handleError(error: unknown, fallbackMessage: string): ApiError {
