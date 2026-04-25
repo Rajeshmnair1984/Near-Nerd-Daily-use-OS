@@ -108,6 +108,10 @@ function Sidebar({ activeView, setActiveView, isOpen = false, onNavigate }: Side
         }}
       >
         <button
+          onClick={() => {
+            setActiveView('settings');
+            onNavigate?.();
+          }}
           style={{
             width: '100%',
             padding: '0.75rem 1rem',
@@ -116,11 +120,11 @@ function Sidebar({ activeView, setActiveView, isOpen = false, onNavigate }: Side
             gap: '0.75rem',
             border: '1px solid var(--border)',
             borderRadius: '0.75rem',
-            background: 'rgba(255, 255, 255, 0.72)',
-            color: 'var(--text-secondary)',
+            background: activeView === 'settings' ? 'rgba(0, 113, 227, 0.1)' : 'rgba(255, 255, 255, 0.72)',
+            color: activeView === 'settings' ? 'var(--primary)' : 'var(--text-secondary)',
             cursor: 'pointer',
             transition: 'var(--transition)',
-            fontWeight: 500,
+            fontWeight: activeView === 'settings' ? 700 : 500,
           }}
         >
           <Settings size={20} />

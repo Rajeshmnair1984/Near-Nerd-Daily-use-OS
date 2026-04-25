@@ -4,6 +4,7 @@ import Dashboard from './components/Dashboard';
 import BillManager from './components/BillManager';
 import CalendarView from './components/CalendarView';
 import VendorManager from './components/VendorManager';
+import SettingsView from './components/SettingsView';
 import { dataService } from './services/dataService';
 import { Bell, Menu } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -23,7 +24,7 @@ function AppContent() {
   const [loading, setLoading] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  const { user } = useUser();
+  const { user, setUser } = useUser();
   const { addToast } = useToast();
 
   const loadData = useCallback(async () => {
@@ -154,6 +155,16 @@ function AppContent() {
             onAddVendor={handleAddVendor}
             onDeleteVendor={handleDeleteVendor}
             loading={loading}
+          />
+        );
+      case 'settings':
+        return (
+          <SettingsView
+            user={user}
+            onUpdateUser={setUser}
+            billsCount={bills.length}
+            locationsCount={locations.length}
+            vendorsCount={vendors.length}
           />
         );
       default:
