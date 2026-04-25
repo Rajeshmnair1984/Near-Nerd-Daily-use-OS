@@ -1,145 +1,64 @@
-import { useState, memo } from 'react';
-import { Edit2, Plus, Search, Receipt, Trash2 } from 'lucide-react';
+import React, { useState, memo } from 'react';
+import { 
+  Plus, 
+  Search, 
+  Receipt, 
+  Trash2, 
+  Edit2,
+  X,
+  Calendar as CalendarIcon
+} from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Modal } from './ui/Modal';
-import { BillForm } from './BillForm';
-import { Button } from './ui/Button';
-import { Bill, CreateBillInput, UpdateBillInput } from '@/types/bill';
-import { Location } from '@/types/location';
-import { useToast } from '@/context/ToastContext';
 
-interface BillManagerProps {
-  bills: Bill[];
-  locations: Location[];
-  onAddBill: (bill: CreateBillInput) => Promise<void>;
-  onUpdateBill: (id: string, bill: UpdateBillInput) => Promise<void>;
-  onUpdateStatus: (id: string, status: string) => Promise<void>;
-  onDeleteBill: (id: string) => Promise<void>;
-  loading?: boolean;
-}
-
-function BillManager({
-  bills,
-  locations,
-  onAddBill,
-  onUpdateBill,
-  onUpdateStatus,
-  onDeleteBill,
-  loading,
-}: BillManagerProps) {
+const BillManager = ({ bills, locations, onUpdateStatus, onAddBill, onDeleteBill }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('All');
   const [showModal, setShowModal] = useState(false);
-  const [editingBill, setEditingBill] = useState<Bill | null>(null);
-  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
-  const { addToast } = useToast();
+  const [newBill, setNewBill] = useState({
+    charge_name: '',
+    amount: '',
+    date: '',
+    location_id: '',
+    category: 'Rent',
+    status: 'Pending',
+    is_recurring: false
+  });
 
-  const filteredBills = bills.filter((bill) => {
-    const location = locations.find((l) => l.id === bill.location_id);
-    const normalizedSearch = searchTerm.toLowerCase();
-    const matchesSearch = [
-      bill.charge_name,
-      bill.category,
-      location?.name,
-    ].some((value) => value?.toLowerCase().includes(normalizedSearch));
+  const filteredBills = bills.filter(bill => {
+    const location = locations.find(l => l.id === bill.location_id);
+    const matchesSearch = bill.charge_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         location?.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = filterStatus === 'All' || bill.status === filterStatus;
     return matchesSearch && matchesStatus;
   });
 
-  const handleDeleteConfirm = async (id: string) => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     try {
-      await onDeleteBill(id);
-      setDeleteConfirm(null);
+      await onAddBill({
+        ...newBill,
+        amount: parseFloat(newBill.amount)
+      });
+      setShowModal(false);
+      setNewBill({ charge_name: '', amount: '', date: '', location_id: '', category: 'Rent', status: 'Pending', is_recurring: false });
     } catch (err) {
-      addToast('Failed to delete bill', 'error');
+      alert('Failed to add bill: ' + err.message);
     }
-  };
-
-  const handleEditSubmit = async (bill: CreateBillInput) => {
-    if (!editingBill) return;
-    await onUpdateBill(editingBill.id, bill);
-    setEditingBill(null);
   };
 
   return (
     <div style={{ padding: '2rem' }}>
-      <header
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'flex-end',
-          marginBottom: '2.5rem',
-        }}
-      >
+      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2.5rem' }}>
         <div>
-          <h1 style={{ fontSize: '2rem', fontWeight: 800, marginBottom: '0.5rem' }}>
-            Bill Management
-          </h1>
-          <p style={{ color: 'var(--text-secondary)' }}>
-            Track and manage all your business expenses and recurring payments.
-          </p>
+          <h1 style={{ fontSize: '2rem', fontWeight: 800, marginBottom: '0.5rem' }}>Bill Management</h1>
+          <p style={{ color: 'var(--text-secondary)' }}>Track and manage all your business expenses and recurring payments.</p>
         </div>
-        <Button
-          variant="primary"
-          icon={<Plus size={20} />}
-          onClick={() => setShowModal(true)}
-        >
-          New Bill
-        </Button>
+        <button className="button-primary" onClick={() => setShowModal(true)}>
+          <Plus size={20} />
+          <span>New Bill</span>
+        </button>
       </header>
 
-      {/* Add Bill Modal */}
-      <Modal
-        isOpen={showModal}
-        onClose={() => setShowModal(false)}
-        title="Add New Bill"
-      >
-        <BillForm
-          locations={locations}
-          onCancel={() => setShowModal(false)}
-          onSubmit={async (bill) => {
-            await onAddBill(bill);
-            setShowModal(false);
-          }}
-        />
-      </Modal>
-
-      {/* Edit Bill Modal */}
-      <Modal
-        isOpen={editingBill !== null}
-        onClose={() => setEditingBill(null)}
-        title="Edit Bill"
-      >
-        {editingBill && (
-          <BillForm
-            locations={locations}
-            initialValues={editingBill}
-            submitLabel="Update Bill"
-            onCancel={() => setEditingBill(null)}
-            onSubmit={handleEditSubmit}
-          />
-        )}
-      </Modal>
-
-      {/* Delete Confirmation Dialog */}
-      <Modal
-        isOpen={deleteConfirm !== null}
-        onClose={() => setDeleteConfirm(null)}
-        title="Delete Bill"
-      >
-        <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-          Are you sure you want to delete this bill? This action cannot be undone.
-        </p>
-        <div style={{ display: 'flex', gap: '1rem' }}>
-          <Button
-            variant="secondary"
-            onClick={() => setDeleteConfirm(null)}
-            style={{ flex: 1 }}
-          >
-            Cancel
-          </Button>
-          <Button
-            variant="danger"
       {/* New Bill Modal */}
       <AnimatePresence>
         {showModal && (
@@ -158,8 +77,14 @@ function BillManager({
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               className="glass-card" 
-              style={{ width: '100%', maxWidth: '500px', padding: '2rem' }}
+              style={{ width: '100%', maxWidth: '500px', padding: '2rem', position: 'relative' }}
             >
+              <button 
+                onClick={() => setShowModal(false)}
+                style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}
+              >
+                <X size={24} />
+              </button>
               <h2 style={{ marginBottom: '1.5rem' }}>Add New Bill</h2>
               <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 <div>
@@ -245,7 +170,7 @@ function BillManager({
             <Search size={20} color="var(--text-secondary)" />
             <input 
               type="text" 
-              placeholder="Search bills, vendors..." 
+              placeholder="Search bills, locations..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               style={{ 
@@ -304,13 +229,11 @@ function BillManager({
                       style={{ borderBottom: '1px solid var(--border)', transition: 'var(--transition)' }}
                     >
                       <td style={{ padding: '1.25rem 1rem' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                          <div>
-                            <p style={{ fontWeight: 600 }}>{bill.charge_name}</p>
-                            <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-                              {bill.category} {bill.is_recurring && '• Recurring'}
-                            </p>
-                          </div>
+                        <div>
+                          <p style={{ fontWeight: 600 }}>{bill.charge_name}</p>
+                          <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                            {bill.category} {bill.is_recurring && '• Recurring'}
+                          </p>
                         </div>
                       </td>
                       <td style={{ padding: '1.25rem 1rem', color: 'var(--text-secondary)' }}>
@@ -327,39 +250,27 @@ function BillManager({
                           value={bill.status}
                           onChange={(e) => onUpdateStatus(bill.id, e.target.value)}
                           className={`status-badge status-${bill.status.toLowerCase()}`}
-                          style={{ border: 'none', background: 'transparent', cursor: 'pointer', outline: 'none' }}
+                          style={{ border: 'none', background: 'transparent', cursor: 'pointer', outline: 'none', fontWeight: 600 }}
                         >
                           <option value="Paid">Paid</option>
                           <option value="Pending">Pending</option>
                           <option value="Overdue">Overdue</option>
                         </select>
                       </td>
-                          <button
-                            aria-label={`Edit ${bill.charge_name}`}
-                            title="Edit bill"
-                            onClick={() => setEditingBill(bill)}
-                            style={{
-                              background: 'transparent',
-                              border: 'none',
-                              color: 'var(--text-secondary)',
-                              cursor: 'pointer',
-                              padding: '0.5rem',
-                              transition: 'var(--transition)',
+                      <td style={{ padding: '1.25rem 1rem', textAlign: 'right' }}>
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
+                          <button 
+                            onClick={() => {
+                              if(window.confirm('Delete this bill?')) onDeleteBill(bill.id);
                             }}
-                          >
-                            <Edit2 size={18} />
-                          </button>
-                          <button
-                            aria-label={`Delete ${bill.charge_name}`}
-                            title="Delete bill"
-                            onClick={() => setDeleteConfirm(bill.id)}
-                            style={{
-                              background: 'transparent',
-                              border: 'none',
-                              color: 'var(--error)',
+                            style={{ 
+                              background: 'transparent', 
+                              border: 'none', 
+                              color: 'var(--status-overdue)', 
                               cursor: 'pointer',
                               padding: '0.5rem',
-                              transition: 'var(--transition)',
+                              opacity: 0.6,
+                              transition: 'var(--transition)'
                             }}
                           >
                             <Trash2 size={18} />
@@ -373,22 +284,15 @@ function BillManager({
             </tbody>
           </table>
           {filteredBills.length === 0 && (
-            <div
-              style={{
-                textAlign: 'center',
-                padding: '4rem',
-                color: 'var(--text-secondary)',
-              }}
-            >
+            <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--text-secondary)' }}>
               <Receipt size={48} style={{ marginBottom: '1rem', opacity: 0.2 }} />
               <p>No bills found matching your criteria.</p>
             </div>
           )}
         </div>
-        )}
       </div>
     </div>
   );
-}
+};
 
 export default memo(BillManager);
