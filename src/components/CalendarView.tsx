@@ -1,16 +1,18 @@
-import { useState, memo, useMemo } from 'react';
+import { memo, useMemo, useState } from 'react';
 import {
-  format,
   addMonths,
-  subMonths,
-  startOfMonth,
-  endOfMonth,
   eachDayOfInterval,
-  isSameMonth,
-  startOfWeek,
+  endOfMonth,
   endOfWeek,
+  format,
+  isSameMonth,
+  isToday,
+  parseISO,
+  startOfMonth,
+  startOfWeek,
+  subMonths,
 } from 'date-fns';
-import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
+import { CalendarDays, ChevronLeft, ChevronRight, Clock, DollarSign } from 'lucide-react';
 import { Bill } from '@/types/bill';
 
 interface CalendarViewProps {
@@ -23,209 +25,165 @@ function CalendarView({ bills, loading }: CalendarViewProps) {
 
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
-  const calendarStart = startOfWeek(monthStart);
-  const calendarEnd = endOfWeek(monthEnd);
-  const calendarDays = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
+  const calendarDays = eachDayOfInterval({
+    start: startOfWeek(monthStart),
+    end: endOfWeek(monthEnd),
+  });
 
   const billsByDate = useMemo(() => {
     const map = new Map<string, Bill[]>();
     bills.forEach((bill) => {
-      const key = bill.date;
-      if (!map.has(key)) {
-        map.set(key, []);
+      if (!map.has(bill.date)) {
+        map.set(bill.date, []);
       }
-      map.get(key)!.push(bill);
+      map.get(bill.date)!.push(bill);
     });
     return map;
   }, [bills]);
 
-  const renderHeader = () => (
-    <div
-      style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '2rem',
-        padding: '0 2rem',
-      }}
-    >
-      <h2 style={{ fontSize: '1.5rem', fontWeight: 700 }}>
-        {format(currentMonth, 'MMMM yyyy')}
-      </h2>
-      <div style={{ display: 'flex', gap: '1rem' }}>
-        <button
-          onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
-          style={{
-            padding: '0.5rem',
-            background: 'rgba(255,255,255,0.05)',
-            border: '1px solid var(--border)',
-            borderRadius: '0.5rem',
-            cursor: 'pointer',
-            color: 'var(--text-primary)',
-          }}
-        >
-          <ChevronLeft size={20} />
-        </button>
-        <button
-          onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-          style={{
-            padding: '0.5rem',
-            background: 'rgba(255,255,255,0.05)',
-            border: '1px solid var(--border)',
-            borderRadius: '0.5rem',
-            cursor: 'pointer',
-            color: 'var(--text-primary)',
-          }}
-        >
-          <ChevronRight size={20} />
-        </button>
-      </div>
-    </div>
+  const monthBills = useMemo(
+    () =>
+      bills
+        .filter((bill) => isSameMonth(parseISO(bill.date), currentMonth))
+        .sort((a, b) => a.date.localeCompare(b.date)),
+    [bills, currentMonth]
   );
 
-  const renderDays = () => (
-    <div
-      style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(7, 1fr)',
-        gap: '0.5rem',
-        marginBottom: '1rem',
-        padding: '0 2rem',
-      }}
-    >
-      {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-        <div
-          key={day}
-          style={{
-            textAlign: 'center',
-            fontWeight: 600,
-            color: 'var(--text-secondary)',
-            fontSize: '0.875rem',
-            padding: '0.75rem',
-          }}
-        >
-          {day}
-        </div>
-      ))}
-    </div>
-  );
-
-  const renderCells = () => (
-    <div
-      className="calendar-body"
-      style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(7, 1fr)',
-        gap: '0.5rem',
-        padding: '0 2rem',
-      }}
-    >
-      {calendarDays.map((day, index) => {
-        const dayStr = format(day, 'yyyy-MM-dd');
-        const dayBills = billsByDate.get(dayStr) || [];
-        const isCurrentMonth = isSameMonth(day, currentMonth);
-
-        return (
-          <div
-            key={index}
-            className="calendar-cell"
-            style={{
-              minHeight: '120px',
-              padding: '0.75rem',
-              border: '1px solid var(--border)',
-              borderRadius: '0.75rem',
-              background: isCurrentMonth
-                ? 'rgba(255, 255, 255, 0.92)'
-                : 'rgba(249, 250, 251, 0.7)',
-              opacity: isCurrentMonth ? 1 : 0.5,
-            }}
-          >
-            <div
-              style={{
-                fontSize: '0.875rem',
-                fontWeight: 600,
-                marginBottom: '0.5rem',
-                color: isCurrentMonth
-                  ? 'var(--text-primary)'
-                  : 'var(--text-secondary)',
-              }}
-            >
-              {format(day, 'd')}
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-              {dayBills.slice(0, 2).map((bill) => (
-                <div
-                  key={bill.id}
-                  style={{
-                    fontSize: '0.625rem',
-                    padding: '0.25rem 0.5rem',
-                    borderRadius: '0.25rem',
-                    background:
-                      bill.status === 'Paid'
-                        ? 'rgba(16, 185, 129, 0.2)'
-                        : 'rgba(99, 102, 241, 0.2)',
-                    color:
-                      bill.status === 'Paid'
-                        ? 'var(--status-paid)'
-                        : 'var(--primary)',
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                  }}
-                  title={`${bill.charge_name}: $${bill.amount}`}
-                >
-                  ${bill.amount}
-                </div>
-              ))}
-              {dayBills.length > 2 && (
-                <div
-                  style={{
-                    fontSize: '0.625rem',
-                    color: 'var(--text-secondary)',
-                    fontWeight: 500,
-                  }}
-                >
-                  +{dayBills.length - 2} more
-                </div>
-              )}
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
+  const monthlyTotal = monthBills.reduce((total, bill) => total + Number(bill.amount), 0);
+  const unpaidCount = monthBills.filter((bill) => bill.status !== 'Paid').length;
+  const nextDueBills = monthBills.filter((bill) => bill.status !== 'Paid').slice(0, 5);
 
   return (
-    <div style={{ padding: '2.5rem 0', minHeight: '100vh' }}>
-      <header className="page-hero" style={{ padding: '0 2.5rem' }}>
+    <div className="page-shell">
+      <header className="page-hero">
         <div>
-        <p className="eyebrow">Schedule</p>
-        <h1>
-          Calendar
-        </h1>
-        <p>
-          View your bills and due dates in a calendar format.
-        </p>
+          <p className="eyebrow">Schedule</p>
+          <h1>Calendar</h1>
+          <p>See the month ahead, due dates, and payment pressure without digging through rows.</p>
         </div>
       </header>
 
-      <div className="panel" style={{ margin: '2rem', padding: '2rem' }}>
-        {loading ? (
-          <div style={{ padding: '4rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
-            Loading calendar...
-          </div>
-        ) : bills.length === 0 ? (
-          <div style={{ padding: '4rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
-            No due dates to show yet.
-          </div>
-        ) : (
-          <>
-            {renderHeader()}
-            {renderDays()}
-            {renderCells()}
-          </>
-        )}
+      <div className="metric-strip">
+        <div>
+          <span>This month</span>
+          <strong>{monthBills.length}</strong>
+        </div>
+        <div>
+          <span>Unpaid items</span>
+          <strong>{unpaidCount}</strong>
+        </div>
+        <div>
+          <span>Scheduled total</span>
+          <strong>${monthlyTotal.toLocaleString()}</strong>
+        </div>
       </div>
+
+      <section className="calendar-layout">
+        <div className="panel calendar-panel">
+          <div className="calendar-header">
+            <div>
+              <p className="eyebrow">Month View</p>
+              <h2>{format(currentMonth, 'MMMM yyyy')}</h2>
+            </div>
+            <div className="calendar-actions">
+              <button
+                className="icon-button"
+                aria-label="Previous month"
+                onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
+              >
+                <ChevronLeft size={20} />
+              </button>
+              <button className="button-secondary" onClick={() => setCurrentMonth(new Date())}>
+                Today
+              </button>
+              <button
+                className="icon-button"
+                aria-label="Next month"
+                onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
+              >
+                <ChevronRight size={20} />
+              </button>
+            </div>
+          </div>
+
+          {loading ? (
+            <div className="empty-state">Loading calendar...</div>
+          ) : bills.length === 0 ? (
+            <div className="empty-state calendar-empty">
+              <CalendarDays size={50} />
+              <p>No bill dates yet. Add bills and they will appear here automatically.</p>
+            </div>
+          ) : (
+            <>
+              <div className="calendar-weekdays">
+                {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+                  <span key={day}>{day}</span>
+                ))}
+              </div>
+              <div className="calendar-grid">
+                {calendarDays.map((day) => {
+                  const key = format(day, 'yyyy-MM-dd');
+                  const dayBills = billsByDate.get(key) || [];
+                  const current = isSameMonth(day, currentMonth);
+                  const total = dayBills.reduce((sum, bill) => sum + Number(bill.amount), 0);
+
+                  return (
+                    <article
+                      key={key}
+                      className={`calendar-cell ${current ? '' : 'muted'} ${isToday(day) ? 'today' : ''}`}
+                    >
+                      <div className="calendar-date-row">
+                        <span>{format(day, 'd')}</span>
+                        {dayBills.length > 0 && <strong>${total.toLocaleString()}</strong>}
+                      </div>
+                      <div className="calendar-events">
+                        {dayBills.slice(0, 3).map((bill) => (
+                          <div
+                            key={bill.id}
+                            className={`calendar-event status-${bill.status.toLowerCase()}`}
+                            title={`${bill.charge_name}: $${bill.amount}`}
+                          >
+                            <span>{bill.charge_name}</span>
+                            <strong>${Number(bill.amount).toLocaleString()}</strong>
+                          </div>
+                        ))}
+                        {dayBills.length > 3 && (
+                          <span className="calendar-more">+{dayBills.length - 3} more</span>
+                        )}
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            </>
+          )}
+        </div>
+
+        <aside className="panel agenda-panel">
+          <div className="agenda-title">
+            <Clock size={18} />
+            <h2>Next Due</h2>
+          </div>
+          {nextDueBills.length === 0 ? (
+            <div className="agenda-empty">No unpaid bills scheduled this month.</div>
+          ) : (
+            <div className="agenda-list">
+              {nextDueBills.map((bill) => (
+                <article key={bill.id} className="agenda-item">
+                  <div>
+                    <strong>{bill.charge_name}</strong>
+                    <span>{format(parseISO(bill.date), 'MMM d')} · {bill.category}</span>
+                  </div>
+                  <p>
+                    <DollarSign size={14} />
+                    {Number(bill.amount).toLocaleString()}
+                  </p>
+                </article>
+              ))}
+            </div>
+          )}
+        </aside>
+      </section>
     </div>
   );
 }
