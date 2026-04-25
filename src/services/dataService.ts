@@ -160,6 +160,23 @@ class DataService {
 
       const updated = data?.[0];
       if (updated) {
+        // Logic for recurring bills
+        if (status === 'Paid' && updated.is_recurring) {
+          const nextDate = new Date(updated.date);
+          nextDate.setMonth(nextDate.getMonth() + 1);
+          
+          const { error: nextError } = await supabase
+            .from('bills')
+            .insert([{
+              ...updated,
+              id: undefined,
+              status: 'Pending',
+              date: nextDate.toISOString().split('T')[0],
+              created_at: undefined
+            }]);
+          
+          if (nextError) console.error('Error creating next recurring bill:', nextError);
+        }
         this.invalidateCache();
       }
       return updated;
