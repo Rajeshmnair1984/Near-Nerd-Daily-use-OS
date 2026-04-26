@@ -175,7 +175,9 @@ class AuthService {
   ): Promise<UserProfile> {
     try {
       // Create auth user with temporary password (user will reset on first login)
-      const tempPassword = Math.random().toString(36).slice(-12)
+      const array = new Uint8Array(16);
+      crypto.getRandomValues(array);
+      const tempPassword = Array.from(array, b => b.toString(16).padStart(2, '0')).join('').slice(0, 12)
 
       const { data: authData, error: authError } = await supabase.auth.admin.createUser({
         email,
@@ -210,9 +212,8 @@ class AuthService {
 
   // Update user profile
   async updateUserProfile(userId: string, updates: Partial<UserProfile>): Promise<UserProfile> {
-    const currentUser = await this.getCurrentUser()
-
     try {
+      // Update database profile
       const { data, error } = await supabase
         .from('user_profiles')
         .update({
@@ -227,30 +228,27 @@ class AuthService {
 
       if (error) throw error
 
+      // Update auth metadata if provided
+      if (updates.fullName || updates.avatarUrl) {
+        const { error: authError } = await supabase.auth.updateUser({
+          data: {
+            full_name: updates.fullName,
+            avatar_url: updates.avatarUrl,
+          },
+        })
+
+        if (authError) throw authError
+      }
+
       return this.mapUserProfile(data)
     } catch (error) {
       console.error('Update user profile error:', error)
-    }
-
-    const { data: authData, error: authError } = await supabase.auth.updateUser({
-      data: {
-        full_name: updates.fullName,
-        avatar_url: updates.avatarUrl,
-      },
-    })
-
-    if (authError) throw authError
-    if (!authData.user) throw new Error('Failed to update user profile')
-
-    return {
-      ...(currentUser || this.mapAuthUserFallback(authData.user)),
-      fullName: updates.fullName ?? currentUser?.fullName ?? null,
-      avatarUrl: updates.avatarUrl ?? currentUser?.avatarUrl ?? null,
+      throw error
     }
   }
 
   // Helper: Map database user profile to interface
-  private mapUserProfile(data: any): UserProfile {
+  private mapUserProfile(data: { id: string; organization_id: string; email: string; full_name: string | null; avatar_url: string | null; role: string; is_active: boolean }): UserProfile {
     return {
       id: data.id,
       organizationId: data.organization_id,

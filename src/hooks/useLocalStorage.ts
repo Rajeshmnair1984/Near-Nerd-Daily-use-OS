@@ -23,5 +23,23 @@ export function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T 
     }
   };
 
+  // Sync changes across tabs
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === key && e.newValue) {
+        try {
+          setStoredValue(JSON.parse(e.newValue));
+        } catch (error) {
+          console.error(`Error parsing storage update for key "${key}":`, error);
+        }
+      }
+    };
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('storage', handleStorageChange);
+      return () => window.removeEventListener('storage', handleStorageChange);
+    }
+  }, [key]);
+
   return [storedValue, setValue];
 }

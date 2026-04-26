@@ -37,13 +37,13 @@ export const exportService = {
     const rows = bills.map((bill) => [
       escapeCSVField(bill.charge_name),
       escapeCSVField(bill.category),
-      bill.amount.toString(),
-      bill.date,
-      bill.status,
-      bill.location_id || '',
-      bill.vendor_id || '',
-      bill.is_recurring ? 'Yes' : 'No',
-      bill.created_at || '',
+      escapeCSVField(bill.amount.toString()),
+      escapeCSVField(bill.date),
+      escapeCSVField(bill.status),
+      escapeCSVField(bill.location_id || ''),
+      escapeCSVField(bill.vendor_id || ''),
+      escapeCSVField(bill.is_recurring ? 'Yes' : 'No'),
+      escapeCSVField(bill.created_at || ''),
     ]);
 
     const csv = [

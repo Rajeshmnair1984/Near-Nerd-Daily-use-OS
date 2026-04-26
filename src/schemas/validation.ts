@@ -1,8 +1,5 @@
 import * as yup from 'yup';
 
-const today = new Date();
-today.setHours(0, 0, 0, 0);
-
 export const billValidationSchema = yup.object().shape({
   charge_name: yup
     .string()
@@ -17,7 +14,14 @@ export const billValidationSchema = yup.object().shape({
   date: yup
     .date()
     .required('Due date is required')
-    .min(today, 'Due date cannot be in the past'),
+    .test('not-past', 'Due date cannot be in the past', function (value) {
+      if (!value) return false;
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const dateVal = new Date(value);
+      dateVal.setHours(0, 0, 0, 0);
+      return dateVal >= today;
+    }),
   location_id: yup.string().required('Location is required'),
   category: yup.string().required('Category is required'),
   status: yup
@@ -40,3 +44,11 @@ export const userValidationSchema = yup.object().shape({
   email: yup.string().email('Invalid email').required('Email is required'),
   role: yup.string().required('Role is required'),
 });
+
+export const passwordSchema = yup
+  .string()
+  .required('Password is required')
+  .min(8, 'Password must be at least 8 characters')
+  .matches(/[A-Z]/, 'Password must contain at least one uppercase letter')
+  .matches(/[a-z]/, 'Password must contain at least one lowercase letter')
+  .matches(/[0-9]/, 'Password must contain at least one number');

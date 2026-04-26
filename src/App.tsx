@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import Sidebar from './components/Sidebar'
 import Dashboard from './components/Dashboard'
 import BillManager from './components/BillManager'
@@ -302,6 +302,14 @@ function AppContent() {
           />
         );
       case 'super-admin':
+        if (user?.role !== 'super_admin') {
+          return (
+            <div style={{ padding: '4rem', textAlign: 'center' }}>
+              <h2 style={{ opacity: 0.5 }}>Unauthorized</h2>
+              <p style={{ opacity: 0.4 }}>You do not have permission to access this view.</p>
+            </div>
+          );
+        }
         return <SuperAdminDashboard />;
       default:
         return (
@@ -415,7 +423,7 @@ function App() {
   }
 
   if (!isAuthenticated) {
-    return <LoginView onLoginSuccess={() => window.location.reload()} />
+    return <LoginView onLoginSuccess={() => {}} />
   }
 
   return <AppContent />

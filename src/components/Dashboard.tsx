@@ -82,32 +82,15 @@ interface DashboardProps {
 }
 
 function Dashboard({ stats, bills, loading }: DashboardProps) {
-  const categoryChartData = [
-    {
-      name: 'Rent',
-      value: bills
-        .filter((b) => b.category === 'Rent')
-        .reduce((acc, b) => acc + b.amount, 0),
-    },
-    {
-      name: 'Utilities',
-      value: bills
-        .filter((b) => b.category === 'Utilities')
-        .reduce((acc, b) => acc + b.amount, 0),
-    },
-    {
-      name: 'Insurance',
-      value: bills
-        .filter((b) => b.category === 'Insurance')
-        .reduce((acc, b) => acc + b.amount, 0),
-    },
-    {
-      name: 'Other',
-      value: bills
-        .filter((b) => !['Rent', 'Utilities', 'Insurance'].includes(b.category))
-        .reduce((acc, b) => acc + b.amount, 0),
-    },
-  ];
+  const categoryChartData = (() => {
+    const categoryMap = new Map<string, number>();
+    bills.forEach((bill) => {
+      const category = bill.category || 'Uncategorized';
+      categoryMap.set(category, (categoryMap.get(category) || 0) + bill.amount);
+    });
+    return Array.from(categoryMap, ([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value);
+  })();
 
   // Monthly trend data
   const monthlyTrendData = (() => {
@@ -164,21 +147,18 @@ function Dashboard({ stats, bills, loading }: DashboardProps) {
           value={stats.totalPaid}
           icon={CheckCircle2}
           color="#10b981"
-          trend={bills.length > 0 ? 12 : undefined}
         />
         <StatCard
           title="Total Pending"
           value={stats.totalPending}
           icon={Clock}
           color="#f59e0b"
-          trend={bills.length > 0 ? -5 : undefined}
         />
         <StatCard
           title="Overdue Amount"
           value={stats.totalOverdue}
           icon={AlertCircle}
           color="#ef4444"
-          trend={bills.length > 0 ? 2 : undefined}
         />
       </div>
 

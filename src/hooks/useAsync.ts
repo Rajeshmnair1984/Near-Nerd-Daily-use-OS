@@ -31,7 +31,8 @@ export function useAsync<T>(
       setState({ data: null, loading: false, error });
       throw error;
     }
-  }, [...dependencies]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, dependencies);
 
   useEffect(() => {
     if (immediate) {

@@ -184,7 +184,8 @@ describe('dataService local workspace fallback', () => {
     expect(stored).toBeTruthy();
     if (stored) {
       const parsed = JSON.parse(stored);
-      expect(parsed).toContainEqual(
+      const data = parsed.data || parsed;
+      expect(data).toContainEqual(
         expect.objectContaining({ name: 'Persistent Location' })
       );
     }

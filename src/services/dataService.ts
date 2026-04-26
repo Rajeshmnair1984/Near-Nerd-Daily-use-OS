@@ -57,10 +57,34 @@ class DataService {
     return Date.now() - cache.timestamp < CACHE_DURATION;
   }
 
+  private handleFetchError<T>(error: unknown, cacheKey: string, fallbackData: T): T {
+    if (isSupabaseConfigured) {
+      throw new Error(`Failed to fetch ${cacheKey}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+    const cached = this.getFromLocalStorage<T>(cacheKey);
+    if (cached) {
+      console.warn(`Failed to fetch ${cacheKey}, using cached data`);
+      return cached;
+    }
+    console.warn(`Failed to fetch ${cacheKey}, using fallback`);
+    return fallbackData;
+  }
+
   private getFromLocalStorage<T>(key: string): T | null {
     try {
       const item = localStorage.getItem(key);
-      return item ? JSON.parse(item) : null;
+      if (!item) return null;
+      const parsed = JSON.parse(item);
+
+      // Check if stored data has a TTL
+      if (parsed && typeof parsed === 'object' && 'data' in parsed && 'timestamp' in parsed) {
+        if (Date.now() - parsed.timestamp > CACHE_DURATION) {
+          localStorage.removeItem(key);
+          return null;
+        }
+        return parsed.data;
+      }
+      return parsed;
     } catch {
       return null;
     }
@@ -68,7 +92,8 @@ class DataService {
 
   private saveToLocalStorage<T>(key: string, data: T): void {
     try {
-      localStorage.setItem(key, JSON.stringify(data));
+      const cacheEntry = { data, timestamp: Date.now() };
+      localStorage.setItem(key, JSON.stringify(cacheEntry));
     } catch (error) {
       console.error(`Failed to save to localStorage:`, error);
     }
@@ -144,6 +169,9 @@ class DataService {
       this.saveToLocalStorage('locations_cache', data || []);
       return data || [];
     } catch (error) {
+      if (isSupabaseConfigured) {
+        throw new Error(`Failed to fetch locations: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      }
       const cached = this.getFromLocalStorage<Location[]>('locations_cache');
       if (cached) {
         console.warn('Failed to fetch locations, using cached data');
@@ -188,6 +216,9 @@ class DataService {
       this.saveToLocalStorage('bills_cache', bills)
       return bills
     } catch (error) {
+      if (isSupabaseConfigured) {
+        throw new Error(`Failed to fetch bills: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      }
       const cached = this.getFromLocalStorage<Bill[]>('bills_cache')
       if (cached) {
         console.warn('Failed to fetch bills, using cached data')
@@ -324,6 +355,9 @@ class DataService {
       this.saveToLocalStorage('vendors_cache', data || []);
       return data || [];
     } catch (error) {
+      if (isSupabaseConfigured) {
+        throw new Error(`Failed to fetch vendors: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      }
       const cached = this.getFromLocalStorage<Vendor[]>('vendors_cache');
       if (cached) {
         console.warn('Failed to fetch vendors, using cached data');
@@ -363,6 +397,9 @@ class DataService {
       this.saveToLocalStorage('documents_cache', data || []);
       return data || [];
     } catch (error) {
+      if (isSupabaseConfigured) {
+        throw new Error(`Failed to fetch documents: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      }
       const cached = this.getFromLocalStorage<DocumentRecord[]>('documents_cache');
       if (cached) {
         console.warn('Failed to fetch documents, using cached data');

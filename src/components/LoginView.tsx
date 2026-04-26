@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { Mail, Lock, Building2, User, Eye, EyeOff } from 'lucide-react'
 import AuthService from '@services/AuthService'
 import { UserProfile } from '@services/AuthService'
+import { passwordSchema } from '@/schemas/validation'
 
 interface LoginViewProps {
   onLoginSuccess: (user: UserProfile) => void
@@ -98,8 +99,8 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
         password: loginPassword,
       })
       onLoginSuccess(user)
-    } catch (err: any) {
-      setError(err.message || 'Login failed')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Login failed')
     } finally {
       setLoading(false)
     }
@@ -111,6 +112,13 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
 
     if (signupPassword !== signupConfirmPassword) {
       setError('Passwords do not match')
+      return
+    }
+
+    try {
+      await passwordSchema.validate(signupPassword)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Invalid password')
       return
     }
 
