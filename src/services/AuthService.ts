@@ -42,6 +42,9 @@ class AuthService {
 
       if (authError) throw authError
       if (!authData.user) throw new Error('Failed to create user')
+      if (!authData.session) {
+        throw new Error('Please disable "Confirm email" in your Supabase Auth settings to use this signup flow, or check your email to confirm your account first.');
+      }
 
       // Create organization
       const slug = data.organizationName
