@@ -427,7 +427,7 @@ function AppContent() {
 }
 
 function App() {
-  const { isAuthenticated, isLoading, login } = useUser()
+  const { isAuthenticated, isLoading } = useUser()
 
   if (isLoading) {
     return (
@@ -441,7 +441,7 @@ function App() {
   }
 
   if (!isAuthenticated) {
-    return <LoginView onLoginSuccess={() => {}} />
+    return <LoginView onLoginSuccess={() => window.location.reload()} />
   }
 
   return <AppContent />

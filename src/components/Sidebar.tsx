@@ -29,7 +29,7 @@ function Sidebar({ activeView, setActiveView, isOpen = false, onNavigate, userRo
     { id: 'alerts', label: 'Alerts', icon: AlertCircle },
   ];
 
-  if (userRole === 'SUPER_ADMIN') {
+  if (userRole === 'SUPER_ADMIN' || userRole === 'super_admin') {
     menuItems.unshift({ id: 'super-admin', label: 'Global Console', icon: Globe });
   }
 
