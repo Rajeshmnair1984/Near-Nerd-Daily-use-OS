@@ -8,7 +8,7 @@ const corsHeaders = {
 
 interface RequestBody {
   name: string;
-  domain: string;
+  slug: string;
   adminEmail: string;
 }
 
@@ -18,10 +18,10 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { name, domain, adminEmail } = (await req.json()) as RequestBody;
+    const { name, slug, adminEmail } = (await req.json()) as RequestBody;
 
     // Validate inputs
-    if (!name || !domain || !adminEmail) {
+    if (!name || !slug || !adminEmail) {
       return new Response(
         JSON.stringify({ error: "Missing required fields" }),
         {
@@ -40,7 +40,7 @@ Deno.serve(async (req) => {
     // 1. Create Organization
     const { data: org, error: orgError } = await supabase
       .from("organizations")
-      .insert([{ name, domain }])
+      .insert([{ name, slug, description: null, is_active: true }])
       .select()
       .single();
 

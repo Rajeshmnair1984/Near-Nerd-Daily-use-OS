@@ -8,7 +8,7 @@ const SuperAdminDashboard = () => {
   const [orgs, setOrgs] = useState<Organization[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [newOrg, setNewOrg] = useState({ name: '', domain: '', adminEmail: '' });
+  const [newOrg, setNewOrg] = useState({ name: '', slug: '', adminEmail: '' });
   const [impersonating, setImpersonating] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { addToast } = useToast();
@@ -31,16 +31,16 @@ const SuperAdminDashboard = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!newOrg.name || !newOrg.domain || !newOrg.adminEmail) {
+    if (!newOrg.name || !newOrg.slug || !newOrg.adminEmail) {
       addToast('Please fill in all fields', 'error');
       return;
     }
 
     setIsSubmitting(true);
     try {
-      await dataService.createOrganization(newOrg.name, newOrg.domain, newOrg.adminEmail);
+      await dataService.createOrganization(newOrg.name, newOrg.slug, newOrg.adminEmail);
       setShowModal(false);
-      setNewOrg({ name: '', domain: '', adminEmail: '' });
+      setNewOrg({ name: '', slug: '', adminEmail: '' });
       addToast(`Organization "${newOrg.name}" created successfully! Invitation sent to ${newOrg.adminEmail}.`, 'success');
       loadOrgs();
     } catch (err) {
@@ -152,7 +152,7 @@ const SuperAdminDashboard = () => {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.5rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
                   <Globe size={16} />
-                  <span>{org.domain}.restaurant-os.com</span>
+                  <span>{org.slug}.restaurant-os.com</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
                   <Shield size={16} />
@@ -221,8 +221,8 @@ const SuperAdminDashboard = () => {
                   placeholder="Domain Slug (e.g. lucky-rest)"
                   className="glass-card"
                   style={{ width: '100%', padding: '0.75rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: '#000' }}
-                  value={newOrg.domain}
-                  onChange={e => setNewOrg({...newOrg, domain: e.target.value})}
+                  value={newOrg.slug}
+                  onChange={e => setNewOrg({...newOrg, slug: e.target.value})}
                 />
                 <input
                   placeholder="Admin Email Address"

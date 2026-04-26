@@ -8,7 +8,7 @@ import { DashboardStats, ApiError } from '@/types/common';
 export interface Organization {
   id: string;
   name: string;
-  domain: string;
+  slug: string;
   created_at: string;
 }
 
@@ -770,7 +770,7 @@ class DataService {
     }
   }
 
-  async createOrganization(name: string, domain: string, adminEmail: string): Promise<Organization> {
+  async createOrganization(name: string, slug: string, adminEmail: string): Promise<Organization> {
     try {
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
       const { data: { session } } = await supabase.auth.getSession();
@@ -781,7 +781,7 @@ class DataService {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session?.access_token || ''}`,
         },
-        body: JSON.stringify({ name, domain, adminEmail }),
+        body: JSON.stringify({ name, slug, adminEmail }),
       });
 
       if (!response.ok) {
