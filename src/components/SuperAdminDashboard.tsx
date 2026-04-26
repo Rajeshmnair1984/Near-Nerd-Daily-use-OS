@@ -213,16 +213,14 @@ const SuperAdminDashboard = () => {
                 <input
                   placeholder="Business Name (e.g. Lucky Restaurant)"
                   className="glass-card"
-                  disabled={isSubmitting}
-                  style={{ width: '100%', padding: '0.75rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'white', opacity: isSubmitting ? 0.6 : 1, cursor: isSubmitting ? 'not-allowed' : 'text' }}
+                  style={{ width: '100%', padding: '0.75rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: '#000' }}
                   value={newOrg.name}
                   onChange={e => setNewOrg({...newOrg, name: e.target.value})}
                 />
                 <input
                   placeholder="Domain Slug (e.g. lucky-rest)"
                   className="glass-card"
-                  disabled={isSubmitting}
-                  style={{ width: '100%', padding: '0.75rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'white', opacity: isSubmitting ? 0.6 : 1, cursor: isSubmitting ? 'not-allowed' : 'text' }}
+                  style={{ width: '100%', padding: '0.75rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: '#000' }}
                   value={newOrg.domain}
                   onChange={e => setNewOrg({...newOrg, domain: e.target.value})}
                 />
@@ -230,8 +228,7 @@ const SuperAdminDashboard = () => {
                   placeholder="Admin Email Address"
                   type="email"
                   className="glass-card"
-                  disabled={isSubmitting}
-                  style={{ width: '100%', padding: '0.75rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'white', opacity: isSubmitting ? 0.6 : 1, cursor: isSubmitting ? 'not-allowed' : 'text' }}
+                  style={{ width: '100%', padding: '0.75rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: '#000' }}
                   value={newOrg.adminEmail}
                   onChange={e => setNewOrg({...newOrg, adminEmail: e.target.value})}
                 />
