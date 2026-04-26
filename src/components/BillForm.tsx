@@ -68,7 +68,7 @@ export function BillForm({
 
       <div className="form-row">
         <TextInput
-          label="Amount ($)"
+          label="Amount (CAD)"
           name="amount"
           type="number"
           step="0.01"

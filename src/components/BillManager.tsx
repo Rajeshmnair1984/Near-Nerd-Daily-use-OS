@@ -5,6 +5,7 @@ import { Bill, BillStatus, CreateBillInput } from '@/types/bill';
 import { Location } from '@/types/location';
 import { BillForm } from './BillForm';
 import { Modal } from './ui/Modal';
+import { formatCurrency } from '@/utils/currency';
 
 interface BillManagerProps {
   bills: Bill[];
@@ -142,7 +143,7 @@ function BillManager({
                         </div>
                       </td>
                       <td>{location?.name || 'Unassigned'}</td>
-                      <td className="money">${Number(bill.amount).toLocaleString()}</td>
+                      <td className="money">{formatCurrency(bill.amount)}</td>
                       <td>
                         <span className="date-pill">
                           <CalendarDays size={14} />

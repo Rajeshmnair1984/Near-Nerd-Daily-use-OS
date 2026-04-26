@@ -54,6 +54,45 @@ class DataService {
     }
   }
 
+  private getLocalRecords<T>(key: string): T[] {
+    return this.getFromLocalStorage<T[]>(key) || [];
+  }
+
+  private saveLocalRecords<T>(key: string, records: T[]): void {
+    this.saveToLocalStorage(key, records);
+  }
+
+  private createLocalRecord<T extends object>(record: T): T & { id: string; created_at: string } {
+    return {
+      ...record,
+      id: crypto.randomUUID(),
+      created_at: new Date().toISOString(),
+    };
+  }
+
+  private updateLocalRecord<T extends { id: string }>(key: string, id: string, patch: Partial<T>): T {
+    const records = this.getLocalRecords<T>(key);
+    const record = records.find((item) => item.id === id);
+
+    if (!record) {
+      throw new Error('Record not found');
+    }
+
+    const updated = { ...record, ...patch };
+    this.saveLocalRecords(
+      key,
+      records.map((item) => (item.id === id ? updated : item))
+    );
+    return updated;
+  }
+
+  private deleteLocalRecord<T extends { id: string }>(key: string, id: string): void {
+    this.saveLocalRecords(
+      key,
+      this.getLocalRecords<T>(key).filter((item) => item.id !== id)
+    );
+  }
+
   async getLocations(): Promise<Location[]> {
     // Check memory cache
     if (this.isCacheValid(this.locationsCache)) {
@@ -68,7 +107,7 @@ class DataService {
     }
 
     if (!isSupabaseConfigured) {
-      return [];
+      return this.getLocalRecords<Location>('locations_cache');
     }
 
     // Fetch from Supabase
@@ -90,7 +129,8 @@ class DataService {
         console.warn('Failed to fetch locations, using cached data');
         return cached;
       }
-      throw this.handleError(error, 'Failed to fetch locations');
+      console.warn('Failed to fetch locations, using local workspace.', error);
+      return [];
     }
   }
 
@@ -108,7 +148,7 @@ class DataService {
     }
 
     if (!isSupabaseConfigured) {
-      return [];
+      return this.getLocalRecords<Bill>('bills_cache');
     }
 
     // Fetch from Supabase
@@ -131,13 +171,17 @@ class DataService {
         console.warn('Failed to fetch bills, using cached data');
         return cached;
       }
-      throw this.handleError(error, 'Failed to fetch bills');
+      console.warn('Failed to fetch bills, using local workspace.', error);
+      return [];
     }
   }
 
   async addLocation(location: CreateLocationInput): Promise<Location> {
     if (!isSupabaseConfigured) {
-      throw new Error('Supabase credentials are missing. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to .env to save locations.');
+      const newLocation = this.createLocalRecord(location);
+      this.saveLocalRecords('locations_cache', [...this.getLocalRecords<Location>('locations_cache'), newLocation]);
+      this.invalidateCache(false);
+      return newLocation;
     }
 
     try {
@@ -156,13 +200,19 @@ class DataService {
       }
       return newLocation;
     } catch (error) {
-      throw this.handleError(error, 'Failed to add location');
+      console.warn('Failed to add location in Supabase, saving locally instead.', error);
+      const newLocation = this.createLocalRecord(location);
+      this.saveLocalRecords('locations_cache', [...this.getLocalRecords<Location>('locations_cache'), newLocation]);
+      this.invalidateCache(false);
+      return newLocation;
     }
   }
 
   async deleteLocation(id: string): Promise<void> {
     if (!isSupabaseConfigured) {
-      throw new Error('Supabase credentials are missing. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to .env to delete locations.');
+      this.deleteLocalRecord<Location>('locations_cache', id);
+      this.invalidateCache(false);
+      return;
     }
 
     try {
@@ -177,7 +227,9 @@ class DataService {
 
       this.invalidateCache();
     } catch (error) {
-      throw this.handleError(error, 'Failed to delete location');
+      console.warn('Failed to delete location in Supabase, deleting local record instead.', error);
+      this.deleteLocalRecord<Location>('locations_cache', id);
+      this.invalidateCache(false);
     }
   }
 
@@ -193,7 +245,7 @@ class DataService {
     }
 
     if (!isSupabaseConfigured) {
-      return [];
+      return this.getLocalRecords<Vendor>('vendors_cache');
     }
 
     try {
@@ -215,7 +267,8 @@ class DataService {
         console.warn('Failed to fetch vendors, using cached data');
         return cached;
       }
-      throw this.handleError(error, 'Failed to fetch vendors');
+      console.warn('Failed to fetch vendors, using local workspace.', error);
+      return [];
     }
   }
 
@@ -231,7 +284,7 @@ class DataService {
     }
 
     if (!isSupabaseConfigured) {
-      return [];
+      return this.getLocalRecords<DocumentRecord>('documents_cache');
     }
 
     try {
@@ -253,13 +306,17 @@ class DataService {
         console.warn('Failed to fetch documents, using cached data');
         return cached;
       }
-      throw this.handleError(error, 'Failed to fetch documents');
+      console.warn('Failed to fetch documents, using local workspace.', error);
+      return [];
     }
   }
 
   async addBill(bill: CreateBillInput): Promise<Bill> {
     if (!isSupabaseConfigured) {
-      throw new Error('Supabase credentials are missing. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to .env to save bills.');
+      const newBill = this.createLocalRecord(bill) as Bill;
+      this.saveLocalRecords('bills_cache', [...this.getLocalRecords<Bill>('bills_cache'), newBill]);
+      this.invalidateCache(false);
+      return newBill;
     }
 
     try {
@@ -278,13 +335,20 @@ class DataService {
       }
       return newBill;
     } catch (error) {
-      throw this.handleError(error, 'Failed to add bill');
+      console.warn('Failed to add bill in Supabase, saving locally instead.', error);
+      const newBill = this.createLocalRecord(bill) as Bill;
+      this.saveLocalRecords('bills_cache', [...this.getLocalRecords<Bill>('bills_cache'), newBill]);
+      this.invalidateCache(false);
+      return newBill;
     }
   }
 
   async addVendor(vendor: CreateVendorInput): Promise<Vendor> {
     if (!isSupabaseConfigured) {
-      throw new Error('Supabase credentials are missing. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to .env to save vendors.');
+      const newVendor = this.createLocalRecord({ ...vendor, status: vendor.status || 'Active' }) as Vendor;
+      this.saveLocalRecords('vendors_cache', [...this.getLocalRecords<Vendor>('vendors_cache'), newVendor]);
+      this.invalidateCache(false);
+      return newVendor;
     }
 
     try {
@@ -303,13 +367,20 @@ class DataService {
       }
       return newVendor;
     } catch (error) {
-      throw this.handleError(error, 'Failed to add vendor');
+      console.warn('Failed to add vendor in Supabase, saving locally instead.', error);
+      const newVendor = this.createLocalRecord({ ...vendor, status: vendor.status || 'Active' }) as Vendor;
+      this.saveLocalRecords('vendors_cache', [...this.getLocalRecords<Vendor>('vendors_cache'), newVendor]);
+      this.invalidateCache(false);
+      return newVendor;
     }
   }
 
   async addDocument(document: CreateDocumentInput): Promise<DocumentRecord> {
     if (!isSupabaseConfigured) {
-      throw new Error('Supabase credentials are missing. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to .env to save documents.');
+      const newDocument = this.createLocalRecord({ ...document, status: document.status || 'Active' }) as DocumentRecord;
+      this.saveLocalRecords('documents_cache', [...this.getLocalRecords<DocumentRecord>('documents_cache'), newDocument]);
+      this.invalidateCache(false);
+      return newDocument;
     }
 
     try {
@@ -328,13 +399,19 @@ class DataService {
       }
       return newDocument;
     } catch (error) {
-      throw this.handleError(error, 'Failed to add document');
+      console.warn('Failed to add document in Supabase, saving locally instead.', error);
+      const newDocument = this.createLocalRecord({ ...document, status: document.status || 'Active' }) as DocumentRecord;
+      this.saveLocalRecords('documents_cache', [...this.getLocalRecords<DocumentRecord>('documents_cache'), newDocument]);
+      this.invalidateCache(false);
+      return newDocument;
     }
   }
 
   async deleteDocument(id: string): Promise<void> {
     if (!isSupabaseConfigured) {
-      throw new Error('Supabase credentials are missing. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to .env to delete documents.');
+      this.deleteLocalRecord<DocumentRecord>('documents_cache', id);
+      this.invalidateCache(false);
+      return;
     }
 
     try {
@@ -349,13 +426,17 @@ class DataService {
 
       this.invalidateCache();
     } catch (error) {
-      throw this.handleError(error, 'Failed to delete document');
+      console.warn('Failed to delete document in Supabase, deleting local record instead.', error);
+      this.deleteLocalRecord<DocumentRecord>('documents_cache', id);
+      this.invalidateCache(false);
     }
   }
 
   async updateVendor(id: string, vendor: UpdateVendorInput): Promise<Vendor> {
     if (!isSupabaseConfigured) {
-      throw new Error('Supabase credentials are missing. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to .env to update vendors.');
+      const updatedVendor = this.updateLocalRecord<Vendor>('vendors_cache', id, vendor as Partial<Vendor>);
+      this.invalidateCache(false);
+      return updatedVendor;
     }
 
     try {
@@ -375,13 +456,18 @@ class DataService {
       }
       return updatedVendor;
     } catch (error) {
-      throw this.handleError(error, 'Failed to update vendor');
+      console.warn('Failed to update vendor in Supabase, updating local record instead.', error);
+      const updatedVendor = this.updateLocalRecord<Vendor>('vendors_cache', id, vendor as Partial<Vendor>);
+      this.invalidateCache(false);
+      return updatedVendor;
     }
   }
 
   async deleteVendor(id: string): Promise<void> {
     if (!isSupabaseConfigured) {
-      throw new Error('Supabase credentials are missing. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to .env to delete vendors.');
+      this.deleteLocalRecord<Vendor>('vendors_cache', id);
+      this.invalidateCache(false);
+      return;
     }
 
     try {
@@ -396,13 +482,18 @@ class DataService {
 
       this.invalidateCache();
     } catch (error) {
-      throw this.handleError(error, 'Failed to delete vendor');
+      console.warn('Failed to delete vendor in Supabase, deleting local record instead.', error);
+      this.deleteLocalRecord<Vendor>('vendors_cache', id);
+      this.invalidateCache(false);
     }
   }
 
   async updateBillStatus(id: string, status: string): Promise<Bill> {
     if (!isSupabaseConfigured) {
-      throw new Error('Supabase credentials are missing. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to .env to update bills.');
+      const updatedBill = this.updateLocalRecord<Bill>('bills_cache', id, { status } as Partial<Bill>);
+      this.createNextLocalRecurringBill(updatedBill);
+      this.invalidateCache(false);
+      return updatedBill;
     }
 
     try {
@@ -439,13 +530,19 @@ class DataService {
       }
       return updated;
     } catch (error) {
-      throw this.handleError(error, 'Failed to update bill status');
+      console.warn('Failed to update bill status in Supabase, updating local record instead.', error);
+      const updatedBill = this.updateLocalRecord<Bill>('bills_cache', id, { status } as Partial<Bill>);
+      this.createNextLocalRecurringBill(updatedBill);
+      this.invalidateCache(false);
+      return updatedBill;
     }
   }
 
   async updateBill(id: string, billData: UpdateBillInput): Promise<Bill> {
     if (!isSupabaseConfigured) {
-      throw new Error('Supabase credentials are missing. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to .env to update bills.');
+      const updatedBill = this.updateLocalRecord<Bill>('bills_cache', id, billData as Partial<Bill>);
+      this.invalidateCache(false);
+      return updatedBill;
     }
 
     try {
@@ -465,13 +562,18 @@ class DataService {
       }
       return updated;
     } catch (error) {
-      throw this.handleError(error, 'Failed to update bill');
+      console.warn('Failed to update bill in Supabase, updating local record instead.', error);
+      const updatedBill = this.updateLocalRecord<Bill>('bills_cache', id, billData as Partial<Bill>);
+      this.invalidateCache(false);
+      return updatedBill;
     }
   }
 
   async deleteBill(id: string): Promise<void> {
     if (!isSupabaseConfigured) {
-      throw new Error('Supabase credentials are missing. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to .env to delete bills.');
+      this.deleteLocalRecord<Bill>('bills_cache', id);
+      this.invalidateCache(false);
+      return;
     }
 
     try {
@@ -486,13 +588,15 @@ class DataService {
 
       this.invalidateCache();
     } catch (error) {
-      throw this.handleError(error, 'Failed to delete bill');
+      console.warn('Failed to delete bill in Supabase, deleting local record instead.', error);
+      this.deleteLocalRecord<Bill>('bills_cache', id);
+      this.invalidateCache(false);
     }
   }
 
   async getBillById(id: string): Promise<Bill | null> {
     if (!isSupabaseConfigured) {
-      return null;
+      return this.getLocalRecords<Bill>('bills_cache').find((bill) => bill.id === id) || null;
     }
 
     try {
@@ -570,11 +674,32 @@ class DataService {
     return data || [];
   }
 
-  private invalidateCache(): void {
+  private createNextLocalRecurringBill(bill: Bill): void {
+    if (bill.status !== 'Paid' || !bill.is_recurring) {
+      return;
+    }
+
+    const nextDate = new Date(bill.date);
+    nextDate.setMonth(nextDate.getMonth() + 1);
+    const nextBill = this.createLocalRecord({
+      ...bill,
+      id: undefined,
+      status: 'Pending',
+      date: nextDate.toISOString().split('T')[0],
+      created_at: undefined,
+    }) as Bill;
+
+    this.saveLocalRecords('bills_cache', [...this.getLocalRecords<Bill>('bills_cache'), nextBill]);
+  }
+
+  private invalidateCache(clearStorage = true): void {
     this.billsCache = null;
     this.locationsCache = null;
     this.vendorsCache = null;
     this.documentsCache = null;
+    if (!clearStorage) {
+      return;
+    }
     localStorage.removeItem('bills_cache');
     localStorage.removeItem('locations_cache');
     localStorage.removeItem('vendors_cache');

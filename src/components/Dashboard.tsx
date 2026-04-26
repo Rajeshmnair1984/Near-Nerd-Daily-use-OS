@@ -20,6 +20,7 @@ import {
 } from 'recharts';
 import { Bill } from '@/types/bill';
 import { DashboardStats } from '@/types/common';
+import { formatCurrency } from '@/utils/currency';
 
 interface StatCardProps {
   title: string;
@@ -66,7 +67,7 @@ const StatCard = memo(({ title, value, icon: Icon, color, trend }: StatCardProps
       {title}
     </p>
     <h3 style={{ fontSize: '1.75rem', fontWeight: 700, marginTop: '0.25rem' }}>
-      ${value.toLocaleString()}
+      {formatCurrency(value)}
     </h3>
   </motion.div>
 ));
@@ -244,7 +245,7 @@ function Dashboard({ stats, bills, loading }: DashboardProps) {
                     </p>
                   </div>
                   <div style={{ textAlign: 'right' }}>
-                    <p style={{ fontWeight: 700 }}>${bill.amount}</p>
+                    <p style={{ fontWeight: 700 }}>{formatCurrency(bill.amount)}</p>
                     <span
                       className={`status-badge status-${bill.status.toLowerCase()}`}
                     >

@@ -7,6 +7,7 @@ import VendorManager from './components/VendorManager';
 import SettingsView from './components/SettingsView';
 import LocationManager from './components/LocationManager';
 import DocumentManager from './components/DocumentManager';
+import SuperAdminDashboard from './components/SuperAdminDashboard';
 import { dataService } from './services/dataService';
 import { Bell, Menu } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -34,12 +35,24 @@ function AppContent() {
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const [loadedBills, loadedLocations, loadedVendors, loadedDocuments] = await Promise.all([
+      const [billsResult, locationsResult, vendorsResult, documentsResult] = await Promise.allSettled([
         dataService.getBills(),
         dataService.getLocations(),
         dataService.getVendors(),
         dataService.getDocuments(),
       ]);
+      const loadedBills = billsResult.status === 'fulfilled' ? billsResult.value : [];
+      const loadedLocations = locationsResult.status === 'fulfilled' ? locationsResult.value : [];
+      const loadedVendors = vendorsResult.status === 'fulfilled' ? vendorsResult.value : [];
+      const loadedDocuments = documentsResult.status === 'fulfilled' ? documentsResult.value : [];
+
+      [billsResult, locationsResult, vendorsResult, documentsResult].forEach((result, index) => {
+        if (result.status === 'rejected') {
+          const resource = ['bills', 'locations', 'vendors', 'documents'][index];
+          console.warn(`Could not load ${resource}; starting that section empty.`, result.reason);
+        }
+      });
+
       setBills(loadedBills);
       setLocations(loadedLocations);
       setVendors(loadedVendors);
@@ -238,6 +251,8 @@ function AppContent() {
             vendorsCount={vendors.length}
           />
         );
+      case 'super-admin':
+        return <SuperAdminDashboard />;
       default:
         return (
           <div style={{ padding: '4rem', textAlign: 'center' }}>

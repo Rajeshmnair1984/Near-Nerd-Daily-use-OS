@@ -12,8 +12,9 @@ import {
   startOfWeek,
   subMonths,
 } from 'date-fns';
-import { CalendarDays, ChevronLeft, ChevronRight, Clock, DollarSign } from 'lucide-react';
+import { CalendarDays, ChevronLeft, ChevronRight, Clock } from 'lucide-react';
 import { Bill } from '@/types/bill';
+import { formatCurrency } from '@/utils/currency';
 
 interface CalendarViewProps {
   bills: Bill[];
@@ -74,7 +75,7 @@ function CalendarView({ bills, loading }: CalendarViewProps) {
         </div>
         <div>
           <span>Scheduled total</span>
-          <strong>${monthlyTotal.toLocaleString()}</strong>
+          <strong>{formatCurrency(monthlyTotal)}</strong>
         </div>
       </div>
 
@@ -134,17 +135,17 @@ function CalendarView({ bills, loading }: CalendarViewProps) {
                     >
                       <div className="calendar-date-row">
                         <span>{format(day, 'd')}</span>
-                        {dayBills.length > 0 && <strong>${total.toLocaleString()}</strong>}
+                        {dayBills.length > 0 && <strong>{formatCurrency(total)}</strong>}
                       </div>
                       <div className="calendar-events">
                         {dayBills.slice(0, 3).map((bill) => (
                           <div
                             key={bill.id}
                             className={`calendar-event status-${bill.status.toLowerCase()}`}
-                            title={`${bill.charge_name}: $${bill.amount}`}
+                            title={`${bill.charge_name}: ${formatCurrency(bill.amount)}`}
                           >
                             <span>{bill.charge_name}</span>
-                            <strong>${Number(bill.amount).toLocaleString()}</strong>
+                            <strong>{formatCurrency(bill.amount)}</strong>
                           </div>
                         ))}
                         {dayBills.length > 3 && (
@@ -175,8 +176,8 @@ function CalendarView({ bills, loading }: CalendarViewProps) {
                     <span>{format(parseISO(bill.date), 'MMM d')} · {bill.category}</span>
                   </div>
                   <p>
-                    <DollarSign size={14} />
-                    {Number(bill.amount).toLocaleString()}
+                    <span>CAD</span>
+                    {formatCurrency(bill.amount)}
                   </p>
                 </article>
               ))}
