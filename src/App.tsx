@@ -1,23 +1,25 @@
-import { useCallback, useEffect, useState } from 'react';
-import Sidebar from './components/Sidebar';
-import Dashboard from './components/Dashboard';
-import BillManager from './components/BillManager';
-import CalendarView from './components/CalendarView';
-import VendorManager from './components/VendorManager';
-import SettingsView from './components/SettingsView';
-import LocationManager from './components/LocationManager';
-import DocumentManager from './components/DocumentManager';
-import SuperAdminDashboard from './components/SuperAdminDashboard';
-import { dataService } from './services/dataService';
-import { Bell, Menu } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Bill, CreateBillInput, UpdateBillInput } from '@/types/bill';
-import { CreateDocumentInput, DocumentRecord } from '@/types/document';
-import { CreateLocationInput, Location } from '@/types/location';
-import { CreateVendorInput, Vendor } from '@/types/vendor';
-import { DashboardStats } from '@/types/common';
-import { useUser } from '@/context/UserContext';
-import { useToast } from '@/context/ToastContext';
+import { useCallback, useEffect, useState } from 'react'
+import Sidebar from './components/Sidebar'
+import Dashboard from './components/Dashboard'
+import BillManager from './components/BillManager'
+import CalendarView from './components/CalendarView'
+import VendorManager from './components/VendorManager'
+import SettingsView from './components/SettingsView'
+import LocationManager from './components/LocationManager'
+import DocumentManager from './components/DocumentManager'
+import SuperAdminDashboard from './components/SuperAdminDashboard'
+import LoginView from './components/LoginView'
+import { dataService } from './services/dataService'
+import { Bell, Menu, LogOut } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Bill, CreateBillInput, UpdateBillInput } from '@/types/bill'
+import { CreateDocumentInput, DocumentRecord } from '@/types/document'
+import { CreateLocationInput, Location } from '@/types/location'
+import { CreateVendorInput, Vendor } from '@/types/vendor'
+import { DashboardStats } from '@/types/common'
+import { useUser } from '@/context/UserContext'
+import { useToast } from '@/context/ToastContext'
+import { UserProfile } from '@/services/AuthService'
 
 function AppContent() {
   const [activeView, setActiveView] = useState<string>('dashboard');
@@ -29,8 +31,8 @@ function AppContent() {
   const [loading, setLoading] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  const { user, setUser } = useUser();
-  const { addToast } = useToast();
+  const { user } = useUser()
+  const { addToast } = useToast()
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -245,7 +247,6 @@ function AppContent() {
         return (
           <SettingsView
             user={user}
-            onUpdateUser={setUser}
             billsCount={bills.length}
             locationsCount={locations.length}
             vendorsCount={vendors.length}
@@ -340,7 +341,7 @@ function AppContent() {
               }}
             >
               <div style={{ textAlign: 'right' }}>
-                <p style={{ fontSize: '0.875rem', fontWeight: 600 }}>{user?.name}</p>
+                <p style={{ fontSize: '0.875rem', fontWeight: 600 }}>{user?.fullName || user?.email}</p>
                 <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{user?.role}</p>
               </div>
               <div
@@ -355,7 +356,7 @@ function AppContent() {
                   fontWeight: 700,
                 }}
               >
-                {user?.name.split(' ').map(n => n[0]).join('')}
+                {(user?.fullName || user?.email || '?').split(' ').map(n => n[0]).join('').toUpperCase()}
               </div>
             </div>
           </div>
@@ -377,4 +378,25 @@ function AppContent() {
   );
 }
 
-export default AppContent;
+function App() {
+  const { isAuthenticated, isLoading, login } = useUser()
+
+  if (isLoading) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: '#f3f4f6' }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>🔄</div>
+          <p style={{ color: '#6b7280', fontSize: '1rem' }}>Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!isAuthenticated) {
+    return <LoginView onLoginSuccess={() => {}} />
+  }
+
+  return <AppContent />
+}
+
+export default App

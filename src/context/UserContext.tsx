@@ -1,66 +1,83 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { User } from '@/types/user';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import AuthService, { UserProfile, Organization } from '@services/AuthService'
 
 interface UserContextType {
-  user: User | null;
-  setUser: (user: User) => void;
-  logout: () => void;
+  user: UserProfile | null
+  organization: Organization | null
+  isAuthenticated: boolean
+  isLoading: boolean
+  login: (email: string, password: string) => Promise<void>
+  logout: () => Promise<void>
+  updateUser: (updates: Partial<UserProfile>) => Promise<void>
 }
 
-const UserContext = createContext<UserContextType | undefined>(undefined);
-
-const DEFAULT_USER: User = {
-  id: '1',
-  name: 'Raj Admin',
-  email: 'rajesh.m.1984@gmail.com',
-  role: 'Super Manager',
-};
+const UserContext = createContext<UserContextType | undefined>(undefined)
 
 export function UserProvider({ children }: { children: ReactNode }) {
-  const [user, setUserState] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [user, setUserState] = useState<UserProfile | null>(null)
+  const [organization, setOrganization] = useState<Organization | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    // Load user from localStorage on mount
-    const savedUser = localStorage.getItem('currentUser');
-    if (savedUser) {
+    // Check if user is already logged in
+    const initializeAuth = async () => {
       try {
-        setUserState(JSON.parse(savedUser));
-      } catch {
-        setUserState(DEFAULT_USER);
+        const currentUser = await AuthService.getCurrentUser()
+        if (currentUser) {
+          setUserState(currentUser)
+          const org = await AuthService.getOrganization(currentUser.organizationId)
+          setOrganization(org)
+        }
+      } catch (error) {
+        console.error('Auth initialization error:', error)
+      } finally {
+        setIsLoading(false)
       }
-    } else {
-      setUserState(DEFAULT_USER);
-      localStorage.setItem('currentUser', JSON.stringify(DEFAULT_USER));
     }
-    setIsLoading(false);
-  }, []);
 
-  const setUser = (newUser: User) => {
-    setUserState(newUser);
-    localStorage.setItem('currentUser', JSON.stringify(newUser));
-  };
+    initializeAuth()
+  }, [])
 
-  const logout = () => {
-    setUserState(null);
-    localStorage.removeItem('currentUser');
-  };
+  const login = async (email: string, password: string) => {
+    const currentUser = await AuthService.login({ email, password })
+    setUserState(currentUser)
+    const org = await AuthService.getOrganization(currentUser.organizationId)
+    setOrganization(org)
+  }
 
-  if (isLoading) {
-    return null;
+  const logout = async () => {
+    await AuthService.logout()
+    setUserState(null)
+    setOrganization(null)
+  }
+
+  const updateUser = async (updates: Partial<UserProfile>) => {
+    if (!user) throw new Error('No user logged in')
+    const updatedUser = await AuthService.updateUserProfile(user.id, updates)
+    setUserState(updatedUser)
   }
 
   return (
-    <UserContext.Provider value={{ user, setUser, logout }}>
+    <UserContext.Provider
+      value={{
+        user,
+        organization,
+        isAuthenticated: !!user,
+        isLoading,
+        login,
+        logout,
+        updateUser,
+      }}
+    >
       {children}
     </UserContext.Provider>
-  );
+  )
 }
 
 export function useUser() {
-  const context = useContext(UserContext);
+  const context = useContext(UserContext)
   if (!context) {
-    throw new Error('useUser must be used within UserProvider');
+    throw new Error('useUser must be used within UserProvider')
   }
-  return context;
+  return context
 }
