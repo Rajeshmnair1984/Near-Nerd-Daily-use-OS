@@ -3,6 +3,8 @@ import { ExternalLink, FileText, Plus, Search, Trash2, Edit, Upload } from 'luci
 import { AnimatePresence } from 'framer-motion';
 import { CreateDocumentInput, DocumentRecord } from '@/types/document';
 import { Modal } from './ui/Modal';
+import { ErrorBanner } from './ui/ErrorBanner';
+import { ConfirmationModal } from './ui/ConfirmationModal';
 import DocumentEditForm from './DocumentEditForm';
 import { dataService } from '@/services/dataService';
 
@@ -39,6 +41,9 @@ function DocumentManager({
   const [editLoading, setEditLoading] = useState(false);
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [deleteLoading, setDeleteLoading] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
   const filteredDocuments = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -58,6 +63,7 @@ function DocumentManager({
     event.preventDefault();
     setIsSaving(true);
     setUploadProgress(0);
+    setError(null);
     try {
       let fileUrl = document.file_url;
 
@@ -78,6 +84,9 @@ function DocumentManager({
       setUploadFile(null);
       setUploadProgress(0);
       setIsModalOpen(false);
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Failed to add document';
+      setError(errorMsg);
     } finally {
       setIsSaving(false);
     }
@@ -86,11 +95,28 @@ function DocumentManager({
   const handleEditDocument = async (updates: CreateDocumentInput) => {
     if (!editingDocument || !onUpdateDocument) return;
     setEditLoading(true);
+    setError(null);
     try {
       await onUpdateDocument(editingDocument.id, updates);
       setEditingDocument(null);
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Failed to update document';
+      setError(errorMsg);
     } finally {
       setEditLoading(false);
+    }
+  };
+
+  const handleDeleteDocument = async (id: string) => {
+    setDeleteLoading(id);
+    setError(null);
+    try {
+      await onDeleteDocument(id);
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Failed to delete document';
+      setError(errorMsg);
+    } finally {
+      setDeleteLoading(null);
     }
   };
 
@@ -107,6 +133,8 @@ function DocumentManager({
           <span>New Document</span>
         </button>
       </header>
+
+      <ErrorBanner error={error} onDismiss={() => setError(null)} />
 
       <div className="metric-strip">
         <div>
@@ -190,13 +218,11 @@ function DocumentManager({
                   <button
                     className="icon-button danger"
                     aria-label={`Delete ${item.title}`}
-                    onClick={() => {
-                      if (window.confirm('Delete this document record?')) {
-                        onDeleteDocument(item.id);
-                      }
-                    }}
+                    disabled={deleteLoading === item.id}
+                    onClick={() => setConfirmDelete(item.id)}
+                    style={{ opacity: deleteLoading === item.id ? 0.5 : 1 }}
                   >
-                    <Trash2 size={17} />
+                    {deleteLoading === item.id ? '...' : <Trash2 size={17} />}
                   </button>
                 </div>
               </article>
@@ -321,6 +347,23 @@ function DocumentManager({
           />
         )}
       </AnimatePresence>
+
+      <ConfirmationModal
+        isOpen={confirmDelete !== null}
+        title="Delete Document"
+        message="Are you sure you want to delete this document record? This action cannot be undone."
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        isDangerous
+        isLoading={deleteLoading !== null}
+        onConfirm={() => {
+          if (confirmDelete) {
+            handleDeleteDocument(confirmDelete);
+            setConfirmDelete(null);
+          }
+        }}
+        onCancel={() => setConfirmDelete(null)}
+      />
     </div>
   );
 }

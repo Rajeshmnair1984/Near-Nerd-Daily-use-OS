@@ -775,6 +775,16 @@ textarea::placeholder {
   line-height: 1;
 }
 
+@media (max-width: 1024px) {
+  .calendar-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .settings-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 900px) {
   .app-main {
     margin-left: 0;
@@ -821,29 +831,134 @@ textarea::placeholder {
     grid-template-columns: 1fr;
   }
 
-  .calendar-layout {
-    grid-template-columns: 1fr;
-  }
-
   .calendar-header {
     align-items: stretch;
     flex-direction: column;
   }
 
-  .settings-layout,
   .settings-stats {
     grid-template-columns: 1fr;
+  }
+
+  .vendor-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+
+  .search-field {
+    min-width: 100%;
+  }
+
+  .page-hero {
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .page-shell {
+    padding: 1.5rem;
+  }
+
+  .page-hero {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .page-hero button {
+    width: 100%;
+  }
+
+  .button-primary,
+  .button-secondary {
+    min-height: 44px;
+    padding: 0.875rem 1.25rem;
+  }
+
+  .form-actions button {
+    min-height: 44px;
+  }
+
+  .icon-button {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+  }
+
+  .metric-strip {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .metric-strip div {
+    padding: 1rem;
+  }
+
+  .premium-table {
+    font-size: 0.9rem;
+  }
+
+  .premium-table th,
+  .premium-table td {
+    padding: 0.75rem 0.5rem;
+  }
+
+  .bill-title {
+    gap: 0.5rem;
+  }
+
+  .bill-title strong {
+    font-size: 0.95rem;
+  }
+
+  .bill-title small {
+    font-size: 0.7rem;
+  }
+
+  .vendor-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .segmented-control {
+    flex-wrap: wrap;
+  }
+
+  .segmented-control button {
+    flex: 1;
+    min-width: 80px;
+  }
+
+  .calendar-weekdays,
+  .calendar-grid {
+    grid-template-columns: repeat(7, 1fr);
+  }
+
+  .calendar-cell {
+    min-height: 100px;
+    padding: 0.5rem;
+    font-size: 0.75rem;
+  }
+
+  .calendar-event {
+    padding: 0.35rem 0.4rem;
+    font-size: 0.65rem;
   }
 }
 
 @media (max-width: 640px) {
   .page-shell {
-    padding: 1.2rem;
+    padding: 1rem;
   }
 
   .page-hero {
-    align-items: stretch;
-    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .page-hero h1 {
+    font-size: clamp(1.5rem, 4vw, 2.25rem);
+    margin-bottom: 0.5rem;
+  }
+
+  .page-hero p {
+    font-size: 0.95rem;
   }
 
   .glass-card {
@@ -852,5 +967,246 @@ textarea::placeholder {
 
   h1 {
     font-size: 1.5rem !important;
+  }
+
+  h2 {
+    font-size: 1.1rem;
+  }
+
+  .button-primary,
+  .button-secondary {
+    min-height: 44px;
+    padding: 0.875rem 1rem;
+    font-size: 0.95rem;
+  }
+
+  .form-input,
+  .form-select,
+  .form-textarea {
+    padding: 0.875rem;
+    font-size: 16px;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .form-actions {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .form-actions button {
+    width: 100%;
+    min-height: 44px;
+  }
+
+  .metric-strip {
+    gap: 0.5rem;
+  }
+
+  .metric-strip div {
+    padding: 0.75rem;
+  }
+
+  .metric-strip span {
+    font-size: 0.75rem;
+  }
+
+  .metric-strip strong {
+    font-size: 1.5rem;
+  }
+
+  .bill-toolbar {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .search-field {
+    padding: 0.75rem;
+    min-width: 100%;
+  }
+
+  .search-field input {
+    font-size: 16px;
+  }
+
+  .segmented-control {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .segmented-control button {
+    min-width: 60px;
+    min-height: 40px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
+  }
+
+  .table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 1rem;
+  }
+
+  .premium-table {
+    font-size: 0.8rem;
+    white-space: nowrap;
+  }
+
+  .premium-table th,
+  .premium-table td {
+    padding: 0.6rem 0.4rem;
+  }
+
+  .bill-title {
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .bill-title strong {
+    font-size: 0.9rem;
+  }
+
+  .bill-title small {
+    font-size: 0.65rem;
+  }
+
+  .bill-icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .vendor-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .vendor-card {
+    padding: 1rem;
+    border-radius: var(--radius-md);
+  }
+
+  .vendor-card h2 {
+    font-size: 1rem;
+  }
+
+  .vendor-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .status-badge {
+    padding: 0.35rem 0.6rem;
+    font-size: 0.65rem;
+  }
+
+  .vendor-contact {
+    font-size: 0.8rem;
+    gap: 0.35rem;
+  }
+
+  .vendor-notes {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    font-size: 0.8rem;
+  }
+
+  .vendor-card > .icon-button {
+    position: static;
+    width: 44px;
+    height: 44px;
+    margin-top: 0.5rem;
+  }
+
+  .icon-button {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .error-banner {
+    gap: 0.75rem;
+  }
+
+  .calendar-weekdays,
+  .calendar-grid {
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0.35rem;
+  }
+
+  .calendar-cell {
+    min-height: 80px;
+    padding: 0.4rem;
+    font-size: 0.65rem;
+    border-radius: var(--radius-sm);
+  }
+
+  .calendar-date-row {
+    margin-bottom: 0.4rem;
+  }
+
+  .calendar-event {
+    padding: 0.3rem 0.35rem;
+    font-size: 0.6rem;
+  }
+
+  .calendar-event span {
+    font-size: 0.6rem;
+  }
+
+  .calendar-event strong {
+    font-size: 0.6rem;
+  }
+
+  .agenda-item {
+    padding: 0.75rem;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .agenda-item p {
+    font-size: 0.95rem;
+  }
+
+  .settings-stats {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .settings-stats div {
+    padding: 0.75rem;
+  }
+
+  .settings-stats span {
+    font-size: 0.7rem;
+  }
+
+  .settings-stats strong {
+    font-size: 1.5rem;
+  }
+
+  .panel {
+    border-radius: var(--radius-md);
+  }
+
+  .bill-panel {
+    padding: 1rem;
+  }
+
+  select {
+    min-height: 44px;
+    font-size: 16px;
+  }
+
+  input[type="date"],
+  input[type="text"],
+  input[type="email"],
+  input[type="phone"],
+  input[type="url"] {
+    font-size: 16px;
   }
 }

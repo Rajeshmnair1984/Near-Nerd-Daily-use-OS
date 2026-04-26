@@ -3,6 +3,8 @@ import { MapPin, Plus, Search, Trash2, Building2, Edit } from 'lucide-react';
 import { AnimatePresence } from 'framer-motion';
 import { CreateLocationInput, Location } from '@/types/location';
 import { Modal } from './ui/Modal';
+import { ErrorBanner } from './ui/ErrorBanner';
+import { ConfirmationModal } from './ui/ConfirmationModal';
 import LocationEditForm from './LocationEditForm';
 
 interface LocationManagerProps {
@@ -32,6 +34,9 @@ function LocationManager({
   const [isSaving, setIsSaving] = useState(false);
   const [editingLocation, setEditingLocation] = useState<Location | null>(null);
   const [editLoading, setEditLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
   const filteredLocations = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -50,6 +55,7 @@ function LocationManager({
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsSaving(true);
+    setError(null);
     try {
       await onAddLocation({
         name: location.name.trim(),
@@ -58,6 +64,9 @@ function LocationManager({
       });
       setLocation(emptyLocation);
       setIsModalOpen(false);
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Failed to add location';
+      setError(errorMsg);
     } finally {
       setIsSaving(false);
     }
@@ -66,11 +75,28 @@ function LocationManager({
   const handleEditLocation = async (updates: CreateLocationInput) => {
     if (!editingLocation || !onUpdateLocation) return;
     setEditLoading(true);
+    setError(null);
     try {
       await onUpdateLocation(editingLocation.id, updates);
       setEditingLocation(null);
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Failed to update location';
+      setError(errorMsg);
     } finally {
       setEditLoading(false);
+    }
+  };
+
+  const handleDeleteLocation = async (id: string) => {
+    setDeleteLoading(id);
+    setError(null);
+    try {
+      await onDeleteLocation(id);
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Failed to delete location';
+      setError(errorMsg);
+    } finally {
+      setDeleteLoading(null);
     }
   };
 
@@ -87,6 +113,8 @@ function LocationManager({
           <span>New Location</span>
         </button>
       </header>
+
+      <ErrorBanner error={error} onDismiss={() => setError(null)} />
 
       <div className="metric-strip">
         <div>
@@ -157,13 +185,11 @@ function LocationManager({
                   <button
                     className="icon-button danger"
                     aria-label={`Delete ${item.name}`}
-                    onClick={() => {
-                      if (window.confirm('Delete this location? Bills linked to it may also be removed in Supabase.')) {
-                        onDeleteLocation(item.id);
-                      }
-                    }}
+                    disabled={deleteLoading === item.id}
+                    onClick={() => setConfirmDelete(item.id)}
+                    style={{ opacity: deleteLoading === item.id ? 0.5 : 1 }}
                   >
-                    <Trash2 size={17} />
+                    {deleteLoading === item.id ? '...' : <Trash2 size={17} />}
                   </button>
                 </div>
               </article>
@@ -220,6 +246,23 @@ function LocationManager({
           />
         )}
       </AnimatePresence>
+
+      <ConfirmationModal
+        isOpen={confirmDelete !== null}
+        title="Delete Location"
+        message="Are you sure you want to delete this location? Bills linked to it may also be removed."
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        isDangerous
+        isLoading={deleteLoading !== null}
+        onConfirm={() => {
+          if (confirmDelete) {
+            handleDeleteLocation(confirmDelete);
+            setConfirmDelete(null);
+          }
+        }}
+        onCancel={() => setConfirmDelete(null)}
+      />
     </div>
   );
 }

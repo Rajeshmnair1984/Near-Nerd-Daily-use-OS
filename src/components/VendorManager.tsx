@@ -3,6 +3,8 @@ import { Building2, Mail, Phone, Plus, Search, Trash2, Edit } from 'lucide-react
 import { AnimatePresence } from 'framer-motion';
 import { CreateVendorInput, Vendor } from '@/types/vendor';
 import { Modal } from './ui/Modal';
+import { ErrorBanner } from './ui/ErrorBanner';
+import { ConfirmationModal } from './ui/ConfirmationModal';
 import VendorEditForm from './VendorEditForm';
 
 interface VendorManagerProps {
@@ -31,6 +33,9 @@ function VendorManager({ vendors, onAddVendor, onUpdateVendor, onDeleteVendor, l
   const [isSaving, setIsSaving] = useState(false);
   const [editingVendor, setEditingVendor] = useState<Vendor | null>(null);
   const [editLoading, setEditLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
   const filteredVendors = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -57,6 +62,7 @@ function VendorManager({ vendors, onAddVendor, onUpdateVendor, onDeleteVendor, l
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsSaving(true);
+    setError(null);
     try {
       await onAddVendor({
         ...vendor,
@@ -70,6 +76,9 @@ function VendorManager({ vendors, onAddVendor, onUpdateVendor, onDeleteVendor, l
       });
       setVendor(emptyVendor);
       setIsModalOpen(false);
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Failed to add vendor';
+      setError(errorMsg);
     } finally {
       setIsSaving(false);
     }
@@ -78,11 +87,28 @@ function VendorManager({ vendors, onAddVendor, onUpdateVendor, onDeleteVendor, l
   const handleEditVendor = async (updates: CreateVendorInput) => {
     if (!editingVendor || !onUpdateVendor) return;
     setEditLoading(true);
+    setError(null);
     try {
       await onUpdateVendor(editingVendor.id, updates);
       setEditingVendor(null);
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Failed to update vendor';
+      setError(errorMsg);
     } finally {
       setEditLoading(false);
+    }
+  };
+
+  const handleDeleteVendor = async (id: string) => {
+    setDeleteLoading(id);
+    setError(null);
+    try {
+      await onDeleteVendor(id);
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Failed to delete vendor';
+      setError(errorMsg);
+    } finally {
+      setDeleteLoading(null);
     }
   };
 
@@ -99,6 +125,8 @@ function VendorManager({ vendors, onAddVendor, onUpdateVendor, onDeleteVendor, l
           <span>New Vendor</span>
         </button>
       </header>
+
+      <ErrorBanner error={error} onDismiss={() => setError(null)} />
 
       <div className="metric-strip">
         <div>
@@ -179,13 +207,11 @@ function VendorManager({ vendors, onAddVendor, onUpdateVendor, onDeleteVendor, l
                   <button
                     className="icon-button danger"
                     aria-label={`Delete ${item.name}`}
-                    onClick={() => {
-                      if (window.confirm('Delete this vendor?')) {
-                        onDeleteVendor(item.id);
-                      }
-                    }}
+                    disabled={deleteLoading === item.id}
+                    onClick={() => setConfirmDelete(item.id)}
+                    style={{ opacity: deleteLoading === item.id ? 0.5 : 1 }}
                   >
-                    <Trash2 size={17} />
+                    {deleteLoading === item.id ? '...' : <Trash2 size={17} />}
                   </button>
                 </div>
               </article>
@@ -294,6 +320,23 @@ function VendorManager({ vendors, onAddVendor, onUpdateVendor, onDeleteVendor, l
           />
         )}
       </AnimatePresence>
+
+      <ConfirmationModal
+        isOpen={confirmDelete !== null}
+        title="Delete Vendor"
+        message="Are you sure you want to delete this vendor? This action cannot be undone."
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        isDangerous
+        isLoading={deleteLoading !== null}
+        onConfirm={() => {
+          if (confirmDelete) {
+            handleDeleteVendor(confirmDelete);
+            setConfirmDelete(null);
+          }
+        }}
+        onCancel={() => setConfirmDelete(null)}
+      />
     </div>
   );
 }

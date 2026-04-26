@@ -1,5 +1,5 @@
 import { memo, useMemo, useState } from 'react'
-import { Plus, Search, Receipt, Trash2, CalendarDays, Repeat2, Edit } from 'lucide-react'
+import { Plus, Search, Receipt, Trash2, CalendarDays, Repeat2, Edit, Download } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Bill, BillStatus, CreateBillInput, UpdateBillInput } from '@/types/bill'
 import { Location } from '@/types/location'
@@ -7,7 +7,10 @@ import { Vendor } from '@/types/vendor'
 import { BillForm } from './BillForm'
 import BillEditForm from './BillEditForm'
 import { Modal } from './ui/Modal'
+import { ErrorBanner } from './ui/ErrorBanner'
+import { ConfirmationModal } from './ui/ConfirmationModal'
 import { formatCurrency } from '@/utils/currency'
+import { exportService } from '@/services/exportService'
 
 interface BillManagerProps {
   bills: Bill[]
@@ -42,6 +45,10 @@ function BillManager({
   const [showModal, setShowModal] = useState(false)
   const [editingBill, setEditingBill] = useState<Bill | null>(null)
   const [editLoading, setEditLoading] = useState(false)
+  const [addLoading, setAddLoading] = useState(false)
+  const [deleteLoading, setDeleteLoading] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
 
   const locationById = useMemo(
     () => new Map(locations.map((location) => [location.id, location])),
@@ -85,18 +92,44 @@ function BillManager({
   );
 
   const handleAddBill = async (bill: CreateBillInput) => {
-    await onAddBill(bill)
-    setShowModal(false)
+    setAddLoading(true)
+    setError(null)
+    try {
+      await onAddBill(bill)
+      setShowModal(false)
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Failed to add bill'
+      setError(errorMsg)
+    } finally {
+      setAddLoading(false)
+    }
   }
 
   const handleEditBill = async (updates: UpdateBillInput) => {
     if (!editingBill || !onUpdateBill) return
     setEditLoading(true)
+    setError(null)
     try {
       await onUpdateBill(editingBill.id, updates)
       setEditingBill(null)
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Failed to update bill'
+      setError(errorMsg)
     } finally {
       setEditLoading(false)
+    }
+  }
+
+  const handleDeleteBill = async (id: string) => {
+    setDeleteLoading(id)
+    setError(null)
+    try {
+      await onDeleteBill(id)
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Failed to delete bill'
+      setError(errorMsg)
+    } finally {
+      setDeleteLoading(null)
     }
   }
 
@@ -124,6 +157,8 @@ function BillManager({
       </Modal>
 
       <section className="panel bill-panel">
+        <ErrorBanner error={error} onDismiss={() => setError(null)} />
+
         <div className="bill-toolbar">
           <label className="search-field">
             <Search size={19} />
@@ -135,16 +170,86 @@ function BillManager({
             />
           </label>
 
-          <div className="segmented-control" aria-label="Filter by status">
-            {statusOptions.map((status) => (
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+            <div className="segmented-control" aria-label="Filter by status">
+              {statusOptions.map((status) => (
+                <button
+                  key={status}
+                  onClick={() => setFilterStatus(status)}
+                  className={filterStatus === status ? 'active' : ''}
+                >
+                  {status}
+                </button>
+              ))}
+            </div>
+            <div style={{ display: 'flex', gap: '0.5rem', borderLeft: '1px solid var(--border)', paddingLeft: '0.75rem' }}>
               <button
-                key={status}
-                onClick={() => setFilterStatus(status)}
-                className={filterStatus === status ? 'active' : ''}
+                type="button"
+                onClick={() => exportService.exportBillsToCSV(filteredBills)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  padding: '0.6rem 1rem',
+                  borderRadius: 'var(--radius-md)',
+                  border: '1px solid var(--border)',
+                  background: 'var(--surface)',
+                  cursor: 'pointer',
+                  fontSize: '0.875rem',
+                  fontWeight: 500,
+                  color: 'var(--text-primary)',
+                  transition: 'var(--transition)',
+                }}
+                title="Export to CSV"
               >
-                {status}
+                <Download size={16} />
+                CSV
               </button>
-            ))}
+              <button
+                type="button"
+                onClick={() => exportService.exportBillsSummaryToCSV(filteredBills)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  padding: '0.6rem 1rem',
+                  borderRadius: 'var(--radius-md)',
+                  border: '1px solid var(--border)',
+                  background: 'var(--surface)',
+                  cursor: 'pointer',
+                  fontSize: '0.875rem',
+                  fontWeight: 500,
+                  color: 'var(--text-primary)',
+                  transition: 'var(--transition)',
+                }}
+                title="Export summary"
+              >
+                <Download size={16} />
+                Summary
+              </button>
+              <button
+                type="button"
+                onClick={() => exportService.exportBillsToText(filteredBills)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  padding: '0.6rem 1rem',
+                  borderRadius: 'var(--radius-md)',
+                  border: '1px solid var(--border)',
+                  background: 'var(--surface)',
+                  cursor: 'pointer',
+                  fontSize: '0.875rem',
+                  fontWeight: 500,
+                  color: 'var(--text-primary)',
+                  transition: 'var(--transition)',
+                }}
+                title="Export report"
+              >
+                <Download size={16} />
+                Report
+              </button>
+            </div>
           </div>
         </div>
 
@@ -340,13 +445,11 @@ function BillManager({
                         <button
                           className="icon-button danger"
                           aria-label={`Delete ${bill.charge_name}`}
-                          onClick={() => {
-                            if (window.confirm('Delete this bill?')) {
-                              onDeleteBill(bill.id)
-                            }
-                          }}
+                          disabled={deleteLoading === bill.id}
+                          onClick={() => setConfirmDelete(bill.id)}
+                          style={{ opacity: deleteLoading === bill.id ? 0.5 : 1 }}
                         >
-                          <Trash2 size={17} />
+                          {deleteLoading === bill.id ? '...' : <Trash2 size={17} />}
                         </button>
                       </td>
                     </motion.tr>
@@ -377,6 +480,23 @@ function BillManager({
           />
         )}
       </AnimatePresence>
+
+      <ConfirmationModal
+        isOpen={confirmDelete !== null}
+        title="Delete Bill"
+        message="Are you sure you want to delete this bill? This action cannot be undone."
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        isDangerous
+        isLoading={deleteLoading !== null}
+        onConfirm={() => {
+          if (confirmDelete) {
+            handleDeleteBill(confirmDelete)
+            setConfirmDelete(null)
+          }
+        }}
+        onCancel={() => setConfirmDelete(null)}
+      />
     </div>
   )
 }
