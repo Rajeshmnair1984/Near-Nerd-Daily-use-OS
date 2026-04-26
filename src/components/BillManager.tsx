@@ -1,19 +1,23 @@
-import { memo, useMemo, useState } from 'react';
-import { Plus, Search, Receipt, Trash2, CalendarDays, Repeat2 } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { Bill, BillStatus, CreateBillInput } from '@/types/bill';
-import { Location } from '@/types/location';
-import { BillForm } from './BillForm';
-import { Modal } from './ui/Modal';
-import { formatCurrency } from '@/utils/currency';
+import { memo, useMemo, useState } from 'react'
+import { Plus, Search, Receipt, Trash2, CalendarDays, Repeat2, Edit } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Bill, BillStatus, CreateBillInput, UpdateBillInput } from '@/types/bill'
+import { Location } from '@/types/location'
+import { Vendor } from '@/types/vendor'
+import { BillForm } from './BillForm'
+import BillEditForm from './BillEditForm'
+import { Modal } from './ui/Modal'
+import { formatCurrency } from '@/utils/currency'
 
 interface BillManagerProps {
-  bills: Bill[];
-  locations: Location[];
-  onUpdateStatus: (id: string, status: BillStatus) => Promise<void>;
-  onAddBill: (bill: CreateBillInput) => Promise<void>;
-  onDeleteBill: (id: string) => Promise<void>;
-  loading?: boolean;
+  bills: Bill[]
+  locations: Location[]
+  vendors?: Vendor[]
+  onUpdateStatus: (id: string, status: BillStatus) => Promise<void>
+  onAddBill: (bill: CreateBillInput) => Promise<void>
+  onUpdateBill?: (id: string, updates: UpdateBillInput) => Promise<void>
+  onDeleteBill: (id: string) => Promise<void>
+  loading?: boolean
 }
 
 const statusOptions: Array<BillStatus | 'All'> = ['All', 'Paid', 'Pending', 'Overdue'];
@@ -21,14 +25,18 @@ const statusOptions: Array<BillStatus | 'All'> = ['All', 'Paid', 'Pending', 'Ove
 function BillManager({
   bills,
   locations,
+  vendors = [],
   onUpdateStatus,
   onAddBill,
+  onUpdateBill,
   onDeleteBill,
   loading,
 }: BillManagerProps) {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState<BillStatus | 'All'>('All');
-  const [showModal, setShowModal] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('')
+  const [filterStatus, setFilterStatus] = useState<BillStatus | 'All'>('All')
+  const [showModal, setShowModal] = useState(false)
+  const [editingBill, setEditingBill] = useState<Bill | null>(null)
+  const [editLoading, setEditLoading] = useState(false)
 
   const locationById = useMemo(
     () => new Map(locations.map((location) => [location.id, location])),
@@ -52,9 +60,20 @@ function BillManager({
   );
 
   const handleAddBill = async (bill: CreateBillInput) => {
-    await onAddBill(bill);
-    setShowModal(false);
-  };
+    await onAddBill(bill)
+    setShowModal(false)
+  }
+
+  const handleEditBill = async (updates: UpdateBillInput) => {
+    if (!editingBill || !onUpdateBill) return
+    setEditLoading(true)
+    try {
+      await onUpdateBill(editingBill.id, updates)
+      setEditingBill(null)
+    } finally {
+      setEditLoading(false)
+    }
+  }
 
   return (
     <div className="page-shell">
@@ -161,13 +180,23 @@ function BillManager({
                           <option value="Overdue">Overdue</option>
                         </select>
                       </td>
-                      <td>
+                      <td style={{ display: 'flex', gap: '0.5rem' }}>
+                        {onUpdateBill && (
+                          <button
+                            className="icon-button"
+                            aria-label={`Edit ${bill.charge_name}`}
+                            onClick={() => setEditingBill(bill)}
+                            style={{ padding: '0.5rem', borderRadius: '6px', border: '1px solid #e5e7eb', background: 'white', cursor: 'pointer', color: '#667eea' }}
+                          >
+                            <Edit size={17} />
+                          </button>
+                        )}
                         <button
                           className="icon-button danger"
                           aria-label={`Delete ${bill.charge_name}`}
                           onClick={() => {
                             if (window.confirm('Delete this bill?')) {
-                              onDeleteBill(bill.id);
+                              onDeleteBill(bill.id)
                             }
                           }}
                         >
@@ -189,8 +218,21 @@ function BillManager({
           </div>
         )}
       </section>
+
+      <AnimatePresence>
+        {editingBill && (
+          <BillEditForm
+            bill={editingBill}
+            locations={locations}
+            vendors={vendors}
+            onSave={handleEditBill}
+            onCancel={() => setEditingBill(null)}
+            loading={editLoading}
+          />
+        )}
+      </AnimatePresence>
     </div>
-  );
+  )
 }
 
-export default memo(BillManager);
+export default memo(BillManager)
