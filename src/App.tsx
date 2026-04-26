@@ -32,7 +32,7 @@ function AppContent() {
   const [loading, setLoading] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  const { user } = useUser()
+  const { user, updateUser } = useUser()
   const { addToast } = useToast()
 
   const loadData = useCallback(async () => {
@@ -295,6 +295,7 @@ function AppContent() {
         return (
           <SettingsView
             user={user}
+            onUpdateUser={updateUser}
             billsCount={bills.length}
             locationsCount={locations.length}
             vendorsCount={vendors.length}

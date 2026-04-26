@@ -210,6 +210,8 @@ class AuthService {
 
   // Update user profile
   async updateUserProfile(userId: string, updates: Partial<UserProfile>): Promise<UserProfile> {
+    const currentUser = await this.getCurrentUser()
+
     try {
       const { data, error } = await supabase
         .from('user_profiles')
@@ -228,7 +230,22 @@ class AuthService {
       return this.mapUserProfile(data)
     } catch (error) {
       console.error('Update user profile error:', error)
-      throw error
+    }
+
+    const { data: authData, error: authError } = await supabase.auth.updateUser({
+      data: {
+        full_name: updates.fullName,
+        avatar_url: updates.avatarUrl,
+      },
+    })
+
+    if (authError) throw authError
+    if (!authData.user) throw new Error('Failed to update user profile')
+
+    return {
+      ...(currentUser || this.mapAuthUserFallback(authData.user)),
+      fullName: updates.fullName ?? currentUser?.fullName ?? null,
+      avatarUrl: updates.avatarUrl ?? currentUser?.avatarUrl ?? null,
     }
   }
 

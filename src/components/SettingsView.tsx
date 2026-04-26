@@ -1,11 +1,11 @@
-import { FormEvent, memo, useState } from 'react';
+import { FormEvent, memo, useEffect, useState } from 'react';
 import { Database, ShieldCheck, SlidersHorizontal, UserRound } from 'lucide-react';
-import { User } from '@/types/user';
+import { UserProfile } from '@/services/AuthService';
 import { DEFAULT_CURRENCY } from '@/utils/currency';
 
 interface SettingsViewProps {
-  user: User | null;
-  onUpdateUser: (user: User) => void;
+  user: UserProfile | null;
+  onUpdateUser: (updates: Partial<UserProfile>) => Promise<void>;
   billsCount: number;
   locationsCount: number;
   vendorsCount: number;
@@ -18,23 +18,37 @@ function SettingsView({
   locationsCount,
   vendorsCount,
 }: SettingsViewProps) {
-  const [name, setName] = useState(user?.name || '');
+  const [name, setName] = useState(user?.fullName || '');
   const [email, setEmail] = useState(user?.email || '');
   const [role, setRole] = useState(user?.role || '');
   const [workspaceName, setWorkspaceName] = useState('NearNerd Operations');
   const [currency, setCurrency] = useState(DEFAULT_CURRENCY);
   const [savedMessage, setSavedMessage] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
 
-  const handleProfileSubmit = (event: FormEvent<HTMLFormElement>) => {
+  useEffect(() => {
+    setName(user?.fullName || '');
+    setEmail(user?.email || '');
+    setRole(user?.role || '');
+  }, [user]);
+
+  const handleProfileSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    onUpdateUser({
-      id: user?.id || '1',
-      name: name.trim() || 'Raj Admin',
-      email: email.trim(),
-      role: role.trim() || 'Super Manager',
-    });
-    setSavedMessage('Settings saved');
-    window.setTimeout(() => setSavedMessage(''), 2500);
+    setIsSaving(true);
+    setSavedMessage('');
+
+    try {
+      await onUpdateUser({
+        fullName: name.trim() || null,
+      });
+      setSavedMessage('Settings saved');
+      window.setTimeout(() => setSavedMessage(''), 2500);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Could not save settings';
+      setSavedMessage(message);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -68,7 +82,7 @@ function SettingsView({
               className="form-input"
               type="email"
               value={email}
-              onChange={(event) => setEmail(event.target.value)}
+              readOnly
             />
           </label>
           <label className="form-group">
@@ -76,11 +90,11 @@ function SettingsView({
             <input
               className="form-input"
               value={role}
-              onChange={(event) => setRole(event.target.value)}
+              readOnly
             />
           </label>
-          <button className="button-primary" type="submit">
-            Save Profile
+          <button className="button-primary" type="submit" disabled={isSaving}>
+            {isSaving ? 'Saving...' : 'Save Profile'}
           </button>
         </form>
 
