@@ -772,27 +772,25 @@ class DataService {
 
   async createOrganization(name: string, domain: string, adminEmail: string): Promise<Organization> {
     try {
-      // 1. Create Organization
-      const { data: org, error: orgError } = await supabase
-        .from('organizations')
-        .insert([{ name, domain }])
-        .select()
-        .single();
+      const supabaseUrl = supabase.supabaseUrl;
+      const { data: { session } } = await supabase.auth.getSession();
 
-      if (orgError) throw orgError;
-
-      // 2. Trigger Supabase Auth Invite (this sends the email)
-      // Note: This requires the Service Role Key or a Supabase Edge Function
-      const { error: inviteError } = await supabase.auth.admin.inviteUserByEmail(adminEmail, {
-        data: { 
-          org_id: org.id,
-          role: 'ORG_ADMIN'
-        }
+      const response = await fetch(`${supabaseUrl}/functions/v1/create-organization`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token || ''}`,
+        },
+        body: JSON.stringify({ name, domain, adminEmail }),
       });
 
-      if (inviteError) console.warn('Invite sent but check service role key permissions:', inviteError.message);
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to create organization');
+      }
 
-      return org;
+      const result = await response.json();
+      return result.organization;
     } catch (error) {
       throw this.handleError(error, 'Failed to create organization');
     }

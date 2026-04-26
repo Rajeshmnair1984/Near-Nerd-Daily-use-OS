@@ -1,0 +1,7 @@
+# Supabase Project Configuration
+
+[project]
+# Reference the project config from the CLI
+
+[functions.create-organization]
+verify_jwt = false
