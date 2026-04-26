@@ -136,8 +136,8 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
       // After signup, we log in automatically
       await login(signupEmail, signupPassword)
       onLoginSuccess?.()
-    } catch (err: any) {
-      setError(err.message || 'Sign up failed')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Sign up failed')
     } finally {
       setLoading(false)
     }

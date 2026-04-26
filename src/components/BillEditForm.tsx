@@ -51,7 +51,7 @@ function BillEditForm({ bill, locations, vendors, onSave, onCancel, loading }: B
     return subtotal + taxTotal
   }, [formData.subtotal, taxTotal])
 
-  const handleInputChange = (field: keyof UpdateBillInput, value: any) => {
+  const handleInputChange = (field: keyof UpdateBillInput, value: string | number | boolean) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,

@@ -1,5 +1,5 @@
 import { memo, useMemo, useState } from 'react';
-import { MapPin, Plus, Search, Trash2, Building2, Edit, ChevronRight } from 'lucide-react';
+import { MapPin, Plus, Search, Trash2, Building2, Edit, ChevronRight, Calendar } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { CreateLocationInput, Location } from '@/types/location';
 import { Modal } from './ui/Modal';

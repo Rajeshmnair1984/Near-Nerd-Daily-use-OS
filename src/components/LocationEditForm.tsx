@@ -24,7 +24,7 @@ export default function LocationEditForm({ location, onSave, onCancel, loading }
     city: location.city || '',
     province: location.province || '',
     postal_code: location.postal_code || '',
-    operational_status: (location.operational_status as any) || 'Active',
+    operational_status: location.operational_status || 'Active',
     is_store_master: location.is_store_master || false,
     
     // Landlord
