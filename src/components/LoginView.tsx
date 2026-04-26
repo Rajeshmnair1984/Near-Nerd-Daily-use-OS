@@ -2,11 +2,11 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Mail, Lock, Building2, User, Eye, EyeOff } from 'lucide-react'
 import AuthService from '@services/AuthService'
-import { UserProfile } from '@services/AuthService'
 import { passwordSchema } from '@/schemas/validation'
+import { useUser } from '@/context/UserContext'
 
 interface LoginViewProps {
-  onLoginSuccess: (user: UserProfile) => void
+  onLoginSuccess?: () => void
 }
 
 type AuthMode = 'login' | 'signup'
@@ -16,6 +16,8 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showPassword, setShowPassword] = useState(false)
+
+  const { login } = useUser()
 
   // Login form state
   const [loginEmail, setLoginEmail] = useState('')
@@ -56,6 +58,7 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
     borderRadius: '8px',
     fontSize: '0.875rem',
     boxSizing: 'border-box' as const,
+    color: '#374151',
   }
 
   const passwordInputStyle = {
@@ -94,11 +97,9 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
     setLoading(true)
 
     try {
-      const user = await AuthService.login({
-        email: loginEmail,
-        password: loginPassword,
-      })
-      onLoginSuccess(user)
+      // Use the context login to ensure state updates globally
+      await login(loginEmail, loginPassword)
+      onLoginSuccess?.()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed')
     } finally {
@@ -125,13 +126,16 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
     setLoading(true)
 
     try {
-      const { user } = await AuthService.signUp({
+      await AuthService.signUp({
         email: signupEmail,
         password: signupPassword,
         fullName,
         organizationName: orgName,
       })
-      onLoginSuccess(user)
+      
+      // After signup, we log in automatically
+      await login(signupEmail, signupPassword)
+      onLoginSuccess?.()
     } catch (err: any) {
       setError(err.message || 'Sign up failed')
     } finally {
