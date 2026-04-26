@@ -6,10 +6,12 @@ import CalendarView from './components/CalendarView';
 import VendorManager from './components/VendorManager';
 import SettingsView from './components/SettingsView';
 import LocationManager from './components/LocationManager';
+import DocumentManager from './components/DocumentManager';
 import { dataService } from './services/dataService';
 import { Bell, Menu } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bill, CreateBillInput, UpdateBillInput } from '@/types/bill';
+import { CreateDocumentInput, DocumentRecord } from '@/types/document';
 import { CreateLocationInput, Location } from '@/types/location';
 import { CreateVendorInput, Vendor } from '@/types/vendor';
 import { DashboardStats } from '@/types/common';
@@ -21,6 +23,7 @@ function AppContent() {
   const [bills, setBills] = useState<Bill[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
   const [vendors, setVendors] = useState<Vendor[]>([]);
+  const [documents, setDocuments] = useState<DocumentRecord[]>([]);
   const [stats, setStats] = useState<DashboardStats>({ totalPaid: 0, totalPending: 0, totalOverdue: 0, overdueCount: 0 });
   const [loading, setLoading] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -31,20 +34,23 @@ function AppContent() {
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const [loadedBills, loadedLocations, loadedVendors] = await Promise.all([
+      const [loadedBills, loadedLocations, loadedVendors, loadedDocuments] = await Promise.all([
         dataService.getBills(),
         dataService.getLocations(),
         dataService.getVendors(),
+        dataService.getDocuments(),
       ]);
       setBills(loadedBills);
       setLocations(loadedLocations);
       setVendors(loadedVendors);
+      setDocuments(loadedDocuments);
       setStats(dataService.getDashboardStats(loadedBills));
     } catch (err) {
       console.warn('Starting with an empty workspace because data could not be loaded.', err);
       setBills([]);
       setLocations([]);
       setVendors([]);
+      setDocuments([]);
       setStats(dataService.getDashboardStats([]));
     } finally {
       setLoading(false);
@@ -154,6 +160,29 @@ function AppContent() {
     }
   };
 
+  const handleAddDocument = async (newDocument: CreateDocumentInput) => {
+    try {
+      const added = await dataService.addDocument(newDocument);
+      setDocuments((current) => [added, ...current]);
+      addToast('Document added successfully', 'success');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to add document';
+      addToast(errorMessage, 'error');
+      throw err;
+    }
+  };
+
+  const handleDeleteDocument = async (id: string) => {
+    try {
+      await dataService.deleteDocument(id);
+      setDocuments((current) => current.filter((document) => document.id !== id));
+      addToast('Document deleted successfully', 'success');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to delete document';
+      addToast(errorMessage, 'error');
+    }
+  };
+
   const renderContent = () => {
     switch (activeView) {
       case 'dashboard':
@@ -187,6 +216,15 @@ function AppContent() {
             vendors={vendors}
             onAddVendor={handleAddVendor}
             onDeleteVendor={handleDeleteVendor}
+            loading={loading}
+          />
+        );
+      case 'documents':
+        return (
+          <DocumentManager
+            documents={documents}
+            onAddDocument={handleAddDocument}
+            onDeleteDocument={handleDeleteDocument}
             loading={loading}
           />
         );

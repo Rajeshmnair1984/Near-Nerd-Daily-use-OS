@@ -1,5 +1,6 @@
 import { isSupabaseConfigured, supabase } from './supabaseClient';
 import { Bill, CreateBillInput, UpdateBillInput } from '@/types/bill';
+import { CreateDocumentInput, DocumentRecord } from '@/types/document';
 import { Location, CreateLocationInput } from '@/types/location';
 import { CreateVendorInput, UpdateVendorInput, Vendor } from '@/types/vendor';
 import { DashboardStats, ApiError } from '@/types/common';
@@ -15,6 +16,7 @@ class DataService {
   private billsCache: CacheEntry<Bill[]> | null = null;
   private locationsCache: CacheEntry<Location[]> | null = null;
   private vendorsCache: CacheEntry<Vendor[]> | null = null;
+  private documentsCache: CacheEntry<DocumentRecord[]> | null = null;
 
   private isCacheValid<T>(cache: CacheEntry<T> | null): boolean {
     if (!cache) return false;
@@ -203,6 +205,44 @@ class DataService {
     }
   }
 
+  async getDocuments(): Promise<DocumentRecord[]> {
+    if (this.isCacheValid(this.documentsCache)) {
+      return this.documentsCache!.data;
+    }
+
+    const cached = this.getFromLocalStorage<DocumentRecord[]>('documents_cache');
+    if (cached) {
+      this.documentsCache = { data: cached, timestamp: Date.now() };
+      return cached;
+    }
+
+    if (!isSupabaseConfigured) {
+      return [];
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('documents')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      this.documentsCache = { data: data || [], timestamp: Date.now() };
+      this.saveToLocalStorage('documents_cache', data || []);
+      return data || [];
+    } catch (error) {
+      const cached = this.getFromLocalStorage<DocumentRecord[]>('documents_cache');
+      if (cached) {
+        console.warn('Failed to fetch documents, using cached data');
+        return cached;
+      }
+      throw this.handleError(error, 'Failed to fetch documents');
+    }
+  }
+
   async addBill(bill: CreateBillInput): Promise<Bill> {
     if (!isSupabaseConfigured) {
       throw new Error('Supabase credentials are missing. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to .env to save bills.');
@@ -250,6 +290,52 @@ class DataService {
       return newVendor;
     } catch (error) {
       throw this.handleError(error, 'Failed to add vendor');
+    }
+  }
+
+  async addDocument(document: CreateDocumentInput): Promise<DocumentRecord> {
+    if (!isSupabaseConfigured) {
+      throw new Error('Supabase credentials are missing. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to .env to save documents.');
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('documents')
+        .insert([{ ...document, status: document.status || 'Active' }])
+        .select();
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      const newDocument = data?.[0];
+      if (newDocument) {
+        this.invalidateCache();
+      }
+      return newDocument;
+    } catch (error) {
+      throw this.handleError(error, 'Failed to add document');
+    }
+  }
+
+  async deleteDocument(id: string): Promise<void> {
+    if (!isSupabaseConfigured) {
+      throw new Error('Supabase credentials are missing. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to .env to delete documents.');
+    }
+
+    try {
+      const { error } = await supabase
+        .from('documents')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      this.invalidateCache();
+    } catch (error) {
+      throw this.handleError(error, 'Failed to delete document');
     }
   }
 
@@ -440,9 +526,11 @@ class DataService {
     this.billsCache = null;
     this.locationsCache = null;
     this.vendorsCache = null;
+    this.documentsCache = null;
     localStorage.removeItem('bills_cache');
     localStorage.removeItem('locations_cache');
     localStorage.removeItem('vendors_cache');
+    localStorage.removeItem('documents_cache');
   }
 
   private handleError(error: unknown, fallbackMessage: string): ApiError {

@@ -37,6 +37,19 @@ CREATE TABLE vendors (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
+-- Create Documents Table
+CREATE TABLE documents (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    title TEXT NOT NULL,
+    category TEXT NOT NULL,
+    owner TEXT,
+    file_url TEXT,
+    renewal_date DATE,
+    status TEXT CHECK (status IN ('Active', 'Needs Review', 'Archived')) DEFAULT 'Active',
+    notes TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
 -- Existing projects can run this safely to support recurring bills.
 ALTER TABLE bills ADD COLUMN IF NOT EXISTS is_recurring BOOLEAN DEFAULT false;
 
@@ -51,5 +64,18 @@ CREATE TABLE IF NOT EXISTS vendors (
     website TEXT,
     notes TEXT,
     status TEXT CHECK (status IN ('Active', 'Paused')) DEFAULT 'Active',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- Existing projects can run this safely to support the Documents screen.
+CREATE TABLE IF NOT EXISTS documents (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    title TEXT NOT NULL,
+    category TEXT NOT NULL,
+    owner TEXT,
+    file_url TEXT,
+    renewal_date DATE,
+    status TEXT CHECK (status IN ('Active', 'Needs Review', 'Archived')) DEFAULT 'Active',
+    notes TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
