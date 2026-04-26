@@ -5,12 +5,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
-  title: string;
+  title?: string;
   children: ReactNode;
   footer?: ReactNode;
+  maxWidth?: string;
 }
 
-export function Modal({ isOpen, onClose, title, children, footer }: ModalProps) {
+export function Modal({ isOpen, onClose, title, children, footer, maxWidth = '500px' }: ModalProps) {
   return (
     <AnimatePresence>
       {isOpen && (
@@ -18,57 +19,73 @@ export function Modal({ isOpen, onClose, title, children, footer }: ModalProps) 
           style={{
             position: 'fixed',
             inset: 0,
-            background: 'rgba(0, 0, 0, 0.8)',
+            background: 'rgba(0, 0, 0, 0.85)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            zIndex: 'var(--z-modal-backdrop)',
+            zIndex: 1400,
             padding: '1rem',
+            backdropFilter: 'blur(12px)',
           }}
           onClick={onClose}
         >
           <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.9, opacity: 0 }}
+            initial={{ scale: 0.95, opacity: 0, y: 20 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.95, opacity: 0, y: 20 }}
             className="glass-card"
             style={{
               width: '100%',
-              maxWidth: '500px',
-              padding: '2rem',
-              zIndex: 'var(--z-modal)',
+              maxWidth: maxWidth,
+              maxHeight: '95vh',
+              overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'column',
+              padding: 0,
+              zIndex: 1410,
+              boxShadow: '0 30px 100px rgba(0, 0, 0, 0.5)',
+              border: '1px solid var(--border-strong)',
+              borderRadius: '24px',
             }}
             onClick={(e) => e.stopPropagation()}
           >
+            {/* Header section - always show close button, title is optional */}
             <div
               style={{
                 display: 'flex',
-                justifyContent: 'space-between',
+                justifyContent: title ? 'space-between' : 'flex-end',
                 alignItems: 'center',
-                marginBottom: '1.5rem',
+                padding: title ? '1.5rem 2rem' : '1rem',
+                borderBottom: title ? '1px solid var(--border)' : 'none',
+                background: title ? 'var(--surface-soft)' : 'transparent',
+                position: title ? 'relative' : 'absolute',
+                top: 0,
+                right: 0,
+                left: 0,
+                zIndex: 10,
               }}
             >
-              <h2 style={{ fontSize: '1.5rem', fontWeight: 700 }}>{title}</h2>
+              {title && <h2 style={{ fontSize: '1.25rem', fontWeight: 800 }}>{title}</h2>}
               <button
                 onClick={onClose}
+                className="icon-button"
                 style={{
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  color: 'var(--text-secondary)',
-                  padding: '0.5rem',
+                  borderRadius: '50%',
+                  background: title ? 'var(--surface)' : 'rgba(0,0,0,0.05)',
+                  padding: '0.4rem',
+                  backdropFilter: title ? 'none' : 'blur(8px)',
                 }}
               >
-                <X size={24} />
+                <X size={20} />
               </button>
             </div>
 
-            <div style={{ marginBottom: footer ? '1.5rem' : 0 }}>
+            <div style={{ flex: 1, overflowY: 'auto', paddingTop: title ? 0 : '1rem' }}>
               {children}
             </div>
 
             {footer && (
-              <div style={{ display: 'flex', gap: '1rem', paddingTop: '1.5rem', borderTop: '1px solid var(--border)' }}>
+              <div style={{ padding: '1.5rem 2rem', borderTop: '1px solid var(--border)', background: 'var(--surface-soft)', display: 'flex', gap: '1rem' }}>
                 {footer}
               </div>
             )}
