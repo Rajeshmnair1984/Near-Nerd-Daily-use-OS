@@ -1,11 +1,12 @@
-import { FormEvent, memo, useMemo, useState } from 'react';
-import { MapPin, Plus, Search, Trash2, Building2, Edit } from 'lucide-react';
-import { AnimatePresence } from 'framer-motion';
+import { memo, useMemo, useState } from 'react';
+import { MapPin, Plus, Search, Trash2, Building2, Edit, ChevronRight } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { CreateLocationInput, Location } from '@/types/location';
 import { Modal } from './ui/Modal';
 import { ErrorBanner } from './ui/ErrorBanner';
 import { ConfirmationModal } from './ui/ConfirmationModal';
 import LocationEditForm from './LocationEditForm';
+import InfrastructureMatrixForm from './InfrastructureMatrixForm';
 
 interface LocationManagerProps {
   locations: Location[];
@@ -14,12 +15,6 @@ interface LocationManagerProps {
   onDeleteLocation: (id: string) => Promise<void>;
   loading?: boolean;
 }
-
-const emptyLocation: CreateLocationInput = {
-  name: '',
-  address: '',
-  contact: '',
-};
 
 function LocationManager({
   locations,
@@ -30,7 +25,6 @@ function LocationManager({
 }: LocationManagerProps) {
   const [query, setQuery] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [location, setLocation] = useState<CreateLocationInput>(emptyLocation);
   const [isSaving, setIsSaving] = useState(false);
   const [editingLocation, setEditingLocation] = useState<Location | null>(null);
   const [editLoading, setEditLoading] = useState(false);
@@ -43,29 +37,20 @@ function LocationManager({
     if (!normalizedQuery) return locations;
 
     return locations.filter((item) =>
-      [item.name, item.address, item.contact]
+      [item.name, item.address, item.contact, item.store_code, item.brand_name]
         .filter(Boolean)
         .some((value) => String(value).toLowerCase().includes(normalizedQuery))
     );
   }, [locations, query]);
 
-  const withAddressCount = locations.filter((item) => Boolean(item.address)).length;
-  const withContactCount = locations.filter((item) => Boolean(item.contact)).length;
-
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const handleAddLocation = async (data: CreateLocationInput) => {
     setIsSaving(true);
     setError(null);
     try {
-      await onAddLocation({
-        name: location.name.trim(),
-        address: location.address?.trim(),
-        contact: location.contact?.trim(),
-      });
-      setLocation(emptyLocation);
+      await onAddLocation(data);
       setIsModalOpen(false);
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Failed to add location';
+      const errorMsg = err instanceof Error ? err.message : 'Failed to add asset';
       setError(errorMsg);
     } finally {
       setIsSaving(false);
@@ -80,7 +65,7 @@ function LocationManager({
       await onUpdateLocation(editingLocation.id, updates);
       setEditingLocation(null);
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Failed to update location';
+      const errorMsg = err instanceof Error ? err.message : 'Failed to update asset';
       setError(errorMsg);
     } finally {
       setEditLoading(false);
@@ -93,7 +78,7 @@ function LocationManager({
     try {
       await onDeleteLocation(id);
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Failed to delete location';
+      const errorMsg = err instanceof Error ? err.message : 'Failed to delete asset';
       setError(errorMsg);
     } finally {
       setDeleteLoading(null);
@@ -104,13 +89,13 @@ function LocationManager({
     <div className="page-shell">
       <header className="page-hero">
         <div>
-          <p className="eyebrow">Portfolio</p>
-          <h1>Locations</h1>
-          <p>Manage every operating address, contact point, and site used across bills.</p>
+          <p className="eyebrow">Asset Management</p>
+          <h1>Infrastructure Matrix</h1>
+          <p>Core infrastructure, lease terms, and operational status for all operating assets.</p>
         </div>
-        <button className="button-primary" onClick={() => setIsModalOpen(true)}>
+        <button className="button-primary" onClick={() => setIsModalOpen(true)} style={{ gap: '0.75rem', padding: '0.75rem 1.5rem' }}>
           <Plus size={19} />
-          <span>New Location</span>
+          <span>INITIALIZE NEW ASSET</span>
         </button>
       </header>
 
@@ -118,16 +103,16 @@ function LocationManager({
 
       <div className="metric-strip">
         <div>
-          <span>Total locations</span>
+          <span>Operating Assets</span>
           <strong>{locations.length}</strong>
         </div>
         <div>
-          <span>With address</span>
-          <strong>{withAddressCount}</strong>
+          <span>Store Masters</span>
+          <strong>{locations.filter(l => l.is_store_master).length}</strong>
         </div>
         <div>
-          <span>With contact</span>
-          <strong>{withContactCount}</strong>
+          <span>Under Construction</span>
+          <strong>{locations.filter(l => l.operational_status === 'Under Construction').length}</strong>
         </div>
       </div>
 
@@ -137,7 +122,7 @@ function LocationManager({
             <Search size={19} />
             <input
               type="text"
-              placeholder="Search locations, addresses, contacts"
+              placeholder="Search assets by name, code, brand, or address..."
               value={query}
               onChange={(event) => setQuery(event.target.value)}
             />
@@ -145,51 +130,65 @@ function LocationManager({
         </div>
 
         {loading ? (
-          <div className="empty-state">Loading locations...</div>
+          <div className="empty-state">Synchronizing core matrix...</div>
         ) : filteredLocations.length === 0 ? (
           <div className="empty-state">
-            <MapPin size={48} />
-            <p>No locations yet. Add your first operating location to start organizing bills.</p>
+            <Building2 size={48} />
+            <p>No operational assets identified. Initialize your first asset to begin.</p>
+            <button className="button-primary" onClick={() => setIsModalOpen(true)} style={{ marginTop: '1.5rem' }}>
+              INITIALIZE FIRST ASSET
+            </button>
           </div>
         ) : (
           <div className="vendor-grid">
             {filteredLocations.map((item) => (
               <article className="vendor-card" key={item.id}>
                 <div className="vendor-card-header">
-                  <span className="bill-icon">
-                    <Building2 size={18} />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span className="bill-icon" style={{ background: item.is_store_master ? 'var(--primary)' : 'var(--surface-soft)', color: item.is_store_master ? 'white' : 'var(--text-secondary)' }}>
+                      {item.is_store_master ? <Building2 size={18} /> : <MapPin size={18} />}
+                    </span>
+                    {item.store_code && <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)' }}>{item.store_code}</span>}
+                  </div>
+                  <span className={`status-badge status-${(item.operational_status || 'Active').toLowerCase().replace(' ', '-')}`}>
+                    {item.operational_status || 'Active'}
                   </span>
-                  <span className="status-badge status-paid">Active</span>
                 </div>
-                <h2>{item.name}</h2>
-                <div className="vendor-contact">
+                
+                <h2 style={{ marginBottom: '0.25rem' }}>{item.name}</h2>
+                {item.brand_name && <p style={{ fontSize: '0.8rem', color: 'var(--primary)', fontWeight: 600, marginBottom: '1rem' }}>{item.brand_name}</p>}
+                
+                <div className="vendor-contact" style={{ marginBottom: '1.5rem' }}>
                   {item.address && (
                     <span>
                       <MapPin size={14} />
                       {item.address}
                     </span>
                   )}
-                  {item.contact && <span>{item.contact}</span>}
-                </div>
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  {onUpdateLocation && (
-                    <button
-                      className="icon-button"
-                      aria-label={`Edit ${item.name}`}
-                      onClick={() => setEditingLocation(item)}
-                      style={{ padding: '0.5rem', borderRadius: '6px', border: '1px solid #e5e7eb', background: 'white', cursor: 'pointer', color: '#667eea' }}
-                    >
-                      <Edit size={17} />
-                    </button>
+                  {item.opening_date && (
+                    <span>
+                      <Calendar size={14} />
+                      Opened: {item.opening_date}
+                    </span>
                   )}
+                </div>
+                
+                <div style={{ display: 'flex', gap: '0.5rem', marginTop: 'auto' }}>
+                  <button
+                    className="button-secondary"
+                    style={{ flex: 1, padding: '0.5rem', fontSize: '0.8rem', gap: '0.4rem' }}
+                    onClick={() => setEditingLocation(item)}
+                  >
+                    <Edit size={14} />
+                    Manage Matrix
+                  </button>
                   <button
                     className="icon-button danger"
-                    aria-label={`Delete ${item.name}`}
+                    aria-label={`Decommission ${item.name}`}
                     disabled={deleteLoading === item.id}
                     onClick={() => setConfirmDelete(item.id)}
-                    style={{ opacity: deleteLoading === item.id ? 0.5 : 1 }}
                   >
-                    {deleteLoading === item.id ? '...' : <Trash2 size={17} />}
+                    {deleteLoading === item.id ? '...' : <Trash2 size={16} />}
                   </button>
                 </div>
               </article>
@@ -198,42 +197,18 @@ function LocationManager({
         )}
       </section>
 
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Add Location">
-        <form onSubmit={handleSubmit} className="vendor-form">
-          <label className="form-group">
-            <span className="form-label">Location Name</span>
-            <input
-              className="form-input"
-              required
-              value={location.name}
-              onChange={(event) => setLocation({ ...location, name: event.target.value })}
-            />
-          </label>
-          <label className="form-group">
-            <span className="form-label">Address</span>
-            <input
-              className="form-input"
-              value={location.address}
-              onChange={(event) => setLocation({ ...location, address: event.target.value })}
-            />
-          </label>
-          <label className="form-group">
-            <span className="form-label">Contact</span>
-            <input
-              className="form-input"
-              value={location.contact}
-              onChange={(event) => setLocation({ ...location, contact: event.target.value })}
-            />
-          </label>
-          <div className="form-actions">
-            <button type="button" className="button-secondary" onClick={() => setIsModalOpen(false)}>
-              Cancel
-            </button>
-            <button type="submit" className="button-primary" disabled={isSaving}>
-              {isSaving ? 'Saving...' : 'Save Location'}
-            </button>
-          </div>
-        </form>
+      {/* NEW ASSET INITIALIZATION MODAL */}
+      <Modal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        title="Initialize New Asset"
+        maxWidth="950px"
+      >
+        <InfrastructureMatrixForm 
+          onSave={handleAddLocation}
+          onCancel={() => setIsModalOpen(false)}
+          loading={isSaving}
+        />
       </Modal>
 
       <AnimatePresence>
@@ -249,10 +224,10 @@ function LocationManager({
 
       <ConfirmationModal
         isOpen={confirmDelete !== null}
-        title="Delete Location"
-        message="Are you sure you want to delete this location? Bills linked to it may also be removed."
-        confirmLabel="Delete"
-        cancelLabel="Cancel"
+        title="Decommission Asset"
+        message="Are you sure you want to decommission this asset? This will archive all infrastructure matrix data associated with this location."
+        confirmLabel="Decommission"
+        cancelLabel="Keep Active"
         isDangerous
         isLoading={deleteLoading !== null}
         onConfirm={() => {
