@@ -20,10 +20,13 @@ Deno.serve(async (req) => {
   try {
     const { name, slug, adminEmail } = (await req.json()) as RequestBody;
 
+    console.log("Received data:", { name, slug, adminEmail });
+
     // Validate inputs
     if (!name || !slug || !adminEmail) {
+      console.log("Validation failed:", { name: !!name, slug: !!slug, adminEmail: !!adminEmail });
       return new Response(
-        JSON.stringify({ error: "Missing required fields" }),
+        JSON.stringify({ error: `Missing required fields: name=${!!name}, slug=${!!slug}, adminEmail=${!!adminEmail}` }),
         {
           status: 400,
           headers: { ...corsHeaders, "Content-Type": "application/json" },

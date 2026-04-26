@@ -789,8 +789,11 @@ class DataService {
         try {
           const errorData = await response.json();
           errorMessage = errorData.error || errorMessage;
+          console.error('Edge Function error response:', errorData);
         } catch (e) {
           // If response is not JSON, it might be a 404 HTML page or other text
+          const text = await response.text();
+          console.error('Edge Function raw response:', text);
           errorMessage = `HTTP error! status: ${response.status}`;
         }
         throw new Error(errorMessage);
