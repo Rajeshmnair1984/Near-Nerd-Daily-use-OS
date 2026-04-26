@@ -1,6 +1,7 @@
 import { FormEvent, memo, useState } from 'react';
 import { Database, ShieldCheck, SlidersHorizontal, UserRound } from 'lucide-react';
 import { User } from '@/types/user';
+import { DEFAULT_CURRENCY } from '@/utils/currency';
 
 interface SettingsViewProps {
   user: User | null;
@@ -21,7 +22,7 @@ function SettingsView({
   const [email, setEmail] = useState(user?.email || '');
   const [role, setRole] = useState(user?.role || '');
   const [workspaceName, setWorkspaceName] = useState('NearNerd Operations');
-  const [currency, setCurrency] = useState('USD');
+  const [currency, setCurrency] = useState(DEFAULT_CURRENCY);
   const [savedMessage, setSavedMessage] = useState('');
 
   const handleProfileSubmit = (event: FormEvent<HTMLFormElement>) => {

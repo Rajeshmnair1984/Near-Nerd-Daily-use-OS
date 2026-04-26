@@ -152,7 +152,7 @@ const SuperAdminDashboard = () => {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.5rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
                   <Globe size={16} />
-                  <span>{org.domain}.resturant-os.com</span>
+                  <span>{org.domain}.restaurant-os.com</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
                   <Shield size={16} />

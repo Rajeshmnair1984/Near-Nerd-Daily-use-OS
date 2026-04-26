@@ -221,7 +221,7 @@ function Dashboard({ stats, bills, loading }: DashboardProps) {
                     borderRadius: '8px',
                   }}
                   itemStyle={{ color: 'var(--text-primary)' }}
-                  formatter={(value) => `$${value.toFixed(2)}`}
+                  formatter={(value) => formatCurrency(Number(value))}
                 />
                 <Legend />
                 <Line

@@ -4,6 +4,7 @@ import { X, DollarSign, Calendar, MapPin, FileText } from 'lucide-react'
 import { Bill, UpdateBillInput, RecurringFrequency } from '@/types/bill'
 import { Location } from '@/types/location'
 import { Vendor } from '@/types/vendor'
+import { formatCurrency } from '@/utils/currency'
 
 interface BillEditFormProps {
   bill: Bill
@@ -303,7 +304,7 @@ function BillEditForm({ bill, locations, vendors, onSave, onCancel, loading }: B
 
             <div style={{ background: '#f3f4f6', padding: '1rem', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', fontWeight: '600' }}>
               <span>Total</span>
-              <span>${totalAmount.toFixed(2)}</span>
+              <span>{formatCurrency(totalAmount)}</span>
             </div>
           </div>
         </div>

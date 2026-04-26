@@ -27,6 +27,66 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
   const [fullName, setFullName] = useState('')
   const [orgName, setOrgName] = useState('')
 
+  const pageStyle = {
+    minHeight: '100vh',
+    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    display: 'flex',
+    alignItems: 'flex-start',
+    justifyContent: 'center',
+    padding: 'clamp(1rem, 4vh, 2rem) 1rem',
+    overflowY: 'auto' as const,
+  }
+
+  const cardStyle = {
+    background: 'white',
+    borderRadius: '16px',
+    padding: 'clamp(1.25rem, 3vw, 2rem)',
+    boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+    width: '100%',
+    maxWidth: '420px',
+    maxHeight: 'calc(100vh - 2rem)',
+    overflowY: 'auto' as const,
+  }
+
+  const inputBaseStyle = {
+    width: '100%',
+    padding: '10px 12px 10px 40px',
+    border: '1px solid #e5e7eb',
+    borderRadius: '8px',
+    fontSize: '0.875rem',
+    boxSizing: 'border-box' as const,
+  }
+
+  const passwordInputStyle = {
+    ...inputBaseStyle,
+    padding: '10px 40px',
+  }
+
+  const fieldIconStyle = {
+    position: 'absolute' as const,
+    left: '12px',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    color: '#9ca3af',
+    pointerEvents: 'none' as const,
+  }
+
+  const passwordToggleStyle = {
+    position: 'absolute' as const,
+    right: '10px',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
+    color: '#9ca3af',
+    width: '28px',
+    height: '28px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  }
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
@@ -72,20 +132,13 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+    <div style={pageStyle}>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        style={{
-          background: 'white',
-          borderRadius: '16px',
-          padding: '2rem',
-          boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
-          width: '100%',
-          maxWidth: '420px',
-        }}
+        style={cardStyle}
       >
-        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+        <div style={{ textAlign: 'center', marginBottom: mode === 'signup' ? '1.25rem' : '2rem' }}>
           <h1 style={{ fontSize: '1.75rem', fontWeight: 'bold', color: '#1f2937', marginBottom: '0.5rem' }}>Near Nerd</h1>
           <p style={{ color: '#6b7280', fontSize: '0.875rem' }}>Operations Portal</p>
         </div>
@@ -114,21 +167,13 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
                 Email
               </label>
               <div style={{ position: 'relative' }}>
-                <Mail size={18} style={{ position: 'absolute', left: '12px', top: '12px', color: '#9ca3af' }} />
+                <Mail size={18} style={fieldIconStyle} />
                 <input
                   type="email"
                   value={loginEmail}
                   onChange={(e) => setLoginEmail(e.target.value)}
                   placeholder="you@example.com"
-                  style={{
-                    width: '100%',
-                    paddingLeft: '40px',
-                    padding: '10px 12px',
-                    border: '1px solid #e5e7eb',
-                    borderRadius: '8px',
-                    fontSize: '0.875rem',
-                    boxSizing: 'border-box',
-                  }}
+                  style={inputBaseStyle}
                   required
                 />
               </div>
@@ -139,28 +184,19 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
                 Password
               </label>
               <div style={{ position: 'relative' }}>
-                <Lock size={18} style={{ position: 'absolute', left: '12px', top: '12px', color: '#9ca3af' }} />
+                <Lock size={18} style={fieldIconStyle} />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={loginPassword}
                   onChange={(e) => setLoginPassword(e.target.value)}
                   placeholder="••••••••"
-                  style={{
-                    width: '100%',
-                    paddingLeft: '40px',
-                    paddingRight: '40px',
-                    padding: '10px 12px',
-                    border: '1px solid #e5e7eb',
-                    borderRadius: '8px',
-                    fontSize: '0.875rem',
-                    boxSizing: 'border-box',
-                  }}
+                  style={passwordInputStyle}
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  style={{ position: 'absolute', right: '12px', top: '12px', background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af' }}
+                  style={passwordToggleStyle}
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
@@ -203,21 +239,13 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
                 Full Name
               </label>
               <div style={{ position: 'relative' }}>
-                <User size={18} style={{ position: 'absolute', left: '12px', top: '12px', color: '#9ca3af' }} />
+                <User size={18} style={fieldIconStyle} />
                 <input
                   type="text"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder="John Doe"
-                  style={{
-                    width: '100%',
-                    paddingLeft: '40px',
-                    padding: '10px 12px',
-                    border: '1px solid #e5e7eb',
-                    borderRadius: '8px',
-                    fontSize: '0.875rem',
-                    boxSizing: 'border-box',
-                  }}
+                  style={inputBaseStyle}
                   required
                 />
               </div>
@@ -228,21 +256,13 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
                 Organization Name
               </label>
               <div style={{ position: 'relative' }}>
-                <Building2 size={18} style={{ position: 'absolute', left: '12px', top: '12px', color: '#9ca3af' }} />
+                <Building2 size={18} style={fieldIconStyle} />
                 <input
                   type="text"
                   value={orgName}
                   onChange={(e) => setOrgName(e.target.value)}
                   placeholder="Your Company"
-                  style={{
-                    width: '100%',
-                    paddingLeft: '40px',
-                    padding: '10px 12px',
-                    border: '1px solid #e5e7eb',
-                    borderRadius: '8px',
-                    fontSize: '0.875rem',
-                    boxSizing: 'border-box',
-                  }}
+                  style={inputBaseStyle}
                   required
                 />
               </div>
@@ -253,21 +273,13 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
                 Email
               </label>
               <div style={{ position: 'relative' }}>
-                <Mail size={18} style={{ position: 'absolute', left: '12px', top: '12px', color: '#9ca3af' }} />
+                <Mail size={18} style={fieldIconStyle} />
                 <input
                   type="email"
                   value={signupEmail}
                   onChange={(e) => setSignupEmail(e.target.value)}
                   placeholder="you@example.com"
-                  style={{
-                    width: '100%',
-                    paddingLeft: '40px',
-                    padding: '10px 12px',
-                    border: '1px solid #e5e7eb',
-                    borderRadius: '8px',
-                    fontSize: '0.875rem',
-                    boxSizing: 'border-box',
-                  }}
+                  style={inputBaseStyle}
                   required
                 />
               </div>
@@ -278,28 +290,19 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
                 Password
               </label>
               <div style={{ position: 'relative' }}>
-                <Lock size={18} style={{ position: 'absolute', left: '12px', top: '12px', color: '#9ca3af' }} />
+                <Lock size={18} style={fieldIconStyle} />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={signupPassword}
                   onChange={(e) => setSignupPassword(e.target.value)}
                   placeholder="••••••••"
-                  style={{
-                    width: '100%',
-                    paddingLeft: '40px',
-                    paddingRight: '40px',
-                    padding: '10px 12px',
-                    border: '1px solid #e5e7eb',
-                    borderRadius: '8px',
-                    fontSize: '0.875rem',
-                    boxSizing: 'border-box',
-                  }}
+                  style={passwordInputStyle}
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  style={{ position: 'absolute', right: '12px', top: '12px', background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af' }}
+                  style={passwordToggleStyle}
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
@@ -311,22 +314,13 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
                 Confirm Password
               </label>
               <div style={{ position: 'relative' }}>
-                <Lock size={18} style={{ position: 'absolute', left: '12px', top: '12px', color: '#9ca3af' }} />
+                <Lock size={18} style={fieldIconStyle} />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={signupConfirmPassword}
                   onChange={(e) => setSignupConfirmPassword(e.target.value)}
                   placeholder="••••••••"
-                  style={{
-                    width: '100%',
-                    paddingLeft: '40px',
-                    paddingRight: '40px',
-                    padding: '10px 12px',
-                    border: '1px solid #e5e7eb',
-                    borderRadius: '8px',
-                    fontSize: '0.875rem',
-                    boxSizing: 'border-box',
-                  }}
+                  style={passwordInputStyle}
                   required
                 />
               </div>
