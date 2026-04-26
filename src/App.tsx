@@ -241,7 +241,7 @@ function AppContent() {
       default:
         return (
           <div style={{ padding: '4rem', textAlign: 'center' }}>
-            <h2 style={{ opacity: 0.5 }}>{activeView.charAt(0).toUpperCase() + activeView.slice(1)} View Coming Soon</h2>
+            <h2 style={{ opacity: 0.5 }}>View Coming Soon</h2>
           </div>
         );
     }
@@ -254,6 +254,7 @@ function AppContent() {
         setActiveView={setActiveView}
         isOpen={isSidebarOpen}
         onNavigate={() => setIsSidebarOpen(false)}
+        userRole={user?.role}
       />
       {isSidebarOpen && (
         <button

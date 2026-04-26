@@ -6,6 +6,7 @@ import {
   Calendar,
   FileText,
   Settings,
+  Globe,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -13,18 +14,23 @@ interface SidebarProps {
   setActiveView: (view: string) => void;
   isOpen?: boolean;
   onNavigate?: () => void;
+  userRole?: string;
 }
 
-const menuItems = [
-  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { id: 'locations', label: 'Locations', icon: MapPin },
-  { id: 'bills', label: 'Bills', icon: Receipt },
-  { id: 'vendors', label: 'Vendors', icon: Users },
-  { id: 'calendar', label: 'Calendar', icon: Calendar },
-  { id: 'documents', label: 'Documents', icon: FileText },
-];
+function Sidebar({ activeView, setActiveView, isOpen = false, onNavigate, userRole }: SidebarProps) {
+  const menuItems = [
+    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { id: 'locations', label: 'Locations', icon: MapPin },
+    { id: 'bills', label: 'Bills', icon: Receipt },
+    { id: 'vendors', label: 'Vendors', icon: Users },
+    { id: 'calendar', label: 'Calendar', icon: Calendar },
+    { id: 'documents', label: 'Documents', icon: FileText },
+  ];
 
-function Sidebar({ activeView, setActiveView, isOpen = false, onNavigate }: SidebarProps) {
+  if (userRole === 'SUPER_ADMIN') {
+    menuItems.unshift({ id: 'super-admin', label: 'Global Console', icon: Globe });
+  }
+
   return (
     <aside
       className={`app-sidebar ${isOpen ? 'is-open' : ''}`}
