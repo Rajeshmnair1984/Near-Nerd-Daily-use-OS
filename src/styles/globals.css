@@ -486,6 +486,12 @@ textarea::placeholder {
   text-decoration: none;
 }
 
+.vendor-contact span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
 .vendor-notes {
   margin-top: 1rem;
   padding-top: 1rem;

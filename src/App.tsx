@@ -5,11 +5,12 @@ import BillManager from './components/BillManager';
 import CalendarView from './components/CalendarView';
 import VendorManager from './components/VendorManager';
 import SettingsView from './components/SettingsView';
+import LocationManager from './components/LocationManager';
 import { dataService } from './services/dataService';
 import { Bell, Menu } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bill, CreateBillInput, UpdateBillInput } from '@/types/bill';
-import { Location } from '@/types/location';
+import { CreateLocationInput, Location } from '@/types/location';
 import { CreateVendorInput, Vendor } from '@/types/vendor';
 import { DashboardStats } from '@/types/common';
 import { useUser } from '@/context/UserContext';
@@ -107,6 +108,29 @@ function AppContent() {
     }
   };
 
+  const handleAddLocation = async (newLocation: CreateLocationInput) => {
+    try {
+      const added = await dataService.addLocation(newLocation);
+      setLocations((current) => [...current, added].sort((a, b) => a.name.localeCompare(b.name)));
+      addToast('Location added successfully', 'success');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to add location';
+      addToast(errorMessage, 'error');
+      throw err;
+    }
+  };
+
+  const handleDeleteLocation = async (id: string) => {
+    try {
+      await dataService.deleteLocation(id);
+      setLocations((current) => current.filter((location) => location.id !== id));
+      addToast('Location deleted successfully', 'success');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to delete location';
+      addToast(errorMessage, 'error');
+    }
+  };
+
   const handleAddVendor = async (newVendor: CreateVendorInput) => {
     try {
       const added = await dataService.addVendor(newVendor);
@@ -143,6 +167,15 @@ function AppContent() {
             onUpdateBill={handleUpdateBill}
             onUpdateStatus={handleUpdateStatus}
             onDeleteBill={handleDeleteBill}
+            loading={loading}
+          />
+        );
+      case 'locations':
+        return (
+          <LocationManager
+            locations={locations}
+            onAddLocation={handleAddLocation}
+            onDeleteLocation={handleDeleteLocation}
             loading={loading}
           />
         );

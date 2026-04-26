@@ -119,6 +119,52 @@ class DataService {
     }
   }
 
+  async addLocation(location: CreateLocationInput): Promise<Location> {
+    if (!isSupabaseConfigured) {
+      throw new Error('Supabase credentials are missing. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to .env to save locations.');
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('locations')
+        .insert([location])
+        .select();
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      const newLocation = data?.[0];
+      if (newLocation) {
+        this.invalidateCache();
+      }
+      return newLocation;
+    } catch (error) {
+      throw this.handleError(error, 'Failed to add location');
+    }
+  }
+
+  async deleteLocation(id: string): Promise<void> {
+    if (!isSupabaseConfigured) {
+      throw new Error('Supabase credentials are missing. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to .env to delete locations.');
+    }
+
+    try {
+      const { error } = await supabase
+        .from('locations')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      this.invalidateCache();
+    } catch (error) {
+      throw this.handleError(error, 'Failed to delete location');
+    }
+  }
+
   async getVendors(): Promise<Vendor[]> {
     if (this.isCacheValid(this.vendorsCache)) {
       return this.vendorsCache!.data;
