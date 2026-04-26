@@ -34,6 +34,11 @@ function BillManager({
 }: BillManagerProps) {
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatus, setFilterStatus] = useState<BillStatus | 'All'>('All')
+  const [filterLocation, setFilterLocation] = useState<string>('All')
+  const [filterVendor, setFilterVendor] = useState<string>('All')
+  const [filterCategory, setFilterCategory] = useState<string>('All')
+  const [dateRangeFrom, setDateRangeFrom] = useState<string>('')
+  const [dateRangeTo, setDateRangeTo] = useState<string>('')
   const [showModal, setShowModal] = useState(false)
   const [editingBill, setEditingBill] = useState<Bill | null>(null)
   const [editLoading, setEditLoading] = useState(false)
@@ -41,6 +46,11 @@ function BillManager({
   const locationById = useMemo(
     () => new Map(locations.map((location) => [location.id, location])),
     [locations]
+  );
+
+  const uniqueCategories = useMemo(
+    () => ['All', ...Array.from(new Set(bills.map((b) => b.category)))],
+    [bills]
   );
 
   const filteredBills = useMemo(
@@ -54,9 +64,24 @@ function BillManager({
           bill.category.toLowerCase().includes(query) ||
           location?.name.toLowerCase().includes(query);
         const matchesStatus = filterStatus === 'All' || bill.status === filterStatus;
-        return matchesSearch && matchesStatus;
+        const matchesLocation = filterLocation === 'All' || bill.location_id === filterLocation;
+        const matchesVendor = filterVendor === 'All' || bill.vendor_id === filterVendor;
+        const matchesCategory = filterCategory === 'All' || bill.category === filterCategory;
+        const billDate = new Date(bill.date);
+        const fromDate = dateRangeFrom ? new Date(dateRangeFrom) : null;
+        const toDate = dateRangeTo ? new Date(dateRangeTo) : null;
+        const matchesDateRange =
+          (!fromDate || billDate >= fromDate) && (!toDate || billDate <= toDate);
+        return (
+          matchesSearch &&
+          matchesStatus &&
+          matchesLocation &&
+          matchesVendor &&
+          matchesCategory &&
+          matchesDateRange
+        );
       }),
-    [bills, filterStatus, locationById, searchTerm]
+    [bills, filterStatus, filterLocation, filterVendor, filterCategory, dateRangeFrom, dateRangeTo, locationById, searchTerm]
   );
 
   const handleAddBill = async (bill: CreateBillInput) => {
@@ -121,6 +146,127 @@ function BillManager({
               </button>
             ))}
           </div>
+        </div>
+
+        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', padding: '1rem 0', borderBottom: '1px solid var(--border)' }}>
+          <select
+            value={filterLocation}
+            onChange={(e) => setFilterLocation(e.target.value)}
+            style={{
+              padding: '0.5rem 0.75rem',
+              border: '1px solid var(--border)',
+              borderRadius: '6px',
+              fontSize: '0.875rem',
+              background: 'white',
+              cursor: 'pointer',
+            }}
+            aria-label="Filter by location"
+          >
+            <option value="All">All Locations</option>
+            {locations.map((location) => (
+              <option key={location.id} value={location.id}>
+                {location.name}
+              </option>
+            ))}
+          </select>
+
+          <select
+            value={filterVendor}
+            onChange={(e) => setFilterVendor(e.target.value)}
+            style={{
+              padding: '0.5rem 0.75rem',
+              border: '1px solid var(--border)',
+              borderRadius: '6px',
+              fontSize: '0.875rem',
+              background: 'white',
+              cursor: 'pointer',
+            }}
+            aria-label="Filter by vendor"
+          >
+            <option value="All">All Vendors</option>
+            {vendors.map((vendor) => (
+              <option key={vendor.id} value={vendor.id}>
+                {vendor.name}
+              </option>
+            ))}
+          </select>
+
+          <select
+            value={filterCategory}
+            onChange={(e) => setFilterCategory(e.target.value)}
+            style={{
+              padding: '0.5rem 0.75rem',
+              border: '1px solid var(--border)',
+              borderRadius: '6px',
+              fontSize: '0.875rem',
+              background: 'white',
+              cursor: 'pointer',
+            }}
+            aria-label="Filter by category"
+          >
+            {uniqueCategories.map((category) => (
+              <option key={category} value={category}>
+                {category === 'All' ? 'All Categories' : category}
+              </option>
+            ))}
+          </select>
+
+          <input
+            type="date"
+            value={dateRangeFrom}
+            onChange={(e) => setDateRangeFrom(e.target.value)}
+            placeholder="From date"
+            style={{
+              padding: '0.5rem 0.75rem',
+              border: '1px solid var(--border)',
+              borderRadius: '6px',
+              fontSize: '0.875rem',
+              background: 'white',
+              cursor: 'pointer',
+            }}
+            aria-label="Filter from date"
+          />
+
+          <input
+            type="date"
+            value={dateRangeTo}
+            onChange={(e) => setDateRangeTo(e.target.value)}
+            placeholder="To date"
+            style={{
+              padding: '0.5rem 0.75rem',
+              border: '1px solid var(--border)',
+              borderRadius: '6px',
+              fontSize: '0.875rem',
+              background: 'white',
+              cursor: 'pointer',
+            }}
+            aria-label="Filter to date"
+          />
+
+          {(filterLocation !== 'All' || filterVendor !== 'All' || filterCategory !== 'All' || dateRangeFrom || dateRangeTo) && (
+            <button
+              onClick={() => {
+                setFilterLocation('All');
+                setFilterVendor('All');
+                setFilterCategory('All');
+                setDateRangeFrom('');
+                setDateRangeTo('');
+              }}
+              style={{
+                padding: '0.5rem 1rem',
+                border: 'none',
+                borderRadius: '6px',
+                background: '#f3f4f6',
+                cursor: 'pointer',
+                fontSize: '0.875rem',
+                fontWeight: 500,
+                color: '#6b7280',
+              }}
+              aria-label="Clear filters"
+            >
+              Clear Filters
+            </button>
+          )}
         </div>
 
         {loading ? (
