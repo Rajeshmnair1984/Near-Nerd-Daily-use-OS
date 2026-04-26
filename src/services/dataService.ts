@@ -19,7 +19,27 @@ export interface UserProfile {
   full_name: string;
 }
 
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
+
+// Helper function to determine if a bill is overdue
+function isOverdue(bill: Bill): boolean {
+  // If explicitly marked as Overdue, return true
+  if (bill.status === 'Overdue') return true
+
+  // If bill is already Paid, it's not overdue
+  if (bill.status === 'Paid') return false
+
+  // Check if due_date is in the past
+  if (bill.due_date) {
+    const dueDate = new Date(bill.due_date)
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    dueDate.setHours(0, 0, 0, 0)
+    return dueDate < today
+  }
+
+  return false
+}
 
 interface CacheEntry<T> {
   data: T;
@@ -137,18 +157,19 @@ class DataService {
   async getBills(): Promise<Bill[]> {
     // Check memory cache
     if (this.isCacheValid(this.billsCache)) {
-      return this.billsCache!.data;
+      return this.applyOverdueDetection(this.billsCache!.data)
     }
 
     // Check localStorage
-    const cached = this.getFromLocalStorage<Bill[]>('bills_cache');
+    const cached = this.getFromLocalStorage<Bill[]>('bills_cache')
     if (cached) {
-      this.billsCache = { data: cached, timestamp: Date.now() };
-      return cached;
+      const bills = this.applyOverdueDetection(cached)
+      this.billsCache = { data: bills, timestamp: Date.now() }
+      return bills
     }
 
     if (!isSupabaseConfigured) {
-      return this.getLocalRecords<Bill>('bills_cache');
+      return this.applyOverdueDetection(this.getLocalRecords<Bill>('bills_cache'))
     }
 
     // Fetch from Supabase
@@ -156,24 +177,34 @@ class DataService {
       const { data, error } = await supabase
         .from('bills')
         .select('*')
-        .order('date', { ascending: true });
+        .order('date', { ascending: true })
 
       if (error) {
-        throw new Error(error.message);
+        throw new Error(error.message)
       }
 
-      this.billsCache = { data: data || [], timestamp: Date.now() };
-      this.saveToLocalStorage('bills_cache', data || []);
-      return data || [];
+      const bills = this.applyOverdueDetection(data || [])
+      this.billsCache = { data: bills, timestamp: Date.now() }
+      this.saveToLocalStorage('bills_cache', bills)
+      return bills
     } catch (error) {
-      const cached = this.getFromLocalStorage<Bill[]>('bills_cache');
+      const cached = this.getFromLocalStorage<Bill[]>('bills_cache')
       if (cached) {
-        console.warn('Failed to fetch bills, using cached data');
-        return cached;
+        console.warn('Failed to fetch bills, using cached data')
+        return this.applyOverdueDetection(cached)
       }
-      console.warn('Failed to fetch bills, using local workspace.', error);
-      return [];
+      console.warn('Failed to fetch bills, using local workspace.', error)
+      return []
     }
+  }
+
+  private applyOverdueDetection(bills: Bill[]): Bill[] {
+    return bills.map((bill) => {
+      if (bill.status !== 'Paid' && isOverdue(bill)) {
+        return { ...bill, status: 'Overdue' as const }
+      }
+      return bill
+    })
   }
 
   async addLocation(location: CreateLocationInput): Promise<Location> {
@@ -618,26 +649,26 @@ class DataService {
 
   getDashboardStats(bills: Bill[]): DashboardStats {
     if (!bills || bills.length === 0) {
-      return { totalPaid: 0, totalPending: 0, totalOverdue: 0, overdueCount: 0 };
+      return { totalPaid: 0, totalPending: 0, totalOverdue: 0, overdueCount: 0 }
     }
 
     const paid = bills
       .filter((b) => b.status === 'Paid')
-      .reduce((acc, b) => acc + b.amount, 0);
+      .reduce((acc, b) => acc + b.amount, 0)
 
     const pending = bills
-      .filter((b) => b.status === 'Pending')
-      .reduce((acc, b) => acc + b.amount, 0);
+      .filter((b) => b.status === 'Pending' && !isOverdue(b))
+      .reduce((acc, b) => acc + b.amount, 0)
 
-    const overdue = bills.filter((b) => b.status === 'Overdue');
-    const overdueTotal = overdue.reduce((acc, b) => acc + b.amount, 0);
+    const overdue = bills.filter((b) => isOverdue(b))
+    const overdueTotal = overdue.reduce((acc, b) => acc + b.amount, 0)
 
     return {
       totalPaid: paid,
       totalPending: pending,
       totalOverdue: overdueTotal,
       overdueCount: overdue.length,
-    };
+    }
   }
 
   async createOrganization(name: string, domain: string, adminEmail: string): Promise<Organization> {
