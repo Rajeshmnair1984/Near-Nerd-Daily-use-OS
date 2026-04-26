@@ -15,10 +15,18 @@ interface SidebarProps {
   setActiveView: (view: string) => void;
   isOpen?: boolean;
   onNavigate?: () => void;
+  userName?: string;
   userRole?: string;
 }
 
-function Sidebar({ activeView, setActiveView, isOpen = false, onNavigate, userRole }: SidebarProps) {
+function Sidebar({
+  activeView,
+  setActiveView,
+  isOpen = false,
+  onNavigate,
+  userName,
+  userRole,
+}: SidebarProps) {
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'locations', label: 'Locations', icon: MapPin },
@@ -56,7 +64,7 @@ function Sidebar({ activeView, setActiveView, isOpen = false, onNavigate, userRo
       <div
         style={{
           padding: '0 1.5rem',
-          marginBottom: '2rem',
+          marginBottom: '1.25rem',
         }}
       >
         <h1
@@ -71,6 +79,61 @@ function Sidebar({ activeView, setActiveView, isOpen = false, onNavigate, userRo
         >
           NearNerd
         </h1>
+      </div>
+
+      <div
+        style={{
+          margin: '0 1.5rem 1.5rem',
+          padding: '0.95rem',
+          border: '1px solid var(--border)',
+          borderRadius: '0.75rem',
+          background: 'rgba(255, 255, 255, 0.72)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.75rem',
+        }}
+      >
+        <div
+          style={{
+            width: '38px',
+            height: '38px',
+            borderRadius: '10px',
+            background: 'linear-gradient(135deg, var(--primary), #64d2ff)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontWeight: 800,
+            color: '#fff',
+            flexShrink: 0,
+          }}
+        >
+          {(userName || '?').split(' ').map((part) => part[0]).join('').slice(0, 2).toUpperCase()}
+        </div>
+        <div style={{ minWidth: 0 }}>
+          <p
+            style={{
+              fontSize: '0.9rem',
+              fontWeight: 700,
+              color: 'var(--text-primary)',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            }}
+          >
+            {userName}
+          </p>
+          <p
+            style={{
+              fontSize: '0.75rem',
+              color: 'var(--text-secondary)',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            }}
+          >
+            {userRole}
+          </p>
+        </div>
       </div>
 
       {/* Menu Items */}

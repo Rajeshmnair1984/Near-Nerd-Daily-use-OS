@@ -319,6 +319,7 @@ function AppContent() {
         setActiveView={setActiveView}
         isOpen={isSidebarOpen}
         onNavigate={() => setIsSidebarOpen(false)}
+        userName={user?.fullName || user?.email || ''}
         userRole={user?.role}
       />
       {isSidebarOpen && (
@@ -354,7 +355,7 @@ function AppContent() {
           >
             <Menu size={22} />
           </button>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginLeft: 'auto' }}>
             <div style={{ position: 'relative', cursor: 'pointer' }}>
               <Bell size={22} color="var(--text-secondary)" />
               {stats.overdueCount > 0 && (
@@ -379,34 +380,6 @@ function AppContent() {
                   {stats.overdueCount}
                 </span>
               )}
-            </div>
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.75rem',
-                borderLeft: '1px solid var(--border)',
-                paddingLeft: '1.5rem',
-              }}
-            >
-              <div style={{ textAlign: 'right' }}>
-                <p style={{ fontSize: '0.875rem', fontWeight: 600 }}>{user?.fullName || user?.email}</p>
-                <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{user?.role}</p>
-              </div>
-              <div
-                style={{
-                  width: '40px',
-                  height: '40px',
-                  borderRadius: '12px',
-                  background: 'linear-gradient(135deg, var(--primary), #64d2ff)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontWeight: 700,
-                }}
-              >
-                {(user?.fullName || user?.email || '?').split(' ').map(n => n[0]).join('').toUpperCase()}
-              </div>
             </div>
           </div>
         </header>
