@@ -112,11 +112,11 @@ class AuthService {
 
   // Get current authenticated user
   async getCurrentUser(): Promise<UserProfile | null> {
+    let authUser: Awaited<ReturnType<typeof supabase.auth.getUser>>['data']['user'] = null
+
     try {
-      const {
-        data: { user: authUser },
-        error: authError,
-      } = await supabase.auth.getUser()
+      const { data: authData, error: authError } = await supabase.auth.getUser()
+      authUser = authData.user
 
       if (authError || !authUser) return null
 
@@ -126,13 +126,16 @@ class AuthService {
         .eq('id', authUser.id)
         .single()
 
-      if (error || !data) return null
+      if (error || !data) {
+        return this.mapAuthUserFallback(authUser)
+      }
 
       return this.mapUserProfile(data)
     } catch (error) {
       console.error('Get current user error:', error)
-      return null
     }
+
+    return authUser ? this.mapAuthUserFallback(authUser) : null
   }
 
   // Logout
@@ -239,6 +242,18 @@ class AuthService {
       avatarUrl: data.avatar_url,
       role: data.role,
       isActive: data.is_active,
+    }
+  }
+
+  private mapAuthUserFallback(authUser: any): UserProfile {
+    return {
+      id: authUser.id,
+      organizationId: authUser.user_metadata?.organization_id || '',
+      email: authUser.email || authUser.user_metadata?.email || '',
+      fullName: authUser.user_metadata?.full_name || null,
+      avatarUrl: authUser.user_metadata?.avatar_url || null,
+      role: authUser.user_metadata?.role || 'viewer',
+      isActive: true,
     }
   }
 
