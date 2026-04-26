@@ -1,6 +1,6 @@
 import { memo, useMemo, FC } from 'react'
-import { AlertCircle, Clock, FileText, RefreshCw } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { AlertCircle, Clock, FileText, RefreshCw, Zap, ShieldAlert, ArrowRight, Activity, BellRing } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Bill } from '@/types/bill'
 import { DocumentRecord } from '@/types/document'
 import { formatCurrency } from '@/utils/currency'
@@ -19,6 +19,7 @@ interface Alert {
   icon: React.ComponentType<{ size: number }>
   color: string
   actionItem: string
+  severity: 'high' | 'medium' | 'low'
 }
 
 const AlertsManager: FC<AlertsManagerProps> = ({ bills, documents, loading }) => {
@@ -34,11 +35,12 @@ const AlertsManager: FC<AlertsManagerProps> = ({ bills, documents, loading }) =>
       allAlerts.push({
         id: `overdue-${bill.id}`,
         type: 'overdue',
-        title: `Overdue: ${bill.charge_name}`,
-        description: `Due: ${bill.date} • Amount: ${formatCurrency(bill.amount)}`,
+        title: `Overdue Payment: ${bill.charge_name}`,
+        description: `Settlement coordinate: ${bill.date} • Impact: ${formatCurrency(bill.amount)}`,
         icon: AlertCircle,
         color: '#ef4444',
-        actionItem: 'Pay immediately'
+        actionItem: 'SETTLE IMMEDIATELY',
+        severity: 'high'
       })
     })
 
@@ -50,11 +52,12 @@ const AlertsManager: FC<AlertsManagerProps> = ({ bills, documents, loading }) =>
         allAlerts.push({
           id: `dueSoon-${bill.id}`,
           type: 'dueSoon',
-          title: `Due soon: ${bill.charge_name}`,
-          description: `Due: ${bill.date} • Amount: ${formatCurrency(bill.amount)}`,
+          title: `Imminent Commitment: ${bill.charge_name}`,
+          description: `Timeline coordinate: ${bill.date} • Volume: ${formatCurrency(bill.amount)}`,
           icon: Clock,
           color: '#f59e0b',
-          actionItem: 'Schedule payment'
+          actionItem: 'ORCHESTRATE PAYMENT',
+          severity: 'medium'
         })
       }
     })
@@ -64,11 +67,12 @@ const AlertsManager: FC<AlertsManagerProps> = ({ bills, documents, loading }) =>
       allAlerts.push({
         id: `doc-${doc.id}`,
         type: 'missingDoc',
-        title: `Document needs review: ${doc.title}`,
-        description: `Category: ${doc.category}${doc.owner ? ` • Owner: ${doc.owner}` : ''}`,
+        title: `Vault Review Required: ${doc.title}`,
+        description: `Intel Category: ${doc.category}${doc.owner ? ` • Entity: ${doc.owner}` : ''}`,
         icon: FileText,
-        color: '#f59e0b',
-        actionItem: 'Review document'
+        color: '#0071e3',
+        actionItem: 'VERIFY INTEL',
+        severity: 'medium'
       })
     })
 
@@ -82,95 +86,178 @@ const AlertsManager: FC<AlertsManagerProps> = ({ bills, documents, loading }) =>
         allAlerts.push({
           id: `renewal-${doc.id}`,
           type: 'renewal',
-          title: `Renewal coming: ${doc.title}`,
-          description: `Renews: ${doc.renewal_date} • ${daysUntilRenewal} days remaining`,
+          title: `Vault Renewal Approaching: ${doc.title}`,
+          description: `Renewal coordinate: ${doc.renewal_date} • ${daysUntilRenewal} days remaining`,
           icon: RefreshCw,
-          color: '#06b6d4',
-          actionItem: 'Renew soon'
+          color: '#34a853',
+          actionItem: 'EXTEND CLEARANCE',
+          severity: 'low'
         })
       }
     })
 
-    return allAlerts.slice(0, 12)
+    return allAlerts.sort((a, b) => {
+      const severityOrder = { high: 0, medium: 1, low: 2 }
+      return severityOrder[a.severity] - severityOrder[b.severity]
+    }).slice(0, 15)
   }, [bills, documents])
 
   return (
-    <div className="page-shell">
+    <div className="page-shell alerts-premium-page">
+      <style>{`
+        .alerts-premium-page .page-hero {
+          background: linear-gradient(135deg, var(--surface) 0%, var(--surface-soft) 100%);
+          padding: 2.5rem;
+          border-radius: 24px;
+          border: 1px solid var(--border);
+          margin-bottom: 2.5rem;
+          display: grid;
+          grid-template-columns: 1fr auto;
+          align-items: center;
+          gap: 2rem;
+        }
+
+        .alerts-premium-page .hero-content h1 {
+          font-size: 3rem;
+          font-weight: 900;
+          letter-spacing: -0.04em;
+          background: linear-gradient(to right, var(--text-primary), var(--primary));
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          margin-bottom: 0.5rem;
+        }
+
+        .alerts-premium-page .threat-matrix {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 1rem;
+        }
+
+        .alerts-premium-page .premium-alert-card {
+          background: var(--bg-card);
+          border-radius: 20px;
+          padding: 1.5rem;
+          border: 1px solid var(--border);
+          display: grid;
+          grid-template-columns: auto 1fr auto;
+          align-items: center;
+          gap: 1.5rem;
+          transition: var(--transition);
+          position: relative;
+          overflow: hidden;
+        }
+
+        .alerts-premium-page .premium-alert-card:hover {
+          transform: translateX(4px);
+          box-shadow: var(--shadow-sm);
+        }
+
+        .alerts-premium-page .alert-severity-indicator {
+          position: absolute;
+          left: 0;
+          top: 0;
+          bottom: 0;
+          width: 4px;
+        }
+
+        .alerts-premium-page .alert-icon-box {
+          width: 48px;
+          height: 48px;
+          border-radius: 14px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .alerts-premium-page .action-trigger {
+          padding: 0.6rem 1.25rem;
+          border-radius: 10px;
+          font-size: 0.75rem;
+          font-weight: 900;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          transition: var(--transition);
+          cursor: pointer;
+          border: none;
+        }
+      `}</style>
+
       <header className="page-hero">
-        <div>
-          <p className="eyebrow">Operations</p>
-          <h1>Alerts & Notifications</h1>
-          <p>Stay on top of upcoming payments, renewals, and document reviews.</p>
+        <div className="hero-content">
+          <p className="eyebrow">Neural Monitoring</p>
+          <h1>Threat Intel Matrix</h1>
+          <p>Real-time synchronization of upcoming liabilities, expiring intel, and system interventions.</p>
+        </div>
+        <div style={{ display: 'flex', gap: '1rem' }}>
+          <div className="metric-badge" style={{ padding: '0.75rem 1.25rem', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <Activity size={18} className="text-primary" />
+            <div>
+              <p style={{ fontSize: '0.6rem', fontWeight: 900, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Active Threats</p>
+              <p style={{ fontSize: '1.25rem', fontWeight: 900 }}>{alerts.length}</p>
+            </div>
+          </div>
         </div>
       </header>
 
-      <section className="panel bill-panel">
+      <section>
         {loading ? (
-          <div className="empty-state">Loading alerts...</div>
+          <div className="empty-state" style={{ padding: '8rem' }}>
+            <Zap size={48} className="animate-pulse" color="var(--primary)" />
+            <h2 style={{ marginTop: '1.5rem', fontWeight: 900 }}>SCANNING THREAT VECTORS...</h2>
+          </div>
         ) : alerts.length === 0 ? (
-          <div className="empty-state">
-            <AlertCircle size={48} />
-            <p>All clear! No pending items or upcoming due dates.</p>
+          <div className="empty-state" style={{ padding: '8rem', background: 'var(--bg-card)', borderRadius: '32px', border: '1px solid var(--border)' }}>
+            <BellRing size={64} style={{ opacity: 0.1, marginBottom: '1.5rem' }} />
+            <h2 style={{ fontWeight: 950 }}>ALL CLEAR</h2>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem' }}>The operational matrix is fully optimized. No pending threats detected.</p>
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {alerts.map((alert) => {
-              const Icon = alert.icon
-              return (
-                <motion.div
-                  key={alert.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  style={{
-                    display: 'flex',
-                    gap: '1rem',
-                    padding: '1.25rem',
-                    background: 'white',
-                    border: `2px solid ${alert.color}20`,
-                    borderLeft: `4px solid ${alert.color}`,
-                    borderRadius: '12px',
-                    alignItems: 'flex-start',
-                  }}
-                >
-                  <div
-                    style={{
-                      background: `${alert.color}15`,
-                      padding: '0.75rem',
-                      borderRadius: '8px',
-                      color: alert.color,
-                      flex: 0,
-                    }}
+          <div className="threat-matrix">
+            <AnimatePresence>
+              {alerts.map((alert, index) => {
+                const Icon = alert.icon
+                return (
+                  <motion.div
+                    key={alert.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    className="premium-alert-card"
                   >
-                    <Icon size={24} />
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <h3 style={{ fontWeight: 600, marginBottom: '0.25rem' }}>
-                      {alert.title}
-                    </h3>
-                    <p style={{ color: '#6b7280', fontSize: '0.875rem', marginBottom: '0.75rem' }}>
-                      {alert.description}
-                    </p>
-                    <button
-                      style={{
-                        background: alert.color,
-                        color: 'white',
-                        border: 'none',
-                        padding: '0.5rem 1rem',
-                        borderRadius: '6px',
-                        fontSize: '0.75rem',
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                      }}
-                    >
-                      {alert.actionItem}
+                    <div className="alert-severity-indicator" style={{ background: alert.color }} />
+                    
+                    <div className="alert-icon-box" style={{ background: `${alert.color}10`, color: alert.color, border: `1px solid ${alert.color}20` }}>
+                      <Icon size={24} />
+                    </div>
+
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.25rem' }}>
+                        <h3 style={{ fontWeight: 900, fontSize: '1.1rem', letterSpacing: '-0.02em' }}>{alert.title}</h3>
+                        <span style={{ fontSize: '0.65rem', fontWeight: 900, padding: '0.25rem 0.6rem', background: `${alert.color}15`, color: alert.color, borderRadius: '4px', textTransform: 'uppercase' }}>
+                          {alert.severity} PRIORITY
+                        </span>
+                      </div>
+                      <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', fontWeight: 600 }}>{alert.description}</p>
+                    </div>
+
+                    <button className="action-trigger" style={{ background: alert.color, color: 'white', boxShadow: `0 8px 16px ${alert.color}30` }}>
+                      {alert.actionItem} <ArrowRight size={14} />
                     </button>
-                  </div>
-                </motion.div>
-              )
-            })}
+                  </motion.div>
+                )
+              })}
+            </AnimatePresence>
           </div>
         )}
       </section>
+
+      <div style={{ marginTop: '2.5rem', padding: '1.5rem', background: 'var(--surface-soft)', borderRadius: '20px', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+        <ShieldAlert size={20} className="text-secondary" />
+        <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
+          This matrix represents prioritized operational interventions. System audits are performed every 24 hours to identify new threat vectors.
+        </p>
+      </div>
     </div>
   )
 }

@@ -1,5 +1,5 @@
 import { memo, useMemo, useState } from 'react'
-import { Plus, Search, Receipt, Trash2, CalendarDays, Repeat2, Edit, Download } from 'lucide-react'
+import { Plus, Search, Receipt, Trash2, CalendarDays, Repeat2, Edit, Download, Wallet, CreditCard, PieChart, TrendingUp, Filter, ChevronDown, X } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Bill, BillStatus, CreateBillInput, UpdateBillInput } from '@/types/bill'
 import { Location } from '@/types/location'
@@ -49,6 +49,7 @@ function BillManager({
   const [deleteLoading, setDeleteLoading] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
+  const [showFilters, setShowFilters] = useState(false)
 
   const locationById = useMemo(
     () => new Map(locations.map((location) => [location.id, location])),
@@ -90,6 +91,13 @@ function BillManager({
       }),
     [bills, filterStatus, filterLocation, filterVendor, filterCategory, dateRangeFrom, dateRangeTo, locationById, searchTerm]
   );
+
+  const stats = useMemo(() => {
+    const total = bills.reduce((acc, curr) => acc + curr.amount, 0);
+    const pending = bills.filter(b => b.status === 'Pending').reduce((acc, curr) => acc + curr.amount, 0);
+    const overdue = bills.filter(b => b.status === 'Overdue').reduce((acc, curr) => acc + curr.amount, 0);
+    return { total, pending, overdue };
+  }, [bills]);
 
   const handleAddBill = async (bill: CreateBillInput) => {
     setAddLoading(true)
@@ -133,258 +141,354 @@ function BillManager({
     }
   }
 
+  const isFiltered = filterLocation !== 'All' || filterVendor !== 'All' || filterCategory !== 'All' || dateRangeFrom || dateRangeTo;
+
   return (
-    <div className="page-shell">
+    <div className="page-shell bill-matrix-page">
+      <style>{`
+        .bill-matrix-page .page-hero {
+          background: linear-gradient(135deg, var(--surface) 0%, var(--surface-soft) 100%);
+          padding: 2.5rem;
+          border-radius: 24px;
+          border: 1px solid var(--border);
+          margin-bottom: 2.5rem;
+          display: grid;
+          grid-template-columns: 1fr auto;
+          align-items: center;
+          gap: 2rem;
+        }
+
+        .bill-matrix-page .hero-content h1 {
+          font-size: 3rem;
+          font-weight: 900;
+          letter-spacing: -0.04em;
+          line-height: 1;
+          margin-bottom: 0.75rem;
+          background: linear-gradient(to right, var(--text-primary), var(--primary));
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+        }
+
+        .bill-matrix-page .hero-content p {
+          font-size: 1.15rem;
+          color: var(--text-secondary);
+          max-width: 600px;
+        }
+
+        .bill-matrix-page .metric-strip {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+          gap: 1.5rem;
+          margin-bottom: 2.5rem;
+        }
+
+        .bill-matrix-page .metric-card {
+          background: var(--bg-card);
+          padding: 1.5rem;
+          border-radius: 20px;
+          border: 1px solid var(--border);
+          display: flex;
+          align-items: center;
+          gap: 1.25rem;
+          box-shadow: var(--shadow-sm);
+          transition: var(--transition);
+        }
+
+        .bill-matrix-page .metric-card:hover {
+          transform: translateY(-4px);
+          box-shadow: var(--shadow-md);
+          border-color: var(--primary);
+        }
+
+        .bill-matrix-page .metric-icon {
+          width: 54px;
+          height: 54px;
+          border-radius: 16px;
+          background: rgba(0, 113, 227, 0.08);
+          color: var(--primary);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .bill-matrix-page .metric-info span {
+          display: block;
+          font-size: 0.75rem;
+          font-weight: 800;
+          color: var(--text-secondary);
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          margin-bottom: 0.25rem;
+        }
+
+        .bill-matrix-page .metric-info strong {
+          display: block;
+          font-size: 1.75rem;
+          font-weight: 900;
+          color: var(--text-primary);
+          line-height: 1;
+        }
+
+        .bill-matrix-page .bill-toolbar-premium {
+          display: flex;
+          flex-direction: column;
+          gap: 1rem;
+          margin-bottom: 1.5rem;
+        }
+
+        .bill-matrix-page .main-tools {
+          display: flex;
+          gap: 1rem;
+          align-items: center;
+        }
+
+        .bill-matrix-page .search-field-premium {
+          flex: 1;
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          background: var(--surface-soft);
+          border: 1px solid var(--border);
+          border-radius: 100px;
+          padding: 0.8rem 1.5rem;
+          transition: var(--transition);
+        }
+
+        .bill-matrix-page .search-field-premium:focus-within {
+          background: var(--surface);
+          border-color: var(--primary);
+          box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.1);
+        }
+
+        .bill-matrix-page .search-field-premium input {
+          width: 100%;
+          border: 0;
+          outline: 0;
+          background: transparent;
+          font-size: 0.95rem;
+          color: var(--text-primary);
+        }
+
+        .bill-matrix-page .advanced-filters {
+          background: var(--surface-soft);
+          border: 1px solid var(--border);
+          border-radius: 16px;
+          padding: 1.25rem;
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+          gap: 1rem;
+          margin-bottom: 1.5rem;
+        }
+
+        .bill-matrix-page .filter-group {
+          display: flex;
+          flex-direction: column;
+          gap: 0.4rem;
+        }
+
+        .bill-matrix-page .filter-group label {
+          font-size: 0.65rem;
+          font-weight: 800;
+          color: var(--text-secondary);
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+        }
+
+        .bill-matrix-page .filter-select {
+          padding: 0.6rem;
+          border-radius: 8px;
+          border: 1px solid var(--border);
+          background: var(--surface);
+          font-size: 0.85rem;
+          cursor: pointer;
+        }
+
+        .bill-matrix-page .premium-button {
+          padding: 0.75rem 1.5rem;
+          border-radius: 100px;
+          font-weight: 800;
+          font-size: 0.9rem;
+          display: flex;
+          align-items: center;
+          gap: 0.6rem;
+          transition: var(--transition);
+        }
+
+        .bill-matrix-page .export-group {
+          display: flex;
+          gap: 0.5rem;
+        }
+
+        .bill-matrix-page .export-button {
+          padding: 0.6rem 1rem;
+          border-radius: 100px;
+          border: 1px solid var(--border);
+          background: var(--surface);
+          font-size: 0.75rem;
+          font-weight: 700;
+          display: flex;
+          align-items: center;
+          gap: 0.4rem;
+          transition: var(--transition);
+        }
+
+        .bill-matrix-page .export-button:hover {
+          background: var(--surface-soft);
+          border-color: var(--primary);
+          color: var(--primary);
+        }
+      `}</style>
+
       <header className="page-hero">
-        <div>
-          <p className="eyebrow">Operations</p>
+        <div className="hero-content">
+          <p className="eyebrow">Financial Orchestration</p>
           <h1>Bill Management</h1>
-          <p>Track commitments, recurring payments, and location expenses in one focused workspace.</p>
+          <p>Global oversight of commitments, recurring liabilities, and location-based operational expenses.</p>
         </div>
-        <button className="button-primary" onClick={() => setShowModal(true)}>
-          <Plus size={19} />
-          <span>New Bill</span>
+        <button className="premium-button button-primary" onClick={() => setShowModal(true)}>
+          <Plus size={20} />
+          <span>INITIALIZE NEW BILL</span>
         </button>
       </header>
 
-      <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="Add New Bill">
-        <BillForm
-          locations={locations}
-          onSubmit={handleAddBill}
-          onCancel={() => setShowModal(false)}
-          submitLabel="Save Bill"
-        />
-      </Modal>
+      <div className="metric-strip">
+        <div className="metric-card">
+          <div className="metric-icon"><Wallet size={24} /></div>
+          <div className="metric-info">
+            <span>Total Liabilities</span>
+            <strong>{formatCurrency(stats.total)}</strong>
+          </div>
+        </div>
+        <div className="metric-card">
+          <div className="metric-icon"><CreditCard size={24} /></div>
+          <div className="metric-info">
+            <span>Pending Clearance</span>
+            <strong>{formatCurrency(stats.pending)}</strong>
+          </div>
+        </div>
+        <div className="metric-card">
+          <div className="metric-icon"><PieChart size={24} /></div>
+          <div className="metric-info">
+            <span>High Risk (Overdue)</span>
+            <strong style={{ color: 'var(--error)' }}>{formatCurrency(stats.overdue)}</strong>
+          </div>
+        </div>
+      </div>
 
       <section className="panel bill-panel">
         <ErrorBanner error={error} onDismiss={() => setError(null)} />
 
-        <div className="bill-toolbar">
-          <label className="search-field">
-            <Search size={19} />
-            <input
-              type="text"
-              placeholder="Search bills, locations, categories"
-              value={searchTerm}
-              onChange={(event) => setSearchTerm(event.target.value)}
-            />
-          </label>
-
-          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-            <div className="segmented-control" aria-label="Filter by status">
+        <div className="bill-toolbar-premium">
+          <div className="main-tools">
+            <div className="search-field-premium">
+              <Search size={19} className="text-secondary" />
+              <input
+                type="text"
+                placeholder="Locate liabilities by name, location, or category..."
+                value={searchTerm}
+                onChange={(event) => setSearchTerm(event.target.value)}
+              />
+            </div>
+            
+            <div className="segmented-control" style={{ borderRadius: '100px', padding: '0.4rem' }}>
               {statusOptions.map((status) => (
                 <button
                   key={status}
                   onClick={() => setFilterStatus(status)}
                   className={filterStatus === status ? 'active' : ''}
+                  style={{ borderRadius: '100px', minHeight: '34px' }}
                 >
                   {status}
                 </button>
               ))}
             </div>
-            <div style={{ display: 'flex', gap: '0.5rem', borderLeft: '1px solid var(--border)', paddingLeft: '0.75rem' }}>
-              <button
-                type="button"
-                onClick={() => exportService.exportBillsToCSV(filteredBills)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  padding: '0.6rem 1rem',
-                  borderRadius: 'var(--radius-md)',
-                  border: '1px solid var(--border)',
-                  background: 'var(--surface)',
-                  cursor: 'pointer',
-                  fontSize: '0.875rem',
-                  fontWeight: 500,
-                  color: 'var(--text-primary)',
-                  transition: 'var(--transition)',
-                }}
-                title="Export to CSV"
+
+            <button 
+              className={`export-button ${showFilters ? 'active' : ''}`}
+              onClick={() => setShowFilters(!showFilters)}
+              style={{ padding: '0.75rem 1.25rem' }}
+            >
+              <Filter size={18} />
+              {showFilters ? 'HIDE FILTERS' : 'ADVANCED FILTERS'}
+            </button>
+          </div>
+
+          <AnimatePresence>
+            {showFilters && (
+              <motion.div 
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                style={{ overflow: 'hidden' }}
               >
-                <Download size={16} />
-                CSV
-              </button>
-              <button
-                type="button"
-                onClick={() => exportService.exportBillsSummaryToCSV(filteredBills)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  padding: '0.6rem 1rem',
-                  borderRadius: 'var(--radius-md)',
-                  border: '1px solid var(--border)',
-                  background: 'var(--surface)',
-                  cursor: 'pointer',
-                  fontSize: '0.875rem',
-                  fontWeight: 500,
-                  color: 'var(--text-primary)',
-                  transition: 'var(--transition)',
-                }}
-                title="Export summary"
-              >
-                <Download size={16} />
-                Summary
-              </button>
-              <button
-                type="button"
-                onClick={() => exportService.exportBillsToText(filteredBills)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  padding: '0.6rem 1rem',
-                  borderRadius: 'var(--radius-md)',
-                  border: '1px solid var(--border)',
-                  background: 'var(--surface)',
-                  cursor: 'pointer',
-                  fontSize: '0.875rem',
-                  fontWeight: 500,
-                  color: 'var(--text-primary)',
-                  transition: 'var(--transition)',
-                }}
-                title="Export report"
-              >
-                <Download size={16} />
-                Report
-              </button>
+                <div className="advanced-filters">
+                  <div className="filter-group">
+                    <label>Location Coordinate</label>
+                    <select className="filter-select" value={filterLocation} onChange={(e) => setFilterLocation(e.target.value)}>
+                      <option value="All">All Locations</option>
+                      {locations.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
+                    </select>
+                  </div>
+                  <div className="filter-group">
+                    <label>Vendor Identity</label>
+                    <select className="filter-select" value={filterVendor} onChange={(e) => setFilterVendor(e.target.value)}>
+                      <option value="All">All Vendors</option>
+                      {vendors.map((v) => <option key={v.id} value={v.id}>{v.name}</option>)}
+                    </select>
+                  </div>
+                  <div className="filter-group">
+                    <label>Category Matrix</label>
+                    <select className="filter-select" value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)}>
+                      {uniqueCategories.map((c) => <option key={c} value={c}>{c === 'All' ? 'All Categories' : c}</option>)}
+                    </select>
+                  </div>
+                  <div className="filter-group">
+                    <label>Temporal Range (Start)</label>
+                    <input type="date" className="filter-select" value={dateRangeFrom} onChange={(e) => setDateRangeFrom(e.target.value)} />
+                  </div>
+                  <div className="filter-group">
+                    <label>Temporal Range (End)</label>
+                    <input type="date" className="filter-select" value={dateRangeTo} onChange={(e) => setDateRangeTo(e.target.value)} />
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+                    {isFiltered && (
+                      <button 
+                        onClick={() => { setFilterLocation('All'); setFilterVendor('All'); setFilterCategory('All'); setDateRangeFrom(''); setDateRangeTo(''); }}
+                        className="export-button"
+                        style={{ width: '100%', justifyContent: 'center', height: '38px', color: 'var(--error)' }}
+                      >
+                        <X size={14} /> RESET COORDINATES
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <p style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-secondary)' }}>
+              IDENTIFIED <span style={{ color: 'var(--primary)' }}>{filteredBills.length}</span> LIABILITIES
+            </p>
+            <div className="export-group">
+              <button className="export-button" onClick={() => exportService.exportBillsToCSV(filteredBills)}><Download size={14} /> CSV</button>
+              <button className="export-button" onClick={() => exportService.exportBillsSummaryToCSV(filteredBills)}><Download size={14} /> SUMMARY</button>
+              <button className="export-button" onClick={() => exportService.exportBillsToText(filteredBills)}><Download size={14} /> REPORT</button>
             </div>
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', padding: '1rem 0', borderBottom: '1px solid var(--border)' }}>
-          <select
-            value={filterLocation}
-            onChange={(e) => setFilterLocation(e.target.value)}
-            style={{
-              padding: '0.5rem 0.75rem',
-              border: '1px solid var(--border)',
-              borderRadius: '6px',
-              fontSize: '0.875rem',
-              background: 'white',
-              cursor: 'pointer',
-            }}
-            aria-label="Filter by location"
-          >
-            <option value="All">All Locations</option>
-            {locations.map((location) => (
-              <option key={location.id} value={location.id}>
-                {location.name}
-              </option>
-            ))}
-          </select>
-
-          <select
-            value={filterVendor}
-            onChange={(e) => setFilterVendor(e.target.value)}
-            style={{
-              padding: '0.5rem 0.75rem',
-              border: '1px solid var(--border)',
-              borderRadius: '6px',
-              fontSize: '0.875rem',
-              background: 'white',
-              cursor: 'pointer',
-            }}
-            aria-label="Filter by vendor"
-          >
-            <option value="All">All Vendors</option>
-            {vendors.map((vendor) => (
-              <option key={vendor.id} value={vendor.id}>
-                {vendor.name}
-              </option>
-            ))}
-          </select>
-
-          <select
-            value={filterCategory}
-            onChange={(e) => setFilterCategory(e.target.value)}
-            style={{
-              padding: '0.5rem 0.75rem',
-              border: '1px solid var(--border)',
-              borderRadius: '6px',
-              fontSize: '0.875rem',
-              background: 'white',
-              cursor: 'pointer',
-            }}
-            aria-label="Filter by category"
-          >
-            {uniqueCategories.map((category) => (
-              <option key={category} value={category}>
-                {category === 'All' ? 'All Categories' : category}
-              </option>
-            ))}
-          </select>
-
-          <input
-            type="date"
-            value={dateRangeFrom}
-            onChange={(e) => setDateRangeFrom(e.target.value)}
-            placeholder="From date"
-            style={{
-              padding: '0.5rem 0.75rem',
-              border: '1px solid var(--border)',
-              borderRadius: '6px',
-              fontSize: '0.875rem',
-              background: 'white',
-              cursor: 'pointer',
-            }}
-            aria-label="Filter from date"
-          />
-
-          <input
-            type="date"
-            value={dateRangeTo}
-            onChange={(e) => setDateRangeTo(e.target.value)}
-            placeholder="To date"
-            style={{
-              padding: '0.5rem 0.75rem',
-              border: '1px solid var(--border)',
-              borderRadius: '6px',
-              fontSize: '0.875rem',
-              background: 'white',
-              cursor: 'pointer',
-            }}
-            aria-label="Filter to date"
-          />
-
-          {(filterLocation !== 'All' || filterVendor !== 'All' || filterCategory !== 'All' || dateRangeFrom || dateRangeTo) && (
-            <button
-              onClick={() => {
-                setFilterLocation('All');
-                setFilterVendor('All');
-                setFilterCategory('All');
-                setDateRangeFrom('');
-                setDateRangeTo('');
-              }}
-              style={{
-                padding: '0.5rem 1rem',
-                border: 'none',
-                borderRadius: '6px',
-                background: '#f3f4f6',
-                cursor: 'pointer',
-                fontSize: '0.875rem',
-                fontWeight: 500,
-                color: '#6b7280',
-              }}
-              aria-label="Clear filters"
-            >
-              Clear Filters
-            </button>
-          )}
-        </div>
-
         {loading ? (
-          <div className="empty-state">Loading bills...</div>
+          <div className="empty-state">Synchronizing Financial Matrix...</div>
         ) : (
           <div className="table-wrap">
             <table className="premium-table">
               <thead>
                 <tr>
-                  <th>Bill</th>
+                  <th>Charge Identity</th>
                   <th>Location</th>
                   <th>Amount</th>
-                  <th>Due Date</th>
+                  <th>Temporal Coordinate</th>
                   <th>Status</th>
                   <th aria-label="Actions" />
                 </tr>
@@ -393,29 +497,30 @@ function BillManager({
                 {filteredBills.map((bill) => {
                   const location = locationById.get(bill.location_id);
                   return (
-                    <motion.tr key={bill.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                    <motion.tr key={bill.id} layout initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                       <td>
                         <div className="bill-title">
-                          <span className="bill-icon">
-                            <Receipt size={18} />
+                          <span className="bill-icon" style={{ background: bill.status === 'Overdue' ? 'rgba(217, 45, 32, 0.1)' : 'rgba(0, 113, 227, 0.1)', color: bill.status === 'Overdue' ? 'var(--error)' : 'var(--primary)' }}>
+                            {bill.is_recurring ? <Repeat2 size={18} /> : <Receipt size={18} />}
                           </span>
                           <span>
-                            <strong>{bill.charge_name}</strong>
-                            <small>
+                            <strong style={{ fontSize: '0.95rem' }}>{bill.charge_name}</strong>
+                            <small style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                               {bill.category}
-                              {bill.is_recurring && (
-                                <span className="recurring-label">
-                                  <Repeat2 size={12} /> Recurring
-                                </span>
-                              )}
+                              {bill.is_recurring && <span style={{ color: 'var(--primary)', fontWeight: 800, fontSize: '0.65rem' }}>• RECURRING</span>}
                             </small>
                           </span>
                         </div>
                       </td>
-                      <td>{location?.name || 'Unassigned'}</td>
-                      <td className="money">{formatCurrency(bill.amount)}</td>
                       <td>
-                        <span className="date-pill">
+                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                           <MapPin size={14} className="text-secondary" />
+                           <span style={{ fontWeight: 600 }}>{location?.name || 'Unassigned'}</span>
+                         </div>
+                      </td>
+                      <td className="money" style={{ fontSize: '1rem' }}>{formatCurrency(bill.amount)}</td>
+                      <td>
+                        <span className="date-pill" style={{ background: 'var(--surface-soft)', border: '1px solid var(--border)' }}>
                           <CalendarDays size={14} />
                           {bill.date}
                         </span>
@@ -425,32 +530,30 @@ function BillManager({
                           value={bill.status}
                           onChange={(event) => onUpdateStatus(bill.id, event.target.value as BillStatus)}
                           className={`status-badge status-${bill.status.toLowerCase()}`}
+                          style={{ border: 'none', cursor: 'pointer', fontWeight: 800 }}
                         >
-                          <option value="Paid">Paid</option>
-                          <option value="Pending">Pending</option>
-                          <option value="Overdue">Overdue</option>
+                          <option value="Paid">PAID</option>
+                          <option value="Pending">PENDING</option>
+                          <option value="Overdue">OVERDUE</option>
                         </select>
                       </td>
-                      <td style={{ display: 'flex', gap: '0.5rem' }}>
-                        {onUpdateBill && (
+                      <td>
+                        <div style={{ display: 'flex', gap: '0.5rem' }}>
                           <button
                             className="icon-button"
-                            aria-label={`Edit ${bill.charge_name}`}
                             onClick={() => setEditingBill(bill)}
-                            style={{ padding: '0.5rem', borderRadius: '6px', border: '1px solid #e5e7eb', background: 'white', cursor: 'pointer', color: '#667eea' }}
+                            style={{ background: 'var(--surface-soft)' }}
                           >
-                            <Edit size={17} />
+                            <Edit size={16} />
                           </button>
-                        )}
-                        <button
-                          className="icon-button danger"
-                          aria-label={`Delete ${bill.charge_name}`}
-                          disabled={deleteLoading === bill.id}
-                          onClick={() => setConfirmDelete(bill.id)}
-                          style={{ opacity: deleteLoading === bill.id ? 0.5 : 1 }}
-                        >
-                          {deleteLoading === bill.id ? '...' : <Trash2 size={17} />}
-                        </button>
+                          <button
+                            className="icon-button danger"
+                            disabled={deleteLoading === bill.id}
+                            onClick={() => setConfirmDelete(bill.id)}
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
                       </td>
                     </motion.tr>
                   );
@@ -459,14 +562,24 @@ function BillManager({
             </table>
 
             {filteredBills.length === 0 && (
-              <div className="empty-state">
-                <Receipt size={44} />
-                <p>No bills found.</p>
+              <div className="empty-state" style={{ padding: '4rem 0' }}>
+                <TrendingUp size={48} style={{ opacity: 0.1, marginBottom: '1rem' }} />
+                <h3 style={{ fontWeight: 800 }}>No Financial Coordinates Found</h3>
+                <p style={{ color: 'var(--text-secondary)' }}>Adjust your filters or initialize a new liability entry.</p>
               </div>
             )}
           </div>
         )}
       </section>
+
+      <Modal isOpen={showModal} onClose={() => setShowModal(false)} maxWidth="1000px">
+        <BillForm
+          locations={locations}
+          onSubmit={handleAddBill}
+          onCancel={() => setShowModal(false)}
+          submitLabel="Commit to Ledger"
+        />
+      </Modal>
 
       <AnimatePresence>
         {editingBill && (
@@ -483,10 +596,10 @@ function BillManager({
 
       <ConfirmationModal
         isOpen={confirmDelete !== null}
-        title="Delete Bill"
-        message="Are you sure you want to delete this bill? This action cannot be undone."
-        confirmLabel="Delete"
-        cancelLabel="Cancel"
+        title="Archive Liability"
+        message="Are you sure you want to archive this financial commitment? This orchestration cannot be reversed."
+        confirmLabel="Archive"
+        cancelLabel="Discard"
         isDangerous
         isLoading={deleteLoading !== null}
         onConfirm={() => {

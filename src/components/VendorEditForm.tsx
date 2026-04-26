@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { motion } from 'framer-motion'
-import { X, Building } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { X, Building2, Users, Mail, Phone, Globe, Info, Shield, CheckCircle2, Zap } from 'lucide-react'
 import { Vendor, CreateVendorInput } from '@/types/vendor'
 
 interface VendorEditFormProps {
@@ -10,7 +10,10 @@ interface VendorEditFormProps {
   loading?: boolean
 }
 
+type TabType = 'identity' | 'contact' | 'intelligence';
+
 export default function VendorEditForm({ vendor, onSave, onCancel, loading }: VendorEditFormProps) {
+  const [activeTab, setActiveTab] = useState<TabType>('identity');
   const [formData, setFormData] = useState<CreateVendorInput>({
     name: vendor.name,
     category: vendor.category,
@@ -24,21 +27,35 @@ export default function VendorEditForm({ vendor, onSave, onCancel, loading }: Ve
 
   const [error, setError] = useState<string | null>(null)
 
+  const handleInputChange = (field: keyof CreateVendorInput, value: any) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }))
+    setError(null)
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
 
     if (!formData.name || !formData.category) {
-      setError('Vendor name and category are required')
+      setError('Identity & Category coordination required')
       return
     }
 
     try {
       await onSave(formData)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save vendor')
+      setError(err instanceof Error ? err.message : 'Failed to commit vendor orchestration')
     }
   }
+
+  const tabs: { id: TabType; label: string; icon: React.ReactNode }[] = [
+    { id: 'identity', label: 'Identity', icon: <Building2 size={18} /> },
+    { id: 'contact', label: 'Contact', icon: <Mail size={18} /> },
+    { id: 'intelligence', label: 'Intelligence', icon: <Zap size={18} /> },
+  ];
 
   return (
     <motion.div
@@ -48,273 +65,217 @@ export default function VendorEditForm({ vendor, onSave, onCancel, loading }: Ve
       style={{
         position: 'fixed',
         inset: 0,
-        background: 'rgba(0, 0, 0, 0.5)',
+        background: 'rgba(0, 0, 0, 0.85)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         zIndex: 1000,
         padding: '1rem',
+        backdropFilter: 'blur(12px)',
       }}
       onClick={onCancel}
     >
-      <motion.form
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.9, opacity: 0 }}
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0, y: 20 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.95, opacity: 0, y: 20 }}
         onClick={(e) => e.stopPropagation()}
-        onSubmit={handleSubmit}
-        style={{
-          background: 'white',
-          borderRadius: '12px',
-          padding: '2rem',
-          maxWidth: '550px',
-          width: '100%',
-          maxHeight: '90vh',
-          overflowY: 'auto',
-          boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
-        }}
+        className="vendor-edit-container"
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#1f2937' }}>Edit Vendor</h2>
-          <button
-            type="button"
-            onClick={onCancel}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af' }}
-          >
-            <X size={24} />
+        <style>{`
+          .vendor-edit-container {
+            background: var(--bg-card);
+            border-radius: 24px;
+            width: 100%;
+            max-width: 900px;
+            max-height: 90vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border);
+          }
+
+          .vendor-modal-header {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--border);
+            background: var(--surface-soft);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          }
+
+          .vendor-modal-header h1 {
+            font-size: 1.25rem;
+            font-weight: 800;
+          }
+
+          .vendor-modal-body {
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            flex: 1;
+            overflow: hidden;
+          }
+
+          .vendor-modal-sidebar {
+            padding: 1.5rem 1rem;
+            background: var(--bg-main);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+          }
+
+          .tab-button {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius-md);
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            transition: var(--transition);
+            text-align: left;
+            width: 100%;
+          }
+
+          .tab-button:hover {
+            background: var(--surface-soft);
+          }
+
+          .tab-button.active {
+            background: var(--primary);
+            color: white;
+          }
+
+          .vendor-modal-content {
+            padding: 2.5rem;
+            overflow-y: auto;
+          }
+
+          .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+          }
+
+          .full-width {
+            grid-column: 1 / -1;
+          }
+        `}</style>
+
+        <div className="vendor-modal-header">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div style={{ padding: '0.5rem', background: 'rgba(0, 113, 227, 0.1)', borderRadius: '10px', color: 'var(--primary)' }}>
+              <Building2 size={20} />
+            </div>
+            <h1>Partner Orchestration: <span style={{ color: 'var(--primary)' }}>{vendor.name}</span></h1>
+          </div>
+          <button onClick={onCancel} className="icon-button" style={{ borderRadius: '50%' }}>
+            <X size={20} />
           </button>
         </div>
 
-        {error && (
-          <div style={{ background: '#fee2e2', color: '#991b1b', padding: '0.75rem', borderRadius: '8px', marginBottom: '1rem', fontSize: '0.875rem' }}>
-            {error}
-          </div>
-        )}
-
-        <div style={{ display: 'grid', gap: '1rem', marginBottom: '1.5rem' }}>
-          <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', marginBottom: '0.5rem' }}>
-              Vendor Name *
-            </label>
-            <div style={{ position: 'relative' }}>
-              <Building size={18} style={{ position: 'absolute', left: '12px', top: '12px', color: '#9ca3af' }} />
-              <input
-                type="text"
-                value={formData.name}
-                onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
-                placeholder="e.g., ABC Supplies"
-                style={{
-                  width: '100%',
-                  paddingLeft: '40px',
-                  padding: '10px 12px',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '8px',
-                  fontSize: '0.875rem',
-                  boxSizing: 'border-box',
-                }}
-                required
-              />
-            </div>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-            <div>
-              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', marginBottom: '0.5rem' }}>
-                Category *
-              </label>
-              <select
-                value={formData.category}
-                onChange={(e) => setFormData((prev) => ({ ...prev, category: e.target.value }))}
-                style={{
-                  width: '100%',
-                  padding: '10px 12px',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '8px',
-                  fontSize: '0.875rem',
-                  boxSizing: 'border-box',
-                }}
-                required
+        <div className="vendor-modal-body">
+          <aside className="vendor-modal-sidebar">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                className={`tab-button ${activeTab === tab.id ? 'active' : ''}`}
+                onClick={() => setActiveTab(tab.id)}
               >
-                <option value="">Select category</option>
-                <option value="Supplier">Supplier</option>
-                <option value="Service Provider">Service Provider</option>
-                <option value="Utility">Utility</option>
-                <option value="Contractor">Contractor</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
+                {tab.icon}
+                {tab.label}
+              </button>
+            ))}
+          </aside>
 
-            <div>
-              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', marginBottom: '0.5rem' }}>
-                Status
-              </label>
-              <select
-                value={formData.status || 'Active'}
-                onChange={(e) => setFormData((prev) => ({ ...prev, status: e.target.value as 'Active' | 'Paused' }))}
-                style={{
-                  width: '100%',
-                  padding: '10px 12px',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '8px',
-                  fontSize: '0.875rem',
-                  boxSizing: 'border-box',
-                }}
-              >
-                <option value="Active">Active</option>
-                <option value="Paused">Paused</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <div style={{ marginBottom: '1.5rem' }}>
-          <h3 style={{ fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '1rem', textTransform: 'uppercase' }}>
-            Contact Information
-          </h3>
-          <div style={{ display: 'grid', gap: '1rem' }}>
-            <div>
-              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', marginBottom: '0.5rem' }}>
-                Contact Person
-              </label>
-              <input
-                type="text"
-                value={formData.contact_name || ''}
-                onChange={(e) => setFormData((prev) => ({ ...prev, contact_name: e.target.value }))}
-                placeholder="Name"
-                style={{
-                  width: '100%',
-                  padding: '10px 12px',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '8px',
-                  fontSize: '0.875rem',
-                  boxSizing: 'border-box',
-                }}
-              />
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', marginBottom: '0.5rem' }}>
-                  Email
-                </label>
-                <input
-                  type="email"
-                  value={formData.email || ''}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
-                  placeholder="email@example.com"
-                  style={{
-                    width: '100%',
-                    padding: '10px 12px',
-                    border: '1px solid #e5e7eb',
-                    borderRadius: '8px',
-                    fontSize: '0.875rem',
-                    boxSizing: 'border-box',
-                  }}
-                />
+          <main className="vendor-modal-content">
+            {error && (
+              <div style={{ background: 'rgba(217, 45, 32, 0.1)', color: 'var(--error)', padding: '1rem', borderRadius: '12px', marginBottom: '1.5rem', fontSize: '0.875rem', fontWeight: 700 }}>
+                {error}
               </div>
+            )}
 
-              <div>
-                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', marginBottom: '0.5rem' }}>
-                  Phone
-                </label>
-                <input
-                  type="tel"
-                  value={formData.phone || ''}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, phone: e.target.value }))}
-                  placeholder="+1 (555) 123-4567"
-                  style={{
-                    width: '100%',
-                    padding: '10px 12px',
-                    border: '1px solid #e5e7eb',
-                    borderRadius: '8px',
-                    fontSize: '0.875rem',
-                    boxSizing: 'border-box',
-                  }}
-                />
-              </div>
-            </div>
+            <form id="vendor-edit-form" onSubmit={handleSubmit}>
+              <AnimatePresence mode="wait">
+                {activeTab === 'identity' && (
+                  <motion.div key="identity" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '2rem', paddingBottom: '1rem', borderBottom: '1px solid var(--border)' }}>
+                      <h2 style={{ fontSize: '1.25rem', fontWeight: 800 }}>Primary Identity</h2>
+                    </div>
+                    <div className="form-grid">
+                      <div className="form-group full-width">
+                        <label className="form-label">VENDOR IDENTITY / NAME</label>
+                        <input className="form-input" value={formData.name} onChange={(e) => handleInputChange('name', e.target.value)} required />
+                      </div>
+                      <div className="form-group">
+                        <label className="form-label">CATEGORY MATRIX</label>
+                        <input className="form-input" value={formData.category} onChange={(e) => handleInputChange('category', e.target.value)} required />
+                      </div>
+                      <div className="form-group">
+                        <label className="form-label">OPERATIONAL STATUS</label>
+                        <select className="form-select" value={formData.status} onChange={(e) => handleInputChange('status', e.target.value)}>
+                          <option value="Active">Active / Verified</option>
+                          <option value="Paused">Paused / Restricted</option>
+                        </select>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
 
-            <div>
-              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', marginBottom: '0.5rem' }}>
-                Website
-              </label>
-              <input
-                type="url"
-                value={formData.website || ''}
-                onChange={(e) => setFormData((prev) => ({ ...prev, website: e.target.value }))}
-                placeholder="https://example.com"
-                style={{
-                  width: '100%',
-                  padding: '10px 12px',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '8px',
-                  fontSize: '0.875rem',
-                  boxSizing: 'border-box',
-                }}
-              />
-            </div>
-          </div>
+                {activeTab === 'contact' && (
+                  <motion.div key="contact" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '2rem', paddingBottom: '1rem', borderBottom: '1px solid var(--border)' }}>
+                      <h2 style={{ fontSize: '1.25rem', fontWeight: 800 }}>Communication Protocol</h2>
+                    </div>
+                    <div className="form-grid">
+                      <div className="form-group full-width">
+                        <label className="form-label">PRIMARY CONTACT ENTITY</label>
+                        <input className="form-input" value={formData.contact_name || ''} onChange={(e) => handleInputChange('contact_name', e.target.value)} />
+                      </div>
+                      <div className="form-group">
+                        <label className="form-label">COMMUNICATION EMAIL</label>
+                        <input type="email" className="form-input" value={formData.email || ''} onChange={(e) => handleInputChange('email', e.target.value)} />
+                      </div>
+                      <div className="form-group">
+                        <label className="form-label">TELEPHONIC COORDINATE</label>
+                        <input className="form-input" value={formData.phone || ''} onChange={(e) => handleInputChange('phone', e.target.value)} />
+                      </div>
+                      <div className="form-group full-width">
+                        <label className="form-label">DIGITAL DOMAIN (WEBSITE)</label>
+                        <input type="url" className="form-input" value={formData.website || ''} onChange={(e) => handleInputChange('website', e.target.value)} />
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                {activeTab === 'intelligence' && (
+                  <motion.div key="intelligence" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '2rem', paddingBottom: '1rem', borderBottom: '1px solid var(--border)' }}>
+                      <h2 style={{ fontSize: '1.25rem', fontWeight: 800 }}>Network Intelligence</h2>
+                    </div>
+                    <div className="form-grid">
+                      <div className="form-group full-width">
+                        <label className="form-label">OPERATIONAL NOTES & CONTEXT</label>
+                        <textarea className="form-textarea" style={{ minHeight: '200px' }} value={formData.notes || ''} onChange={(e) => handleInputChange('notes', e.target.value)} placeholder="Terms, performance logs, or relationship history..." />
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </form>
+          </main>
         </div>
 
-        <div style={{ marginBottom: '1.5rem' }}>
-          <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', marginBottom: '0.5rem' }}>
-            Notes
-          </label>
-          <textarea
-            value={formData.notes || ''}
-            onChange={(e) => setFormData((prev) => ({ ...prev, notes: e.target.value }))}
-            placeholder="Additional information about this vendor..."
-            style={{
-              width: '100%',
-              padding: '10px 12px',
-              border: '1px solid #e5e7eb',
-              borderRadius: '8px',
-              fontSize: '0.875rem',
-              fontFamily: 'inherit',
-              minHeight: '80px',
-              resize: 'vertical',
-              boxSizing: 'border-box',
-            }}
-          />
-        </div>
-
-        <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
-          <button
-            type="button"
-            onClick={onCancel}
-            disabled={loading}
-            style={{
-              padding: '0.75rem 1.5rem',
-              border: '1px solid #e5e7eb',
-              borderRadius: '8px',
-              background: 'white',
-              cursor: 'pointer',
-              fontSize: '0.875rem',
-              fontWeight: '500',
-              color: '#374151',
-            }}
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            disabled={loading}
-            style={{
-              padding: '0.75rem 1.5rem',
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              cursor: loading ? 'not-allowed' : 'pointer',
-              fontSize: '0.875rem',
-              fontWeight: '600',
-              opacity: loading ? 0.7 : 1,
-            }}
-          >
-            {loading ? 'Saving...' : 'Save Changes'}
+        <div style={{ padding: '1.5rem 2rem', borderTop: '1px solid var(--border)', background: 'var(--surface-soft)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <button type="button" onClick={onCancel} className="button-secondary">DISCARD</button>
+          <button type="submit" form="vendor-edit-form" disabled={loading} className="button-primary" style={{ minWidth: '180px', fontWeight: 900 }}>
+            {loading ? 'COMMITING...' : 'COMMIT CHANGES'}
           </button>
         </div>
-      </motion.form>
+      </motion.div>
     </motion.div>
-  )
+  );
 }
