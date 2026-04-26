@@ -239,6 +239,37 @@ class DataService {
     }
   }
 
+  async updateLocation(id: string, location: CreateLocationInput): Promise<Location> {
+    if (!isSupabaseConfigured) {
+      const updatedLocation = this.updateLocalRecord<Location>('locations_cache', id, location as Partial<Location>);
+      this.invalidateCache(false);
+      return updatedLocation;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('locations')
+        .update(location)
+        .eq('id', id)
+        .select();
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      const updatedLocation = data?.[0];
+      if (updatedLocation) {
+        this.invalidateCache();
+      }
+      return updatedLocation;
+    } catch (error) {
+      console.warn('Failed to update location in Supabase, updating local record instead.', error);
+      const updatedLocation = this.updateLocalRecord<Location>('locations_cache', id, location as Partial<Location>);
+      this.invalidateCache(false);
+      return updatedLocation;
+    }
+  }
+
   async deleteLocation(id: string): Promise<void> {
     if (!isSupabaseConfigured) {
       this.deleteLocalRecord<Location>('locations_cache', id);
@@ -435,6 +466,37 @@ class DataService {
       this.saveLocalRecords('documents_cache', [...this.getLocalRecords<DocumentRecord>('documents_cache'), newDocument]);
       this.invalidateCache(false);
       return newDocument;
+    }
+  }
+
+  async updateDocument(id: string, document: CreateDocumentInput): Promise<DocumentRecord> {
+    if (!isSupabaseConfigured) {
+      const updatedDocument = this.updateLocalRecord<DocumentRecord>('documents_cache', id, document as Partial<DocumentRecord>);
+      this.invalidateCache(false);
+      return updatedDocument;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('documents')
+        .update(document)
+        .eq('id', id)
+        .select();
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      const updatedDocument = data?.[0];
+      if (updatedDocument) {
+        this.invalidateCache();
+      }
+      return updatedDocument;
+    } catch (error) {
+      console.warn('Failed to update document in Supabase, updating local record instead.', error);
+      const updatedDocument = this.updateLocalRecord<DocumentRecord>('documents_cache', id, document as Partial<DocumentRecord>);
+      this.invalidateCache(false);
+      return updatedDocument;
     }
   }
 

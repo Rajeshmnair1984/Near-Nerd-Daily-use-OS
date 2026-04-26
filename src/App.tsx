@@ -141,6 +141,18 @@ function AppContent() {
     }
   };
 
+  const handleUpdateLocation = async (id: string, locationData: CreateLocationInput) => {
+    try {
+      const updated = await dataService.updateLocation(id, locationData);
+      setLocations((current) => current.map((location) => (location.id === id ? updated : location)).sort((a, b) => a.name.localeCompare(b.name)));
+      addToast('Location updated successfully', 'success');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to update location';
+      addToast(errorMessage, 'error');
+      throw err;
+    }
+  };
+
   const handleDeleteLocation = async (id: string) => {
     try {
       await dataService.deleteLocation(id);
@@ -164,6 +176,18 @@ function AppContent() {
     }
   };
 
+  const handleUpdateVendor = async (id: string, vendorData: CreateVendorInput) => {
+    try {
+      const updated = await dataService.updateVendor(id, vendorData);
+      setVendors((current) => current.map((vendor) => (vendor.id === id ? updated : vendor)).sort((a, b) => a.name.localeCompare(b.name)));
+      addToast('Vendor updated successfully', 'success');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to update vendor';
+      addToast(errorMessage, 'error');
+      throw err;
+    }
+  };
+
   const handleDeleteVendor = async (id: string) => {
     try {
       await dataService.deleteVendor(id);
@@ -182,6 +206,18 @@ function AppContent() {
       addToast('Document added successfully', 'success');
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to add document';
+      addToast(errorMessage, 'error');
+      throw err;
+    }
+  };
+
+  const handleUpdateDocument = async (id: string, documentData: CreateDocumentInput) => {
+    try {
+      const updated = await dataService.updateDocument(id, documentData);
+      setDocuments((current) => current.map((document) => (document.id === id ? updated : document)));
+      addToast('Document updated successfully', 'success');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to update document';
       addToast(errorMessage, 'error');
       throw err;
     }
@@ -219,6 +255,7 @@ function AppContent() {
           <LocationManager
             locations={locations}
             onAddLocation={handleAddLocation}
+            onUpdateLocation={handleUpdateLocation}
             onDeleteLocation={handleDeleteLocation}
             loading={loading}
           />
@@ -230,6 +267,7 @@ function AppContent() {
           <VendorManager
             vendors={vendors}
             onAddVendor={handleAddVendor}
+            onUpdateVendor={handleUpdateVendor}
             onDeleteVendor={handleDeleteVendor}
             loading={loading}
           />
@@ -239,6 +277,7 @@ function AppContent() {
           <DocumentManager
             documents={documents}
             onAddDocument={handleAddDocument}
+            onUpdateDocument={handleUpdateDocument}
             onDeleteDocument={handleDeleteDocument}
             loading={loading}
           />
