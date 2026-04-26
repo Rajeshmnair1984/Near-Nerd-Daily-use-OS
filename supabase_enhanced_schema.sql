@@ -74,6 +74,12 @@ ALTER TABLE user_profiles ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can see their own profile" ON user_profiles
     FOR SELECT USING (auth.uid() = id);
 
+CREATE POLICY "Users can insert their own profile" ON user_profiles
+    FOR INSERT WITH CHECK (auth.uid() = id);
+
+CREATE POLICY "Users can update their own profile" ON user_profiles
+    FOR UPDATE USING (auth.uid() = id);
+
 CREATE POLICY "Org admins can see all profiles in their org" ON user_profiles
     FOR SELECT USING (
         organization_id IN (
@@ -88,6 +94,16 @@ CREATE POLICY "Org admins can see all profiles in their org" ON user_profiles
 ALTER TABLE organizations ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policy: Users can only see their own organization
+CREATE POLICY "Users can insert organizations" ON organizations
+    FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Users can update their organization" ON organizations
+    FOR UPDATE USING (
+        id IN (
+            SELECT organization_id FROM user_profiles WHERE id = auth.uid()
+        )
+    );
+
 CREATE POLICY "Users can see their organization" ON organizations
     FOR SELECT USING (
         id IN (
