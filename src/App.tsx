@@ -11,7 +11,7 @@ import AlertsManager from './components/AlertsManager'
 import SuperAdminDashboard from './components/SuperAdminDashboard'
 import LoginView from './components/LoginView'
 import { dataService } from './services/dataService'
-import { Bell, Menu, LogOut } from 'lucide-react'
+import { Bell, Menu, LogOut, Sun, Moon, Search, Plus } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Bill, CreateBillInput, UpdateBillInput } from '@/types/bill'
 import { CreateDocumentInput, DocumentRecord } from '@/types/document'
@@ -31,9 +31,20 @@ function AppContent() {
   const [stats, setStats] = useState<DashboardStats>({ totalPaid: 0, totalPending: 0, totalOverdue: 0, overdueCount: 0 });
   const [loading, setLoading] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    return (localStorage.getItem('theme') as 'light' | 'dark') || 'light';
+  });
+  const [searchTerm, setSearchTerm] = useState('');
 
-  const { user, updateUser } = useUser()
+  const { user, updateUser, logout } = useUser()
   const { addToast } = useToast()
+
+  useEffect(() => {
+    document.body.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => setTheme((t) => (t === 'light' ? 'dark' : 'light'));
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -329,6 +340,7 @@ function AppContent() {
         onNavigate={() => setIsSidebarOpen(false)}
         userName={user?.fullName || user?.email || ''}
         userRole={user?.role}
+        onLogout={logout}
       />
       {isSidebarOpen && (
         <button
@@ -351,27 +363,84 @@ function AppContent() {
             padding: '0 2rem',
             position: 'sticky',
             top: 0,
-            background: 'rgba(255, 255, 255, 0.72)',
+            background: theme === 'dark' ? 'rgba(11, 11, 11, 0.72)' : 'rgba(255, 255, 255, 0.72)',
             backdropFilter: 'blur(22px)',
             zIndex: 10,
           }}
         >
-          <button
-            className="mobile-menu-button"
-            aria-label="Open navigation"
-            onClick={() => setIsSidebarOpen(true)}
-          >
-            <Menu size={22} />
-          </button>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginLeft: 'auto' }}>
-            <div style={{ position: 'relative', cursor: 'pointer' }}>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <button
+              className="mobile-menu-button"
+              aria-label="Open navigation"
+              onClick={() => setIsSidebarOpen(true)}
+            >
+              <Menu size={22} />
+            </button>
+
+            <button
+              title="Quick Add"
+              style={{
+                width: '38px',
+                height: '38px',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'var(--primary)',
+                color: 'white',
+                boxShadow: '0 4px 12px rgba(0, 113, 227, 0.3)',
+                marginLeft: '0.75rem',
+              }}
+              onClick={() => {
+                setActiveView('bills');
+                addToast('Opening Bill Manager...', 'info');
+              }}
+            >
+              <Plus size={20} strokeWidth={3} />
+            </button>
+          </div>
+
+          {/* Global Search */}
+          <div className="search-field" style={{ maxWidth: '400px', marginLeft: '1rem', display: 'flex' }}>
+            <Search size={18} />
+            <input 
+              type="text" 
+              placeholder="Search bills, vendors..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginLeft: 'auto' }}>
+            {/* Theme Toggle */}
+            <button
+              onClick={toggleTheme}
+              style={{
+                width: '40px',
+                height: '40px',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'var(--text-secondary)',
+                border: '1px solid var(--border)',
+                background: 'var(--surface)',
+                transition: 'all 0.2s ease',
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--surface-soft)')}
+              onMouseLeave={(e) => (e.currentTarget.style.background = 'var(--surface)')}
+            >
+              {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
+            </button>
+
+            <div style={{ position: 'relative', cursor: 'pointer', padding: '0.5rem' }}>
               <Bell size={22} color="var(--text-secondary)" />
               {stats.overdueCount > 0 && (
                 <span
                   style={{
                     position: 'absolute',
-                    top: '-4px',
-                    right: '-4px',
+                    top: '2px',
+                    right: '2px',
                     background: 'var(--status-overdue)',
                     color: 'white',
                     fontSize: '10px',
@@ -389,6 +458,27 @@ function AppContent() {
                 </span>
               )}
             </div>
+            
+            <button
+              onClick={logout}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                padding: '0.5rem 0.85rem',
+                borderRadius: '0.5rem',
+                border: '1px solid #fee2e2',
+                background: '#fef2f2',
+                color: '#dc2626',
+                cursor: 'pointer',
+                fontSize: '0.85rem',
+                fontWeight: 600,
+                transition: 'all 0.2s ease',
+              }}
+            >
+              <LogOut size={16} />
+              <span>Log Out</span>
+            </button>
           </div>
         </header>
 

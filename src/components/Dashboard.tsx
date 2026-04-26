@@ -7,6 +7,7 @@ import {
   Clock,
   ArrowUpRight,
   ArrowDownRight,
+  Receipt,
 } from 'lucide-react';
 import {
   BarChart,
@@ -196,9 +197,10 @@ function Dashboard({ stats, bills, loading }: DashboardProps) {
                 />
                 <Tooltip
                   contentStyle={{
-                    background: '#ffffff',
+                    background: 'var(--surface)',
                     border: '1px solid var(--border)',
                     borderRadius: '8px',
+                    color: 'var(--text-primary)'
                   }}
                   itemStyle={{ color: 'var(--text-primary)' }}
                   formatter={(value) => formatCurrency(Number(value))}
@@ -260,9 +262,10 @@ function Dashboard({ stats, bills, loading }: DashboardProps) {
                 />
                 <Tooltip
                   contentStyle={{
-                    background: '#ffffff',
+                    background: 'var(--surface)',
                     border: '1px solid var(--border)',
                     borderRadius: '8px',
+                    color: 'var(--text-primary)'
                   }}
                   itemStyle={{ color: 'var(--text-primary)' }}
                 />
@@ -282,7 +285,55 @@ function Dashboard({ stats, bills, loading }: DashboardProps) {
       </div>
 
       {bills.length > 0 && (
-        <div style={{ display: 'block' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="glass-card"
+            style={{ padding: '1.5rem' }}
+          >
+            <h3 style={{ fontWeight: 600, marginBottom: '1.5rem' }}>Recent Activity</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              {bills
+                .sort((a, b) => new Date(b.created_at || b.date).getTime() - new Date(a.created_at || a.date).getTime())
+                .slice(0, 5)
+                .map((bill) => (
+                <div
+                  key={bill.id}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '1rem',
+                    padding: '0.75rem',
+                    background: 'var(--surface-soft)',
+                    borderRadius: '10px',
+                  }}
+                >
+                  <div style={{ 
+                    width: '32px', 
+                    height: '32px', 
+                    borderRadius: '8px', 
+                    background: bill.status === 'Paid' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(0, 113, 227, 0.1)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: bill.status === 'Paid' ? '#10b981' : 'var(--primary)'
+                  }}>
+                    {bill.status === 'Paid' ? <CheckCircle2 size={16} /> : <Receipt size={16} />}
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <p style={{ fontWeight: 600, fontSize: '0.85rem' }}>
+                      {bill.status === 'Paid' ? 'Payment processed' : 'New bill logged'}
+                    </p>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>
+                      {bill.charge_name} • {bill.date}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -293,7 +344,7 @@ function Dashboard({ stats, bills, loading }: DashboardProps) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               {bills
                 .filter((b) => b.status !== 'Paid')
-                .slice(0, 4)
+                .slice(0, 5)
                 .map((bill) => (
                 <div
                   key={bill.id}
@@ -302,7 +353,7 @@ function Dashboard({ stats, bills, loading }: DashboardProps) {
                     alignItems: 'center',
                     gap: '1rem',
                     padding: '1rem',
-                    background: 'rgba(255,255,255,0.02)',
+                    background: 'var(--surface-soft)',
                     borderRadius: '12px',
                     borderLeft: `4px solid ${
                       bill.status === 'Overdue'

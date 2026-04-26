@@ -8,7 +8,12 @@ import {
   AlertCircle,
   Settings,
   Globe,
+  LogOut,
+  Zap,
+  ZapOff,
+  HelpCircle
 } from 'lucide-react';
+import { isSupabaseConfigured } from '@/services/supabaseClient';
 
 interface SidebarProps {
   activeView: string;
@@ -17,6 +22,7 @@ interface SidebarProps {
   onNavigate?: () => void;
   userName?: string;
   userRole?: string;
+  onLogout?: () => void;
 }
 
 function Sidebar({
@@ -26,6 +32,7 @@ function Sidebar({
   onNavigate,
   userName,
   userRole,
+  onLogout,
 }: SidebarProps) {
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -35,6 +42,7 @@ function Sidebar({
     { id: 'calendar', label: 'Calendar', icon: Calendar },
     { id: 'documents', label: 'Documents', icon: FileText },
     { id: 'alerts', label: 'Alerts', icon: AlertCircle },
+    { id: 'help', label: 'Help & Support', icon: HelpCircle },
   ];
 
   if (userRole === 'SUPER_ADMIN' || userRole === 'super_admin') {
@@ -87,7 +95,7 @@ function Sidebar({
           padding: '0.95rem',
           border: '1px solid var(--border)',
           borderRadius: '0.75rem',
-          background: 'rgba(255, 255, 255, 0.72)',
+          background: 'var(--bg-card)',
           display: 'flex',
           alignItems: 'center',
           gap: '0.75rem',
@@ -137,7 +145,7 @@ function Sidebar({
       </div>
 
       {/* Menu Items */}
-      <nav style={{ flex: 1 }}>
+      <nav style={{ flex: 1, overflowY: 'auto' }}>
         {menuItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeView === item.id;
@@ -171,7 +179,7 @@ function Sidebar({
         })}
       </nav>
 
-      {/* Settings Footer */}
+      {/* Footer */}
       <div
         style={{
           padding: '1.5rem',
@@ -191,16 +199,59 @@ function Sidebar({
             gap: '0.75rem',
             border: '1px solid var(--border)',
             borderRadius: '0.75rem',
-            background: activeView === 'settings' ? 'rgba(0, 113, 227, 0.1)' : 'rgba(255, 255, 255, 0.72)',
+            background: activeView === 'settings' ? 'rgba(0, 113, 227, 0.1)' : 'var(--bg-card)',
             color: activeView === 'settings' ? 'var(--primary)' : 'var(--text-secondary)',
             cursor: 'pointer',
             transition: 'var(--transition)',
             fontWeight: activeView === 'settings' ? 700 : 500,
+            marginBottom: '0.5rem',
           }}
         >
           <Settings size={20} />
           <span>Settings</span>
         </button>
+
+        <button
+          onClick={onLogout}
+          style={{
+            width: '100%',
+            padding: '0.75rem 1rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.75rem',
+            border: '1px solid #fee2e2',
+            borderRadius: '0.75rem',
+            background: 'rgba(254, 226, 226, 0.4)',
+            color: '#dc2626',
+            cursor: 'pointer',
+            transition: 'var(--transition)',
+            fontWeight: 500,
+            marginBottom: '1rem',
+          }}
+        >
+          <LogOut size={20} />
+          <span>Log Out</span>
+        </button>
+
+        {/* Connectivity Indicator */}
+        <div 
+          style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '0.5rem', 
+            fontSize: '0.7rem', 
+            color: isSupabaseConfigured ? 'var(--success)' : 'var(--warning)',
+            padding: '0.25rem 0.5rem',
+            borderRadius: '1rem',
+            background: isSupabaseConfigured ? 'rgba(47, 179, 68, 0.1)' : 'rgba(183, 121, 31, 0.1)',
+            width: 'fit-content'
+          }}
+        >
+          {isSupabaseConfigured ? <Zap size={12} fill="currentColor" /> : <ZapOff size={12} />}
+          <span style={{ fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            {isSupabaseConfigured ? 'Supabase Connected' : 'Local Mode'}
+          </span>
+        </div>
       </div>
     </aside>
   );
