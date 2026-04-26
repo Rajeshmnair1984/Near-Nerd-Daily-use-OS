@@ -11,12 +11,15 @@ import {
 import {
   BarChart,
   Bar,
+  LineChart,
+  Line,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
   Cell,
+  Legend,
 } from 'recharts';
 import { Bill } from '@/types/bill';
 import { DashboardStats } from '@/types/common';
@@ -79,7 +82,7 @@ interface DashboardProps {
 }
 
 function Dashboard({ stats, bills, loading }: DashboardProps) {
-  const chartData = [
+  const categoryChartData = [
     {
       name: 'Rent',
       value: bills
@@ -106,6 +109,34 @@ function Dashboard({ stats, bills, loading }: DashboardProps) {
     },
   ];
 
+  // Monthly trend data
+  const monthlyTrendData = (() => {
+    const months: { [key: string]: { paid: number; pending: number } } = {};
+    const now = new Date();
+    for (let i = 5; i >= 0; i--) {
+      const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const monthKey = date.toLocaleString('default', { month: 'short', year: 'numeric' });
+      months[monthKey] = { paid: 0, pending: 0 };
+    }
+
+    bills.forEach((bill) => {
+      const billDate = new Date(bill.date);
+      const monthKey = billDate.toLocaleString('default', { month: 'short', year: 'numeric' });
+      if (months[monthKey]) {
+        if (bill.status === 'Paid') {
+          months[monthKey].paid += bill.amount;
+        } else {
+          months[monthKey].pending += bill.amount;
+        }
+      }
+    });
+
+    return Object.entries(months).map(([month, data]) => ({
+      month,
+      ...data,
+    }));
+  })();
+
   return (
     <div className="page-shell">
       <header className="page-hero">
@@ -124,10 +155,6 @@ function Dashboard({ stats, bills, loading }: DashboardProps) {
         <div className="glass-card" style={{ padding: '4rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
           Loading your operational overview...
         </div>
-      ) : bills.length === 0 ? (
-        <div className="glass-card" style={{ padding: '4rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
-          No bills yet. Add your first bill to populate the dashboard.
-        </div>
       ) : (
         <>
 
@@ -137,30 +164,94 @@ function Dashboard({ stats, bills, loading }: DashboardProps) {
           value={stats.totalPaid}
           icon={CheckCircle2}
           color="#10b981"
-          trend={12}
+          trend={bills.length > 0 ? 12 : undefined}
         />
         <StatCard
           title="Total Pending"
           value={stats.totalPending}
           icon={Clock}
           color="#f59e0b"
-          trend={-5}
+          trend={bills.length > 0 ? -5 : undefined}
         />
         <StatCard
           title="Overdue Amount"
           value={stats.totalOverdue}
           icon={AlertCircle}
           color="#ef4444"
-          trend={2}
+          trend={bills.length > 0 ? 2 : undefined}
         />
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1.5rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '2rem' }}>
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           className="glass-card"
-          style={{ padding: '1.5rem', height: '400px' }}
+          style={{ padding: '1.5rem' }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2rem' }}>
+            <h3 style={{ fontWeight: 600 }}>6-Month Trend</h3>
+            <TrendingUp size={20} color="var(--text-secondary)" />
+          </div>
+          <div style={{ width: '100%', height: '300px' }}>
+            <ResponsiveContainer>
+              <LineChart data={monthlyTrendData}>
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  vertical={false}
+                  stroke="rgba(255,255,255,0.05)"
+                />
+                <XAxis
+                  dataKey="month"
+                  stroke="var(--text-secondary)"
+                  fontSize={12}
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <YAxis
+                  stroke="var(--text-secondary)"
+                  fontSize={12}
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <Tooltip
+                  contentStyle={{
+                    background: '#ffffff',
+                    border: '1px solid var(--border)',
+                    borderRadius: '8px',
+                  }}
+                  itemStyle={{ color: 'var(--text-primary)' }}
+                  formatter={(value) => `$${value.toFixed(2)}`}
+                />
+                <Legend />
+                <Line
+                  type="monotone"
+                  dataKey="paid"
+                  stroke="#10b981"
+                  strokeWidth={2}
+                  dot={{ fill: '#10b981', r: 4 }}
+                  activeDot={{ r: 6 }}
+                  name="Paid"
+                />
+                <Line
+                  type="monotone"
+                  dataKey="pending"
+                  stroke="#f59e0b"
+                  strokeWidth={2}
+                  dot={{ fill: '#f59e0b', r: 4 }}
+                  activeDot={{ r: 6 }}
+                  name="Pending"
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="glass-card"
+          style={{ padding: '1.5rem' }}
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2rem' }}>
             <h3 style={{ fontWeight: 600 }}>Expense Distribution</h3>
@@ -168,7 +259,7 @@ function Dashboard({ stats, bills, loading }: DashboardProps) {
           </div>
           <div style={{ width: '100%', height: '300px' }}>
             <ResponsiveContainer>
-              <BarChart data={chartData}>
+              <BarChart data={categoryChartData}>
                 <CartesianGrid
                   strokeDasharray="3 3"
                   vertical={false}
@@ -196,7 +287,7 @@ function Dashboard({ stats, bills, loading }: DashboardProps) {
                   itemStyle={{ color: 'var(--text-primary)' }}
                 />
                 <Bar dataKey="value" radius={[4, 4, 0, 0]}>
-                  {chartData.map((entry, index) => (
+                  {categoryChartData.map((entry, index) => (
                     <Cell
                       key={`cell-${index}`}
                       fill={index === 0 ? 'var(--primary)' : '#818cf8'}
@@ -208,18 +299,22 @@ function Dashboard({ stats, bills, loading }: DashboardProps) {
           </div>
         </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="glass-card"
-          style={{ padding: '1.5rem' }}
-        >
-          <h3 style={{ fontWeight: 600, marginBottom: '1.5rem' }}>Proactive Alerts</h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {bills
-              .filter((b) => b.status !== 'Paid')
-              .slice(0, 4)
-              .map((bill) => (
+      </div>
+
+      {bills.length > 0 && (
+        <div style={{ display: 'block' }}>
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="glass-card"
+            style={{ padding: '1.5rem' }}
+          >
+            <h3 style={{ fontWeight: 600, marginBottom: '1.5rem' }}>Proactive Alerts</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              {bills
+                .filter((b) => b.status !== 'Paid')
+                .slice(0, 4)
+                .map((bill) => (
                 <div
                   key={bill.id}
                   style={{
@@ -254,9 +349,10 @@ function Dashboard({ stats, bills, loading }: DashboardProps) {
                   </div>
                 </div>
               ))}
-          </div>
-        </motion.div>
-      </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
         </>
       )}
     </div>
