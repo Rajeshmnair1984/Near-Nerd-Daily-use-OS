@@ -1,11 +1,14 @@
 import { FormEvent, memo, useMemo, useState } from 'react';
-import { Building2, Mail, Phone, Plus, Search, Trash2 } from 'lucide-react';
+import { Building2, Mail, Phone, Plus, Search, Trash2, Edit } from 'lucide-react';
+import { AnimatePresence } from 'framer-motion';
 import { CreateVendorInput, Vendor } from '@/types/vendor';
 import { Modal } from './ui/Modal';
+import VendorEditForm from './VendorEditForm';
 
 interface VendorManagerProps {
   vendors: Vendor[];
   onAddVendor: (vendor: CreateVendorInput) => Promise<void>;
+  onUpdateVendor?: (id: string, updates: CreateVendorInput) => Promise<void>;
   onDeleteVendor: (id: string) => Promise<void>;
   loading?: boolean;
 }
@@ -21,11 +24,13 @@ const emptyVendor: CreateVendorInput = {
   status: 'Active',
 };
 
-function VendorManager({ vendors, onAddVendor, onDeleteVendor, loading }: VendorManagerProps) {
+function VendorManager({ vendors, onAddVendor, onUpdateVendor, onDeleteVendor, loading }: VendorManagerProps) {
   const [query, setQuery] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [vendor, setVendor] = useState<CreateVendorInput>(emptyVendor);
   const [isSaving, setIsSaving] = useState(false);
+  const [editingVendor, setEditingVendor] = useState<Vendor | null>(null);
+  const [editLoading, setEditLoading] = useState(false);
 
   const filteredVendors = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -67,6 +72,17 @@ function VendorManager({ vendors, onAddVendor, onDeleteVendor, loading }: Vendor
       setIsModalOpen(false);
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleEditVendor = async (updates: CreateVendorInput) => {
+    if (!editingVendor || !onUpdateVendor) return;
+    setEditLoading(true);
+    try {
+      await onUpdateVendor(editingVendor.id, updates);
+      setEditingVendor(null);
+    } finally {
+      setEditLoading(false);
     }
   };
 
@@ -149,17 +165,29 @@ function VendorManager({ vendors, onAddVendor, onDeleteVendor, loading }: Vendor
                   )}
                 </div>
                 {item.notes && <p className="vendor-notes">{item.notes}</p>}
-                <button
-                  className="icon-button danger"
-                  aria-label={`Delete ${item.name}`}
-                  onClick={() => {
-                    if (window.confirm('Delete this vendor?')) {
-                      onDeleteVendor(item.id);
-                    }
-                  }}
-                >
-                  <Trash2 size={17} />
-                </button>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  {onUpdateVendor && (
+                    <button
+                      className="icon-button"
+                      aria-label={`Edit ${item.name}`}
+                      onClick={() => setEditingVendor(item)}
+                      style={{ padding: '0.5rem', borderRadius: '6px', border: '1px solid #e5e7eb', background: 'white', cursor: 'pointer', color: '#667eea' }}
+                    >
+                      <Edit size={17} />
+                    </button>
+                  )}
+                  <button
+                    className="icon-button danger"
+                    aria-label={`Delete ${item.name}`}
+                    onClick={() => {
+                      if (window.confirm('Delete this vendor?')) {
+                        onDeleteVendor(item.id);
+                      }
+                    }}
+                  >
+                    <Trash2 size={17} />
+                  </button>
+                </div>
               </article>
             ))}
           </div>
@@ -255,6 +283,17 @@ function VendorManager({ vendors, onAddVendor, onDeleteVendor, loading }: Vendor
           </div>
         </form>
       </Modal>
+
+      <AnimatePresence>
+        {editingVendor && (
+          <VendorEditForm
+            vendor={editingVendor}
+            onSave={handleEditVendor}
+            onCancel={() => setEditingVendor(null)}
+            loading={editLoading}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

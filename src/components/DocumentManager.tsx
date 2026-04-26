@@ -1,11 +1,14 @@
 import { FormEvent, memo, useMemo, useState } from 'react';
-import { ExternalLink, FileText, Plus, Search, Trash2 } from 'lucide-react';
+import { ExternalLink, FileText, Plus, Search, Trash2, Edit } from 'lucide-react';
+import { AnimatePresence } from 'framer-motion';
 import { CreateDocumentInput, DocumentRecord } from '@/types/document';
 import { Modal } from './ui/Modal';
+import DocumentEditForm from './DocumentEditForm';
 
 interface DocumentManagerProps {
   documents: DocumentRecord[];
   onAddDocument: (document: CreateDocumentInput) => Promise<void>;
+  onUpdateDocument?: (id: string, updates: CreateDocumentInput) => Promise<void>;
   onDeleteDocument: (id: string) => Promise<void>;
   loading?: boolean;
 }
@@ -23,6 +26,7 @@ const emptyDocument: CreateDocumentInput = {
 function DocumentManager({
   documents,
   onAddDocument,
+  onUpdateDocument,
   onDeleteDocument,
   loading,
 }: DocumentManagerProps) {
@@ -30,6 +34,8 @@ function DocumentManager({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [document, setDocument] = useState<CreateDocumentInput>(emptyDocument);
   const [isSaving, setIsSaving] = useState(false);
+  const [editingDocument, setEditingDocument] = useState<DocumentRecord | null>(null);
+  const [editLoading, setEditLoading] = useState(false);
 
   const filteredDocuments = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -62,6 +68,17 @@ function DocumentManager({
       setIsModalOpen(false);
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleEditDocument = async (updates: CreateDocumentInput) => {
+    if (!editingDocument || !onUpdateDocument) return;
+    setEditLoading(true);
+    try {
+      await onUpdateDocument(editingDocument.id, updates);
+      setEditingDocument(null);
+    } finally {
+      setEditLoading(false);
     }
   };
 
@@ -147,17 +164,29 @@ function DocumentManager({
                   )}
                 </div>
                 {item.notes && <p className="vendor-notes">{item.notes}</p>}
-                <button
-                  className="icon-button danger"
-                  aria-label={`Delete ${item.title}`}
-                  onClick={() => {
-                    if (window.confirm('Delete this document record?')) {
-                      onDeleteDocument(item.id);
-                    }
-                  }}
-                >
-                  <Trash2 size={17} />
-                </button>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  {onUpdateDocument && (
+                    <button
+                      className="icon-button"
+                      aria-label={`Edit ${item.title}`}
+                      onClick={() => setEditingDocument(item)}
+                      style={{ padding: '0.5rem', borderRadius: '6px', border: '1px solid #e5e7eb', background: 'white', cursor: 'pointer', color: '#667eea' }}
+                    >
+                      <Edit size={17} />
+                    </button>
+                  )}
+                  <button
+                    className="icon-button danger"
+                    aria-label={`Delete ${item.title}`}
+                    onClick={() => {
+                      if (window.confirm('Delete this document record?')) {
+                        onDeleteDocument(item.id);
+                      }
+                    }}
+                  >
+                    <Trash2 size={17} />
+                  </button>
+                </div>
               </article>
             ))}
           </div>
@@ -248,6 +277,17 @@ function DocumentManager({
           </div>
         </form>
       </Modal>
+
+      <AnimatePresence>
+        {editingDocument && (
+          <DocumentEditForm
+            document={editingDocument}
+            onSave={handleEditDocument}
+            onCancel={() => setEditingDocument(null)}
+            loading={editLoading}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

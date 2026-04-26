@@ -1,11 +1,14 @@
 import { FormEvent, memo, useMemo, useState } from 'react';
-import { MapPin, Plus, Search, Trash2, Building2 } from 'lucide-react';
+import { MapPin, Plus, Search, Trash2, Building2, Edit } from 'lucide-react';
+import { AnimatePresence } from 'framer-motion';
 import { CreateLocationInput, Location } from '@/types/location';
 import { Modal } from './ui/Modal';
+import LocationEditForm from './LocationEditForm';
 
 interface LocationManagerProps {
   locations: Location[];
   onAddLocation: (location: CreateLocationInput) => Promise<void>;
+  onUpdateLocation?: (id: string, updates: CreateLocationInput) => Promise<void>;
   onDeleteLocation: (id: string) => Promise<void>;
   loading?: boolean;
 }
@@ -19,6 +22,7 @@ const emptyLocation: CreateLocationInput = {
 function LocationManager({
   locations,
   onAddLocation,
+  onUpdateLocation,
   onDeleteLocation,
   loading,
 }: LocationManagerProps) {
@@ -26,6 +30,8 @@ function LocationManager({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [location, setLocation] = useState<CreateLocationInput>(emptyLocation);
   const [isSaving, setIsSaving] = useState(false);
+  const [editingLocation, setEditingLocation] = useState<Location | null>(null);
+  const [editLoading, setEditLoading] = useState(false);
 
   const filteredLocations = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -54,6 +60,17 @@ function LocationManager({
       setIsModalOpen(false);
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleEditLocation = async (updates: CreateLocationInput) => {
+    if (!editingLocation || !onUpdateLocation) return;
+    setEditLoading(true);
+    try {
+      await onUpdateLocation(editingLocation.id, updates);
+      setEditingLocation(null);
+    } finally {
+      setEditLoading(false);
     }
   };
 
@@ -126,17 +143,29 @@ function LocationManager({
                   )}
                   {item.contact && <span>{item.contact}</span>}
                 </div>
-                <button
-                  className="icon-button danger"
-                  aria-label={`Delete ${item.name}`}
-                  onClick={() => {
-                    if (window.confirm('Delete this location? Bills linked to it may also be removed in Supabase.')) {
-                      onDeleteLocation(item.id);
-                    }
-                  }}
-                >
-                  <Trash2 size={17} />
-                </button>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  {onUpdateLocation && (
+                    <button
+                      className="icon-button"
+                      aria-label={`Edit ${item.name}`}
+                      onClick={() => setEditingLocation(item)}
+                      style={{ padding: '0.5rem', borderRadius: '6px', border: '1px solid #e5e7eb', background: 'white', cursor: 'pointer', color: '#667eea' }}
+                    >
+                      <Edit size={17} />
+                    </button>
+                  )}
+                  <button
+                    className="icon-button danger"
+                    aria-label={`Delete ${item.name}`}
+                    onClick={() => {
+                      if (window.confirm('Delete this location? Bills linked to it may also be removed in Supabase.')) {
+                        onDeleteLocation(item.id);
+                      }
+                    }}
+                  >
+                    <Trash2 size={17} />
+                  </button>
+                </div>
               </article>
             ))}
           </div>
@@ -180,6 +209,17 @@ function LocationManager({
           </div>
         </form>
       </Modal>
+
+      <AnimatePresence>
+        {editingLocation && (
+          <LocationEditForm
+            location={editingLocation}
+            onSave={handleEditLocation}
+            onCancel={() => setEditingLocation(null)}
+            loading={editLoading}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
