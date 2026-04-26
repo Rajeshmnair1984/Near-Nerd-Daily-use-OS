@@ -210,25 +210,28 @@ const SuperAdminDashboard = () => {
             <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} className="glass-card" style={{ width: '450px', padding: '2rem' }}>
               <h2 style={{ marginBottom: '1.5rem' }}>Provision New Tenant</h2>
               <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                <input 
-                  placeholder="Business Name (e.g. Lucky Restaurant)" 
-                  className="glass-card" 
-                  style={{ width: '100%', padding: '0.75rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'white' }}
+                <input
+                  placeholder="Business Name (e.g. Lucky Restaurant)"
+                  className="glass-card"
+                  disabled={isSubmitting}
+                  style={{ width: '100%', padding: '0.75rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'white', opacity: isSubmitting ? 0.6 : 1, cursor: isSubmitting ? 'not-allowed' : 'text' }}
                   value={newOrg.name}
                   onChange={e => setNewOrg({...newOrg, name: e.target.value})}
                 />
-                <input 
-                  placeholder="Domain Slug (e.g. lucky-rest)" 
-                  className="glass-card" 
-                  style={{ width: '100%', padding: '0.75rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'white' }}
+                <input
+                  placeholder="Domain Slug (e.g. lucky-rest)"
+                  className="glass-card"
+                  disabled={isSubmitting}
+                  style={{ width: '100%', padding: '0.75rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'white', opacity: isSubmitting ? 0.6 : 1, cursor: isSubmitting ? 'not-allowed' : 'text' }}
                   value={newOrg.domain}
                   onChange={e => setNewOrg({...newOrg, domain: e.target.value})}
                 />
-                <input 
-                  placeholder="Admin Email Address" 
+                <input
+                  placeholder="Admin Email Address"
                   type="email"
-                  className="glass-card" 
-                  style={{ width: '100%', padding: '0.75rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'white' }}
+                  className="glass-card"
+                  disabled={isSubmitting}
+                  style={{ width: '100%', padding: '0.75rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'white', opacity: isSubmitting ? 0.6 : 1, cursor: isSubmitting ? 'not-allowed' : 'text' }}
                   value={newOrg.adminEmail}
                   onChange={e => setNewOrg({...newOrg, adminEmail: e.target.value})}
                 />
