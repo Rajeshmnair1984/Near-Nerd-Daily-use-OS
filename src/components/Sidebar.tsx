@@ -5,6 +5,7 @@ import {
   Users,
   Calendar,
   FileText,
+  AlertCircle,
   Settings,
   Globe,
 } from 'lucide-react';
@@ -25,6 +26,7 @@ function Sidebar({ activeView, setActiveView, isOpen = false, onNavigate, userRo
     { id: 'vendors', label: 'Vendors', icon: Users },
     { id: 'calendar', label: 'Calendar', icon: Calendar },
     { id: 'documents', label: 'Documents', icon: FileText },
+    { id: 'alerts', label: 'Alerts', icon: AlertCircle },
   ];
 
   if (userRole === 'SUPER_ADMIN') {

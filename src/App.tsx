@@ -7,6 +7,7 @@ import VendorManager from './components/VendorManager'
 import SettingsView from './components/SettingsView'
 import LocationManager from './components/LocationManager'
 import DocumentManager from './components/DocumentManager'
+import AlertsManager from './components/AlertsManager'
 import SuperAdminDashboard from './components/SuperAdminDashboard'
 import LoginView from './components/LoginView'
 import { dataService } from './services/dataService'
@@ -279,6 +280,14 @@ function AppContent() {
             onAddDocument={handleAddDocument}
             onUpdateDocument={handleUpdateDocument}
             onDeleteDocument={handleDeleteDocument}
+            loading={loading}
+          />
+        );
+      case 'alerts':
+        return (
+          <AlertsManager
+            bills={bills}
+            documents={documents}
             loading={loading}
           />
         );
