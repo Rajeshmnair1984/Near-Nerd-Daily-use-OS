@@ -772,7 +772,7 @@ class DataService {
 
   async createOrganization(name: string, domain: string, adminEmail: string): Promise<Organization> {
     try {
-      const supabaseUrl = supabase.supabaseUrl;
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
       const { data: { session } } = await supabase.auth.getSession();
 
       const response = await fetch(`${supabaseUrl}/functions/v1/create-organization`, {
@@ -785,8 +785,15 @@ class DataService {
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to create organization');
+        let errorMessage = 'Failed to create organization';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch (e) {
+          // If response is not JSON, it might be a 404 HTML page or other text
+          errorMessage = `HTTP error! status: ${response.status}`;
+        }
+        throw new Error(errorMessage);
       }
 
       const result = await response.json();
@@ -874,17 +881,11 @@ class DataService {
     localStorage.removeItem('documents_cache');
   }
 
-  private handleError(error: unknown, fallbackMessage: string): ApiError {
+  private handleError(error: unknown, fallbackMessage: string): Error {
     if (error instanceof Error) {
-      return {
-        code: 'ERROR',
-        message: error.message || fallbackMessage,
-      };
+      return error;
     }
-    return {
-      code: 'UNKNOWN_ERROR',
-      message: fallbackMessage,
-    };
+    return new Error(fallbackMessage);
   }
 }
 

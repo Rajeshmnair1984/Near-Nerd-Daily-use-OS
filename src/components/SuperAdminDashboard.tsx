@@ -44,7 +44,7 @@ const SuperAdminDashboard = () => {
       addToast(`Organization "${newOrg.name}" created successfully! Invitation sent to ${newOrg.adminEmail}.`, 'success');
       loadOrgs();
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Error creating organization. Make sure you have configured the Supabase Service Role Key.';
+      const errorMessage = err instanceof Error ? err.message : 'Failed to create organization. An unknown error occurred.';
       addToast(errorMessage, 'error');
     } finally {
       setIsSubmitting(false);
