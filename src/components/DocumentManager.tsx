@@ -1,9 +1,10 @@
 import { FormEvent, memo, useMemo, useState } from 'react';
-import { ExternalLink, FileText, Plus, Search, Trash2, Edit } from 'lucide-react';
+import { ExternalLink, FileText, Plus, Search, Trash2, Edit, Upload } from 'lucide-react';
 import { AnimatePresence } from 'framer-motion';
 import { CreateDocumentInput, DocumentRecord } from '@/types/document';
 import { Modal } from './ui/Modal';
 import DocumentEditForm from './DocumentEditForm';
+import { dataService } from '@/services/dataService';
 
 interface DocumentManagerProps {
   documents: DocumentRecord[];
@@ -36,6 +37,8 @@ function DocumentManager({
   const [isSaving, setIsSaving] = useState(false);
   const [editingDocument, setEditingDocument] = useState<DocumentRecord | null>(null);
   const [editLoading, setEditLoading] = useState(false);
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const filteredDocuments = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -54,17 +57,26 @@ function DocumentManager({
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsSaving(true);
+    setUploadProgress(0);
     try {
+      let fileUrl = document.file_url;
+
+      if (uploadFile) {
+        fileUrl = await dataService.uploadDocumentFile(uploadFile, setUploadProgress);
+      }
+
       await onAddDocument({
         ...document,
         title: document.title.trim(),
         category: document.category.trim(),
         owner: document.owner?.trim(),
-        file_url: document.file_url?.trim(),
+        file_url: fileUrl?.trim(),
         renewal_date: document.renewal_date || undefined,
         notes: document.notes?.trim(),
       });
       setDocument(emptyDocument);
+      setUploadFile(null);
+      setUploadProgress(0);
       setIsModalOpen(false);
     } finally {
       setIsSaving(false);
@@ -249,7 +261,28 @@ function DocumentManager({
             </label>
           </div>
           <label className="form-group">
-            <span className="form-label">Document Link</span>
+            <span className="form-label">Document File</span>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '1rem', border: '2px dashed #e5e7eb', borderRadius: '8px', cursor: 'pointer', background: uploadFile ? '#f0f9ff' : 'transparent', transition: 'all 0.2s' }}>
+              <Upload size={18} color={uploadFile ? '#667eea' : '#9ca3af'} />
+              <span style={{ color: uploadFile ? '#667eea' : '#6b7280', fontWeight: uploadFile ? 500 : 400 }}>
+                {uploadFile ? uploadFile.name : 'Click to upload or drag and drop'}
+              </span>
+              <input
+                type="file"
+                onChange={(event) => setUploadFile(event.target.files?.[0] || null)}
+                style={{ display: 'none' }}
+                accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg"
+              />
+            </label>
+            {uploadProgress > 0 && uploadProgress < 100 && (
+              <div style={{ marginTop: '0.5rem', background: '#e5e7eb', borderRadius: '4px', height: '4px', overflow: 'hidden' }}>
+                <div style={{ background: '#667eea', height: '100%', width: `${uploadProgress}%`, transition: 'width 0.3s' }} />
+              </div>
+            )}
+          </label>
+
+          <label className="form-group">
+            <span className="form-label">Document Link (Alternative)</span>
             <input
               className="form-input"
               type="url"

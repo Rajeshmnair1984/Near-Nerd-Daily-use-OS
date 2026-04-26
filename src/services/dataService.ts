@@ -785,6 +785,46 @@ class DataService {
     this.saveLocalRecords('bills_cache', [...this.getLocalRecords<Bill>('bills_cache'), nextBill]);
   }
 
+  async uploadDocumentFile(file: File, onProgress?: (progress: number) => void): Promise<string> {
+    if (!isSupabaseConfigured) {
+      onProgress?.(100);
+      return URL.createObjectURL(file);
+    }
+
+    try {
+      const timestamp = Date.now();
+      const fileName = `${timestamp}-${file.name.replace(/[^a-z0-9._-]/gi, '_')}`;
+      const filePath = `documents/${fileName}`;
+
+      onProgress?.(30);
+
+      const { error } = await supabase.storage
+        .from('documents')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false,
+        });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      onProgress?.(80);
+
+      const { data: publicUrlData } = supabase.storage
+        .from('documents')
+        .getPublicUrl(filePath);
+
+      onProgress?.(100);
+
+      return publicUrlData.publicUrl;
+    } catch (error) {
+      console.warn('Failed to upload document to Supabase Storage, using local blob URL instead.', error);
+      onProgress?.(100);
+      return URL.createObjectURL(file);
+    }
+  }
+
   private invalidateCache(clearStorage = true): void {
     this.billsCache = null;
     this.locationsCache = null;
