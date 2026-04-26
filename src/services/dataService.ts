@@ -5,6 +5,20 @@ import { Location, CreateLocationInput } from '@/types/location';
 import { CreateVendorInput, UpdateVendorInput, Vendor } from '@/types/vendor';
 import { DashboardStats, ApiError } from '@/types/common';
 
+export interface Organization {
+  id: string;
+  name: string;
+  domain: string;
+  created_at: string;
+}
+
+export interface UserProfile {
+  id: string;
+  org_id: string;
+  role: 'SUPER_ADMIN' | 'ORG_ADMIN' | 'USER';
+  full_name: string;
+}
+
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
 interface CacheEntry<T> {
@@ -520,6 +534,40 @@ class DataService {
       totalOverdue: overdueTotal,
       overdueCount: overdue.length,
     };
+  }
+
+  async createOrganization(name: string, domain: string, adminEmail: string): Promise<Organization> {
+    try {
+      // 1. Create Organization
+      const { data: org, error: orgError } = await supabase
+        .from('organizations')
+        .insert([{ name, domain }])
+        .select()
+        .single();
+
+      if (orgError) throw orgError;
+
+      // 2. Trigger Supabase Auth Invite (this sends the email)
+      // Note: This requires the Service Role Key or a Supabase Edge Function
+      const { error: inviteError } = await supabase.auth.admin.inviteUserByEmail(adminEmail, {
+        data: { 
+          org_id: org.id,
+          role: 'ORG_ADMIN'
+        }
+      });
+
+      if (inviteError) console.warn('Invite sent but check service role key permissions:', inviteError.message);
+
+      return org;
+    } catch (error) {
+      throw this.handleError(error, 'Failed to create organization');
+    }
+  }
+
+  async getOrganizations(): Promise<Organization[]> {
+    const { data, error } = await supabase.from('organizations').select('*');
+    if (error) throw error;
+    return data || [];
   }
 
   private invalidateCache(): void {
