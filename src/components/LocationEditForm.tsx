@@ -1,25 +1,12 @@
 import React, { useState } from 'react';
 import { 
   Building2, 
-  MapPin, 
   ShieldCheck, 
-  FileText, 
   User, 
-  Wallet, 
   Zap, 
-  Calendar,
   Activity,
-  CheckCircle2,
-  AlertCircle,
-  Phone,
-  Mail,
   Scale,
-  Clock,
-  Flame,
-  Users,
   Wifi,
-  ChevronRight,
-  Info,
   X
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -33,6 +20,18 @@ interface LocationEditFormProps {
 }
 
 type TabType = 'identity' | 'location' | 'lease' | 'insurance' | 'ops';
+
+const IntelSyncBadge = ({ active, onClick, section }: { active: boolean, onClick: () => void, section: string }) => (
+  <div 
+    className={`intel-sync-toggle ${active ? 'active' : ''}`}
+    onClick={onClick}
+    title={`Toggle AI Intelligence Sync for ${section}`}
+  >
+    <div className="pulse-ring"></div>
+    <Wifi size={14} />
+    <span>{active ? 'AI SYNC ACTIVE' : 'AI SYNC DISABLED'}</span>
+  </div>
+);
 
 export default function LocationEditForm({ location, onSave, onCancel, loading }: LocationEditFormProps) {
   const [activeTab, setActiveTab] = useState<TabType>('identity');
@@ -80,7 +79,7 @@ export default function LocationEditForm({ location, onSave, onCancel, loading }
     policy_number: location.policy_number || '',
     coverage_type: location.coverage_type || '',
     premium_amount: location.premium_amount || 0,
-    premium_frequency: (location.premium_frequency as any) || 'Monthly',
+    premium_frequency: (location.premium_frequency as 'Monthly' | 'Quarterly' | 'Annual') || 'Monthly',
     insurance_start_date: location.insurance_start_date || '',
     insurance_expiry_date: location.insurance_expiry_date || '',
     broker_contact_name: location.broker_contact_name || '',
@@ -131,34 +130,14 @@ export default function LocationEditForm({ location, onSave, onCancel, loading }
     { id: 'ops', label: 'Operations', icon: <Activity size={18} /> },
   ];
 
-  const IntelSyncBadge = ({ active, onClick, section }: { active: boolean, onClick: () => void, section: string }) => (
-    <div 
-      className={`intel-sync-toggle ${active ? 'active' : ''}`}
-      onClick={onClick}
-      title={`Toggle AI Intelligence Sync for ${section}`}
-    >
-      <div className="pulse-ring"></div>
-      <Wifi size={14} />
-      <span>{active ? 'AI SYNC ACTIVE' : 'AI SYNC DISABLED'}</span>
-    </div>
-  );
+
 
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      style={{
-        position: 'fixed',
-        inset: 0,
-        background: 'rgba(0, 0, 0, 0.85)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 1000,
-        padding: '1rem',
-        backdropFilter: 'blur(12px)',
-      }}
+      className="matrix-edit-backdrop"
       onClick={onCancel}
     >
       <motion.div
@@ -169,6 +148,18 @@ export default function LocationEditForm({ location, onSave, onCancel, loading }
         className="matrix-edit-container"
       >
         <style>{`
+          .matrix-edit-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 1rem;
+            backdrop-filter: blur(12px);
+          }
+
           .matrix-edit-container {
             background: var(--bg-card);
             border-radius: 24px;
@@ -192,10 +183,24 @@ export default function LocationEditForm({ location, onSave, onCancel, loading }
             align-items: center;
           }
 
+          .matrix-header-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+          }
+
           .matrix-header h1 {
             font-size: 1.25rem;
             font-weight: 800;
             letter-spacing: -0.02em;
+          }
+
+          .matrix-header-accent {
+            color: var(--primary);
+          }
+
+          .matrix-header-close {
+            border-radius: 50%;
           }
 
           .matrix-body {
@@ -240,9 +245,38 @@ export default function LocationEditForm({ location, onSave, onCancel, loading }
             box-shadow: 0 4px 12px rgba(0, 113, 227, 0.2);
           }
 
+          .matrix-sidebar-status {
+            margin-top: auto;
+            padding: 1rem;
+            background: var(--surface);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            text-align: center;
+          }
+
+          .matrix-sidebar-status svg {
+            margin-bottom: 0.5rem;
+            margin-inline: auto;
+          }
+
+          .matrix-sidebar-status p {
+            font-size: 0.7rem;
+            font-weight: 800;
+          }
+
           .matrix-content {
             padding: 2.5rem;
             overflow-y: auto;
+          }
+
+          .matrix-error-banner {
+            background: rgba(217, 45, 32, 0.1);
+            color: var(--error);
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            font-size: 0.875rem;
+            font-weight: 700;
           }
 
           .matrix-section-title {
@@ -325,14 +359,44 @@ export default function LocationEditForm({ location, onSave, onCancel, loading }
           .full-width {
             grid-column: 1 / -1;
           }
+
+          .master-toggle-wrap {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+          }
+
+          .master-toggle-checkbox {
+            width: 20px;
+            height: 20px;
+          }
+
+          .master-toggle-label {
+            font-weight: 700;
+            font-size: 0.9rem;
+          }
+
+          .spacer-md {
+            height: 2rem;
+          }
+
+          .footer-btn-group {
+            display: flex;
+            gap: 1rem;
+          }
+
+          .footer-submit-btn {
+            min-width: 200px;
+            font-weight: 900;
+          }
         `}</style>
 
         <div className="matrix-header">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <div className="matrix-header-title">
             <Building2 size={20} color="var(--primary)" />
-            <h1>Manage Asset Matrix: <span style={{ color: 'var(--primary)' }}>{location.name}</span></h1>
+            <h1>Manage Asset Matrix: <span className="matrix-header-accent">{location.name}</span></h1>
           </div>
-          <button onClick={onCancel} className="icon-button" style={{ borderRadius: '50%' }}>
+          <button onClick={onCancel} className="icon-button matrix-header-close" title="Close edit form">
             <X size={20} />
           </button>
         </div>
@@ -344,21 +408,22 @@ export default function LocationEditForm({ location, onSave, onCancel, loading }
                 key={tab.id}
                 className={`tab-button ${activeTab === tab.id ? 'active' : ''}`}
                 onClick={() => setActiveTab(tab.id)}
+                title={`Switch to ${tab.label} tab`}
               >
                 {tab.icon}
                 {tab.label}
               </button>
             ))}
             
-            <div style={{ marginTop: 'auto', padding: '1rem', background: 'var(--surface)', borderRadius: '12px', border: '1px solid var(--border)', textAlign: 'center' }}>
-               <Zap size={24} color="var(--primary)" style={{ marginBottom: '0.5rem', marginInline: 'auto' }} />
-               <p style={{ fontSize: '0.7rem', fontWeight: 800 }}>Sync Status: Online</p>
+            <div className="matrix-sidebar-status">
+               <Zap size={24} color="var(--primary)" />
+               <p>Sync Status: Online</p>
             </div>
           </aside>
 
           <main className="matrix-content">
             {error && (
-              <div style={{ background: 'rgba(217, 45, 32, 0.1)', color: 'var(--error)', padding: '1rem', borderRadius: '12px', marginBottom: '1.5rem', fontSize: '0.875rem', fontWeight: 700 }}>
+              <div className="matrix-error-banner">
                 {error}
               </div>
             )}
@@ -378,29 +443,29 @@ export default function LocationEditForm({ location, onSave, onCancel, loading }
                     
                     <div className="form-grid">
                       <div className="form-group full-width">
-                        <label className="form-label">LOCATION NAME</label>
-                        <input name="name" required className="form-input" value={formData.name} onChange={handleChange} />
+                        <label className="form-label" htmlFor="edit-loc-name">LOCATION NAME</label>
+                        <input id="edit-loc-name" name="name" required className="form-input" value={formData.name} onChange={handleChange} title="Location Name" />
                       </div>
                       <div className="form-group">
-                        <label className="form-label">STORE CODE</label>
-                        <input name="store_code" className="form-input" value={formData.store_code} onChange={handleChange} />
+                        <label className="form-label" htmlFor="edit-store-code">STORE CODE</label>
+                        <input id="edit-store-code" name="store_code" className="form-input" value={formData.store_code} onChange={handleChange} title="Store Code" />
                       </div>
                       <div className="form-group">
-                        <label className="form-label">BRAND NAME</label>
-                        <input name="brand_name" className="form-input" value={formData.brand_name} onChange={handleChange} />
+                        <label className="form-label" htmlFor="edit-brand-name">BRAND NAME</label>
+                        <input id="edit-brand-name" name="brand_name" className="form-input" value={formData.brand_name} onChange={handleChange} title="Brand Name" />
                       </div>
                       <div className="form-group">
-                        <label className="form-label">OPERATIONAL STATUS</label>
-                        <select name="operational_status" className="form-select" value={formData.operational_status} onChange={handleChange}>
+                        <label className="form-label" htmlFor="edit-ops-status">OPERATIONAL STATUS</label>
+                        <select id="edit-ops-status" name="operational_status" className="form-select" value={formData.operational_status} onChange={handleChange} title="Operational Status">
                           <option value="Active">Active</option>
                           <option value="Under Construction">Under Construction</option>
                           <option value="Closed">Closed</option>
                           <option value="Planned">Planned</option>
                         </select>
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                         <input type="checkbox" id="edit_is_store_master" name="is_store_master" checked={formData.is_store_master} onChange={handleChange} style={{ width: '20px', height: '20px' }} />
-                         <label htmlFor="edit_is_store_master" style={{ fontWeight: 700, fontSize: '0.9rem' }}>MARK AS STORE MASTER</label>
+                      <div className="master-toggle-wrap">
+                         <input type="checkbox" id="edit_is_store_master" name="is_store_master" checked={formData.is_store_master} onChange={handleChange} className="master-toggle-checkbox" title="Mark as store master" />
+                         <label htmlFor="edit_is_store_master" className="master-toggle-label">MARK AS STORE MASTER</label>
                       </div>
                     </div>
                   </motion.div>
@@ -424,20 +489,20 @@ export default function LocationEditForm({ location, onSave, onCancel, loading }
 
                     <div className="form-grid">
                       <div className="form-group">
-                        <label className="form-label">LANDLORD COMPANY</label>
-                        <input name="landlord_company" className="form-input" value={formData.landlord_company} onChange={handleChange} />
+                        <label className="form-label" htmlFor="edit-landlord-co">LANDLORD COMPANY</label>
+                        <input id="edit-landlord-co" name="landlord_company" className="form-input" value={formData.landlord_company} onChange={handleChange} title="Landlord Company" />
                       </div>
                       <div className="form-group">
-                        <label className="form-label">PRIMARY CONTACT NAME</label>
-                        <input name="landlord_name" className="form-input" value={formData.landlord_name} onChange={handleChange} />
+                        <label className="form-label" htmlFor="edit-landlord-name">PRIMARY CONTACT NAME</label>
+                        <input id="edit-landlord-name" name="landlord_name" className="form-input" value={formData.landlord_name} onChange={handleChange} title="Landlord Name" />
                       </div>
                       <div className="form-group">
-                        <label className="form-label">EMAIL ADDRESS</label>
-                        <input name="landlord_email" className="form-input" value={formData.landlord_email} onChange={handleChange} />
+                        <label className="form-label" htmlFor="edit-landlord-email">EMAIL ADDRESS</label>
+                        <input id="edit-landlord-email" name="landlord_email" className="form-input" value={formData.landlord_email} onChange={handleChange} title="Landlord Email" />
                       </div>
                       <div className="form-group">
-                        <label className="form-label">PHONE NUMBER</label>
-                        <input name="landlord_phone" className="form-input" value={formData.landlord_phone} onChange={handleChange} />
+                        <label className="form-label" htmlFor="edit-landlord-phone">PHONE NUMBER</label>
+                        <input id="edit-landlord-phone" name="landlord_phone" className="form-input" value={formData.landlord_phone} onChange={handleChange} title="Landlord Phone" />
                       </div>
                     </div>
                   </motion.div>
@@ -460,16 +525,34 @@ export default function LocationEditForm({ location, onSave, onCancel, loading }
                     </div>
 
                     <div className="form-grid-3">
-                      <div className="form-group"><label className="form-label">LEASE START</label><input name="lease_start" type="date" className="form-input" value={formData.lease_start} onChange={handleChange} /></div>
-                      <div className="form-group"><label className="form-label">LEASE EXPIRY</label><input name="lease_expiry" type="date" className="form-input" value={formData.lease_expiry} onChange={handleChange} /></div>
-                      <div className="form-group"><label className="form-label">NOTICE (MOS)</label><input name="lease_notice_months" type="number" className="form-input" value={formData.lease_notice_months} onChange={handleChange} /></div>
+                      <div className="form-group">
+                        <label className="form-label" htmlFor="edit-lease-start">LEASE START</label>
+                        <input id="edit-lease-start" name="lease_start" type="date" className="form-input" value={formData.lease_start} onChange={handleChange} title="Lease Start" />
+                      </div>
+                      <div className="form-group">
+                        <label className="form-label" htmlFor="edit-lease-expiry">LEASE EXPIRY</label>
+                        <input id="edit-lease-expiry" name="lease_expiry" type="date" className="form-input" value={formData.lease_expiry} onChange={handleChange} title="Lease Expiry" />
+                      </div>
+                      <div className="form-group">
+                        <label className="form-label" htmlFor="edit-lease-notice">NOTICE (MOS)</label>
+                        <input id="edit-lease-notice" name="lease_notice_months" type="number" className="form-input" value={formData.lease_notice_months} onChange={handleChange} title="Notice Months" />
+                      </div>
                     </div>
 
-                    <div style={{ height: '2rem' }}></div>
+                    <div className="spacer-md"></div>
                     <div className="form-grid-3">
-                      <div className="form-group"><label className="form-label">BASE RENT ($)</label><input name="base_rent" type="number" className="form-input" value={formData.base_rent} onChange={handleChange} /></div>
-                      <div className="form-group"><label className="form-label">CAM / TAX ($)</label><input name="additional_rent_cam" type="number" className="form-input" value={formData.additional_rent_cam} onChange={handleChange} /></div>
-                      <div className="form-group"><label className="form-label">DEPOSIT ($)</label><input name="deposit_amount" type="number" className="form-input" value={formData.deposit_amount} onChange={handleChange} /></div>
+                      <div className="form-group">
+                        <label className="form-label" htmlFor="edit-base-rent">BASE RENT ($)</label>
+                        <input id="edit-base-rent" name="base_rent" type="number" className="form-input" value={formData.base_rent} onChange={handleChange} title="Base Rent" />
+                      </div>
+                      <div className="form-group">
+                        <label className="form-label" htmlFor="edit-cam-rent">CAM / TAX ($)</label>
+                        <input id="edit-cam-rent" name="additional_rent_cam" type="number" className="form-input" value={formData.additional_rent_cam} onChange={handleChange} title="Additional Rent" />
+                      </div>
+                      <div className="form-group">
+                        <label className="form-label" htmlFor="edit-deposit">DEPOSIT ($)</label>
+                        <input id="edit-deposit" name="deposit_amount" type="number" className="form-input" value={formData.deposit_amount} onChange={handleChange} title="Deposit Amount" />
+                      </div>
                     </div>
                   </motion.div>
                 )}
@@ -486,9 +569,18 @@ export default function LocationEditForm({ location, onSave, onCancel, loading }
                     </div>
 
                     <div className="form-grid-3">
-                      <div className="form-group"><label className="form-label">BIZ LICENSE EXPIRY</label><input name="biz_license_expiry" type="date" className="form-input" value={formData.biz_license_expiry} onChange={handleChange} /></div>
-                      <div className="form-group"><label className="form-label">FIRE INSPECTION DUE</label><input name="fire_inspection_due" type="date" className="form-input" value={formData.fire_inspection_due} onChange={handleChange} /></div>
-                      <div className="form-group"><label className="form-label">FIRE EXTINGUISHER</label><input name="fire_extinguisher_expiry" type="date" className="form-input" value={formData.fire_extinguisher_expiry} onChange={handleChange} /></div>
+                      <div className="form-group">
+                        <label className="form-label" htmlFor="edit-license-expiry">BIZ LICENSE EXPIRY</label>
+                        <input id="edit-license-expiry" name="biz_license_expiry" type="date" className="form-input" value={formData.biz_license_expiry} onChange={handleChange} title="License Expiry" />
+                      </div>
+                      <div className="form-group">
+                        <label className="form-label" htmlFor="edit-fire-inspect">FIRE INSPECTION DUE</label>
+                        <input id="edit-fire-inspect" name="fire_inspection_due" type="date" className="form-input" value={formData.fire_inspection_due} onChange={handleChange} title="Fire Inspection Due" />
+                      </div>
+                      <div className="form-group">
+                        <label className="form-label" htmlFor="edit-fire-ext">FIRE EXTINGUISHER</label>
+                        <input id="edit-fire-ext" name="fire_extinguisher_expiry" type="date" className="form-input" value={formData.fire_extinguisher_expiry} onChange={handleChange} title="Fire Extinguisher Expiry" />
+                      </div>
                     </div>
                   </motion.div>
                 )}
@@ -506,20 +598,20 @@ export default function LocationEditForm({ location, onSave, onCancel, loading }
 
                     <div className="form-grid">
                       <div className="form-group full-width">
-                        <label className="form-label">STORE MANAGER NAME</label>
-                        <input name="store_manager_name" className="form-input" value={formData.store_manager_name} onChange={handleChange} />
+                        <label className="form-label" htmlFor="edit-mgr-name">STORE MANAGER NAME</label>
+                        <input id="edit-mgr-name" name="store_manager_name" className="form-input" value={formData.store_manager_name} onChange={handleChange} title="Manager Name" />
                       </div>
                       <div className="form-group">
-                        <label className="form-label">MANAGER EMAIL</label>
-                        <input name="manager_email" type="email" className="form-input" value={formData.manager_email} onChange={handleChange} />
+                        <label className="form-label" htmlFor="edit-mgr-email">MANAGER EMAIL</label>
+                        <input id="edit-mgr-email" name="manager_email" type="email" className="form-input" value={formData.manager_email} onChange={handleChange} title="Manager Email" />
                       </div>
                       <div className="form-group">
-                        <label className="form-label">MANAGER PHONE</label>
-                        <input name="manager_phone" className="form-input" value={formData.manager_phone} onChange={handleChange} />
+                        <label className="form-label" htmlFor="edit-mgr-phone">MANAGER PHONE</label>
+                        <input id="edit-mgr-phone" name="manager_phone" className="form-input" value={formData.manager_phone} onChange={handleChange} title="Manager Phone" />
                       </div>
                       <div className="form-group">
-                        <label className="form-label">STAFF COUNT</label>
-                        <input name="staff_count" type="number" className="form-input" value={formData.staff_count} onChange={handleChange} />
+                        <label className="form-label" htmlFor="edit-staff-count">STAFF COUNT</label>
+                        <input id="edit-staff-count" name="staff_count" type="number" className="form-input" value={formData.staff_count} onChange={handleChange} title="Staff Count" />
                       </div>
                     </div>
                   </motion.div>
@@ -530,14 +622,14 @@ export default function LocationEditForm({ location, onSave, onCancel, loading }
         </div>
 
         <div className="matrix-footer">
-          <button type="button" onClick={onCancel} className="button-secondary">DISCARD CHANGES</button>
-          <div style={{ display: 'flex', gap: '1rem' }}>
+          <button type="button" onClick={onCancel} className="button-secondary" title="Discard all changes">DISCARD CHANGES</button>
+          <div className="footer-btn-group">
              <button 
                type="submit" 
                form="matrix-edit-form" 
                disabled={loading} 
-               className="button-primary" 
-               style={{ minWidth: '200px', fontWeight: 900 }}
+               className="button-primary footer-submit-btn" 
+               title="Update location asset matrix"
              >
                {loading ? 'COMMITING...' : 'UPDATE ASSET MATRIX'}
              </button>

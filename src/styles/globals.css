@@ -93,8 +93,8 @@ textarea::placeholder {
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
-  backdrop-filter: blur(22px);
   -webkit-backdrop-filter: blur(22px);
+  backdrop-filter: blur(22px);
 }
 
 /* Primary button */
@@ -863,6 +863,7 @@ textarea::placeholder {
     position: fixed;
     inset: 0;
     background: rgba(0, 0, 0, 0.3);
+    -webkit-backdrop-filter: blur(4px);
     backdrop-filter: blur(4px);
     z-index: 90;
   }

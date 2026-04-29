@@ -9,9 +9,6 @@ import {
   Settings,
   Globe,
   LogOut,
-  Zap,
-  ZapOff,
-  HelpCircle,
   ChevronRight,
   ShieldCheck,
   Cpu
@@ -54,77 +51,278 @@ function Sidebar({
 
   return (
     <aside
-      className={`app-sidebar ${isOpen ? 'is-open' : ''}`}
-      style={{
-        position: 'fixed',
-        left: 0,
-        top: 0,
-        width: '280px',
-        height: '100vh',
-        background: 'rgba(255, 255, 255, 0.8)',
-        borderRight: '1px solid var(--border)',
-        boxShadow: '20px 0 50px rgba(0, 0, 0, 0.02)',
-        backdropFilter: 'blur(32px)',
-        display: 'flex',
-        flexDirection: 'column',
-        zIndex: 1400,
-        transition: 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
-      }}
+      className={`app-sidebar-premium ${isOpen ? 'is-open' : ''}`}
+      aria-label="Main Navigation"
     >
+      <style>{`
+        .app-sidebar-premium {
+          position: fixed;
+          left: 0;
+          top: 0;
+          width: 280px;
+          height: 100vh;
+          background: rgba(255, 255, 255, 0.8);
+          border-right: 1px solid var(--border);
+          box-shadow: 20px 0 50px rgba(0, 0, 0, 0.02);
+          backdrop-filter: blur(32px);
+          display: flex;
+          flex-direction: column;
+          z-index: 1400;
+          transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .sidebar-brand-header {
+          padding: 2.5rem 2rem;
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+        }
+
+        .brand-icon-box {
+          width: 40px;
+          height: 40px;
+          border-radius: 12px;
+          background: var(--primary);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: white;
+          box-shadow: 0 8px 16px rgba(0, 113, 227, 0.3);
+        }
+
+        .brand-title {
+          font-size: 1.4rem;
+          font-weight: 950;
+          letter-spacing: -0.04em;
+          background: linear-gradient(to right, #1d1d1f, var(--primary));
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+        }
+
+        .brand-title-suffix {
+          color: var(--primary);
+          -webkit-text-fill-color: var(--primary);
+        }
+
+        .identity-matrix {
+          margin: 0 1.25rem 2.5rem;
+          padding: 1.25rem;
+          background: var(--bg-main);
+          border-radius: 20px;
+          border: 1px solid var(--border);
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+          position: relative;
+          overflow: hidden;
+        }
+
+        .identity-bg-icon {
+          position: absolute;
+          right: -10px;
+          top: -10px;
+          opacity: 0.05;
+        }
+
+        .avatar-box {
+          width: 44px;
+          height: 44px;
+          border-radius: 12px;
+          background: linear-gradient(135deg, var(--primary), #00c6ff);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: 900;
+          color: white;
+          fontSize: 1rem;
+          box-shadow: 0 4px 12px rgba(0, 113, 227, 0.2);
+        }
+
+        .user-info {
+          min-width: 0;
+          z-index: 1;
+        }
+
+        .user-name {
+          font-size: 0.9rem;
+          font-weight: 800;
+          color: #1d1d1f;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .user-role {
+          font-size: 0.7rem;
+          font-weight: 700;
+          color: var(--text-secondary);
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+        }
+
+        .sidebar-nav {
+          flex: 1;
+          overflow-y: auto;
+          padding: 0 0.75rem;
+        }
+
+        .nav-section-label {
+          padding: 0 1.25rem 0.75rem;
+          font-size: 0.65rem;
+          font-weight: 900;
+          color: var(--text-secondary);
+          text-transform: uppercase;
+          letter-spacing: 0.1em;
+        }
+
+        .nav-items-container {
+          display: flex;
+          flex-direction: column;
+          gap: 0.25rem;
+        }
+
+        .nav-btn {
+          width: 100%;
+          padding: 0.85rem 1.25rem;
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+          border: none;
+          border-radius: 14px;
+          cursor: pointer;
+          transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+          font-size: 0.9rem;
+          text-align: left;
+        }
+
+        .nav-btn-active {
+          background: var(--primary);
+          color: white;
+          font-weight: 800;
+          box-shadow: 0 10px 20px rgba(0, 113, 227, 0.15);
+        }
+
+        .nav-btn-inactive {
+          background: transparent;
+          color: var(--text-secondary);
+          font-weight: 600;
+        }
+
+        .nav-btn-inactive:hover {
+          background: var(--surface-soft);
+          color: var(--text-primary);
+        }
+
+        .sidebar-footer {
+          padding: 1.5rem;
+          border-top: 1px solid var(--border);
+          background: rgba(255,255,255,0.4);
+        }
+
+        .footer-btn {
+          width: 100%;
+          padding: 0.85rem 1rem;
+          display: flex;
+          align-items: center;
+          gap: 0.85rem;
+          cursor: pointer;
+          transition: all 0.2s;
+          font-weight: 800;
+          font-size: 0.85rem;
+        }
+
+        .settings-btn {
+          border: 1px solid var(--border);
+          border-radius: 16px;
+          margin-bottom: 0.75rem;
+        }
+
+        .settings-btn-active {
+          background: var(--primary);
+          color: white;
+          box-shadow: 0 8px 16px rgba(0, 113, 227, 0.15);
+        }
+
+        .settings-btn-inactive {
+          background: white;
+          color: var(--text-primary);
+          box-shadow: var(--shadow-sm);
+        }
+
+        .logout-btn {
+          border: 1px solid rgba(217, 45, 32, 0.1);
+          border-radius: 16px;
+          background: rgba(217, 45, 32, 0.05);
+          color: var(--error);
+          margin-bottom: 1.5rem;
+        }
+
+        .status-badge-container {
+          display: flex;
+          align-items: center;
+          gap: 0.6rem;
+          padding: 0.5rem 0.75rem;
+          border-radius: 12px;
+          width: fit-content;
+          border: 1px solid rgba(0,0,0,0.03);
+        }
+
+        .status-dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+        }
+
+        .status-text {
+          font-size: 0.65rem;
+          font-weight: 900;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+        }
+      `}</style>
+
       {/* Brand Header */}
-      <div style={{ padding: '2.5rem 2rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-        <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'var(--primary)', display: 'flex', alignItems: 'center', justifyCenter: 'center', color: 'white', boxShadow: '0 8px 16px rgba(0, 113, 227, 0.3)' }}>
-           <Cpu size={22} style={{ margin: 'auto' }} />
+      <div className="sidebar-brand-header">
+        <div className="brand-icon-box">
+           <Cpu size={22} aria-hidden="true" />
         </div>
-        <h1 style={{ fontSize: '1.4rem', fontWeight: 950, letterSpacing: '-0.04em', background: 'linear-gradient(to right, #1d1d1f, var(--primary))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-          NearNerd<span style={{ color: 'var(--primary)', WebkitTextFillColor: 'var(--primary)' }}>OS</span>
+        <h1 className="brand-title">
+          NearNerd<span className="brand-title-suffix">OS</span>
         </h1>
       </div>
 
       {/* Identity Matrix */}
-      <div style={{ margin: '0 1.25rem 2.5rem', padding: '1.25rem', background: 'var(--bg-main)', borderRadius: '20px', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '1rem', position: 'relative', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', right: '-10px', top: '-10px', opacity: 0.05 }}><ShieldCheck size={60} /></div>
-        <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'linear-gradient(135deg, var(--primary), #00c6ff)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, color: 'white', fontSize: '1rem', boxShadow: '0 4px 12px rgba(0, 113, 227, 0.2)' }}>
+      <section className="identity-matrix" aria-label="User identity">
+        <div className="identity-bg-icon" aria-hidden="true">
+          <ShieldCheck size={60} />
+        </div>
+        <div className="avatar-box" aria-hidden="true">
           {(userName || '?')[0].toUpperCase()}
         </div>
-        <div style={{ minWidth: 0, zIndex: 1 }}>
-          <p style={{ fontSize: '0.9rem', fontWeight: 800, color: '#1d1d1f', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{userName}</p>
-          <p style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{userRole?.replace('_', ' ')}</p>
+        <div className="user-info">
+          <p className="user-name">{userName}</p>
+          <p className="user-role">{userRole?.replace('_', ' ')}</p>
         </div>
-      </div>
+      </section>
 
       {/* Navigation Matrix */}
-      <nav style={{ flex: 1, overflowY: 'auto', padding: '0 0.75rem' }}>
-        <p style={{ padding: '0 1.25rem 0.75rem', fontSize: '0.65rem', fontWeight: 900, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Core Orchestration</p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+      <nav className="sidebar-nav">
+        <p className="nav-section-label">Core Orchestration</p>
+        <div className="nav-items-container" role="menu">
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeView === item.id;
             return (
               <button
                 key={item.id}
+                role="menuitem"
                 onClick={() => { setActiveView(item.id); onNavigate?.(); }}
-                style={{
-                  width: '100%',
-                  padding: '0.85rem 1.25rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '1rem',
-                  border: 'none',
-                  borderRadius: '14px',
-                  background: isActive ? 'var(--primary)' : 'transparent',
-                  color: isActive ? 'white' : 'var(--text-secondary)',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-                  fontWeight: isActive ? 800 : 600,
-                  fontSize: '0.9rem',
-                  textAlign: 'left',
-                  boxShadow: isActive ? '0 10px 20px rgba(0, 113, 227, 0.15)' : 'none',
-                }}
+                className={`nav-btn ${isActive ? 'nav-btn-active' : 'nav-btn-inactive'}`}
+                aria-current={isActive ? 'page' : undefined}
               >
-                <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
+                <Icon size={20} strokeWidth={isActive ? 2.5 : 2} aria-hidden="true" />
                 <span style={{ flex: 1 }}>{item.label}</span>
-                {isActive && <motion.div layoutId="active-indicator"><ChevronRight size={16} /></motion.div>}
+                {isActive && <motion.div layoutId="active-indicator" aria-hidden="true"><ChevronRight size={16} /></motion.div>}
               </button>
             );
           })}
@@ -132,57 +330,38 @@ function Sidebar({
       </nav>
 
       {/* Footer / System Control */}
-      <div style={{ padding: '1.5rem', borderTop: '1px solid var(--border)', background: 'rgba(255,255,255,0.4)' }}>
+      <div className="sidebar-footer">
         <button
           onClick={() => { setActiveView('settings'); onNavigate?.(); }}
-          style={{
-            width: '100%',
-            padding: '0.85rem 1rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.85rem',
-            border: '1px solid var(--border)',
-            borderRadius: '16px',
-            background: activeView === 'settings' ? 'var(--primary)' : 'white',
-            color: activeView === 'settings' ? 'white' : 'var(--text-primary)',
-            cursor: 'pointer',
-            transition: 'all 0.2s',
-            fontWeight: 800,
-            fontSize: '0.85rem',
-            marginBottom: '0.75rem',
-            boxShadow: activeView === 'settings' ? '0 8px 16px rgba(0, 113, 227, 0.15)' : 'var(--shadow-sm)',
-          }}
+          className={`footer-btn settings-btn ${activeView === 'settings' ? 'settings-btn-active' : 'settings-btn-inactive'}`}
+          aria-current={activeView === 'settings' ? 'page' : undefined}
         >
-          <Settings size={18} />
+          <Settings size={18} aria-hidden="true" />
           <span>System Settings</span>
         </button>
 
         <button
           onClick={onLogout}
-          style={{
-            width: '100%',
-            padding: '0.85rem 1rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.85rem',
-            border: '1px solid rgba(217, 45, 32, 0.1)',
-            borderRadius: '16px',
-            background: 'rgba(217, 45, 32, 0.05)',
-            color: 'var(--error)',
-            cursor: 'pointer',
-            transition: 'all 0.2s',
-            fontWeight: 800,
-            fontSize: '0.85rem',
-            marginBottom: '1.5rem',
-          }}
+          className="footer-btn logout-btn"
+          aria-label="Logout of system"
         >
-          <LogOut size={18} />
+          <LogOut size={18} aria-hidden="true" />
           <span>Sever Session</span>
         </button>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.5rem 0.75rem', borderRadius: '12px', background: isSupabaseConfigured ? 'rgba(52, 168, 83, 0.08)' : 'rgba(245, 158, 11, 0.08)', width: 'fit-content', border: '1px solid rgba(0,0,0,0.03)' }}>
-          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: isSupabaseConfigured ? '#34a853' : '#f59e0b', boxShadow: isSupabaseConfigured ? '0 0 8px #34a853' : 'none' }} />
-          <span style={{ fontSize: '0.65rem', fontWeight: 900, color: isSupabaseConfigured ? '#34a853' : '#f59e0b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+        <div 
+          className="status-badge-container"
+          style={{ background: isSupabaseConfigured ? 'rgba(52, 168, 83, 0.08)' : 'rgba(245, 158, 11, 0.08)' }}
+          title={isSupabaseConfigured ? "Connected to Cloud Sync" : "Running in Local Sandbox"}
+        >
+          <div 
+            className="status-dot"
+            style={{ 
+              background: isSupabaseConfigured ? '#34a853' : '#f59e0b', 
+              boxShadow: isSupabaseConfigured ? '0 0 8px #34a853' : 'none' 
+            }} 
+          />
+          <span className="status-text" style={{ color: isSupabaseConfigured ? '#34a853' : '#f59e0b' }}>
             {isSupabaseConfigured ? 'Cloud Sync Online' : 'Local Sandbox'}
           </span>
         </div>

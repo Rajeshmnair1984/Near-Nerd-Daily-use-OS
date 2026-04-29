@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, DollarSign, Calendar, MapPin, FileText, Receipt, User, Wallet, PieChart, Shield, Clock, Info, CheckCircle2, ChevronRight, Zap } from 'lucide-react'
-import { Bill, UpdateBillInput, RecurringFrequency } from '@/types/bill'
+import { X, MapPin, Receipt, Wallet, Clock, Zap } from 'lucide-react'
+import { Bill, UpdateBillInput } from '@/types/bill'
 import { Location } from '@/types/location'
 import { Vendor } from '@/types/vendor'
 import { formatCurrency } from '@/utils/currency'
@@ -54,7 +54,7 @@ export default function BillEditForm({ bill, locations, vendors, onSave, onCance
     return subtotal + taxTotal
   }, [formData.subtotal, taxTotal])
 
-  const handleInputChange = (field: keyof UpdateBillInput, value: any) => {
+  const handleInputChange = (field: keyof UpdateBillInput, value: string | number | boolean) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
@@ -237,16 +237,138 @@ export default function BillEditForm({ bill, locations, vendors, onSave, onCance
             font-size: 1.25rem;
             color: var(--primary);
           }
+          .bill-modal-header-left {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+          }
+
+          .header-icon-wrapper {
+            padding: 0.5rem;
+            background: rgba(0, 113, 227, 0.1);
+            border-radius: 10px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+          }
+
+          .header-title span {
+            color: var(--primary);
+          }
+
+          .close-button {
+            border-radius: 50%;
+          }
+
+          .sidebar-footer {
+            margin-top: auto;
+            padding: 1rem;
+            background: var(--surface);
+            borderRadius: 12px;
+            border: 1px solid var(--border);
+            text-align: center;
+          }
+
+          .sidebar-footer-icon {
+            margin-bottom: 0.5rem;
+            margin-inline: auto;
+          }
+
+          .sidebar-footer-text {
+            font-size: 0.7rem;
+            font-weight: 800;
+          }
+
+          .error-container {
+            background: rgba(217, 45, 32, 0.1);
+            color: var(--error);
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            font-size: 0.875rem;
+            font-weight: 700;
+          }
+
+          .input-container {
+            position: relative;
+          }
+
+          .input-prefix {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-weight: 800;
+            color: var(--text-secondary);
+          }
+
+          .input-with-prefix {
+            padding-left: 2rem;
+          }
+
+          .recurring-section {
+            margin-top: 1rem;
+            padding: 1.25rem;
+            background: var(--surface-soft);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+          }
+
+          .recurring-label-inner {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            cursor: pointer;
+          }
+
+          .recurring-checkbox {
+            width: 22px;
+            height: 22px;
+            accent-color: var(--primary);
+          }
+
+          .recurring-text-main {
+            font-weight: 800;
+            font-size: 0.9rem;
+          }
+
+          .recurring-text-sub {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+          }
+
+          .textarea-fixed {
+            min-height: 120px;
+          }
+
+          .modal-footer {
+            padding: 1.5rem 2rem;
+            border-top: 1px solid var(--border);
+            background: var(--surface-soft);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          }
+
+          .footer-actions {
+            display: flex;
+            gap: 1rem;
+          }
+
+          .commit-button {
+            min-width: 200px;
+            font-weight: 900;
+          }
         `}</style>
 
         <div className="bill-modal-header">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <div style={{ padding: '0.5rem', background: 'rgba(0, 113, 227, 0.1)', borderRadius: '10px', color: 'var(--primary)' }}>
+          <div className="bill-modal-header-left">
+            <div className="header-icon-wrapper">
               <Receipt size={20} />
             </div>
-            <h1>Commitment Matrix: <span style={{ color: 'var(--primary)' }}>{bill.charge_name}</span></h1>
+            <h1 className="header-title">Commitment Matrix: <span>{bill.charge_name}</span></h1>
           </div>
-          <button onClick={onCancel} className="icon-button" style={{ borderRadius: '50%' }}>
+          <button onClick={onCancel} className="icon-button close-button" title="Close form">
             <X size={20} />
           </button>
         </div>
@@ -258,21 +380,22 @@ export default function BillEditForm({ bill, locations, vendors, onSave, onCance
                 key={tab.id}
                 className={`tab-button ${activeTab === tab.id ? 'active' : ''}`}
                 onClick={() => setActiveTab(tab.id)}
+                title={`Go to ${tab.label} section`}
               >
                 {tab.icon}
                 {tab.label}
               </button>
             ))}
             
-            <div style={{ marginTop: 'auto', padding: '1rem', background: 'var(--surface)', borderRadius: '12px', border: '1px solid var(--border)', textAlign: 'center' }}>
-               <Zap size={24} color="var(--primary)" style={{ marginBottom: '0.5rem', marginInline: 'auto' }} />
-               <p style={{ fontSize: '0.7rem', fontWeight: 800 }}>Ledger Sync: Online</p>
+            <div className="sidebar-footer">
+               <Zap size={24} color="var(--primary)" className="sidebar-footer-icon" />
+               <p className="sidebar-footer-text">Ledger Sync: Online</p>
             </div>
           </aside>
 
           <main className="bill-modal-content">
             {error && (
-              <div style={{ background: 'rgba(217, 45, 32, 0.1)', color: 'var(--error)', padding: '1rem', borderRadius: '12px', marginBottom: '1.5rem', fontSize: '0.875rem', fontWeight: 700 }}>
+              <div className="error-container">
                 {error}
               </div>
             )}
@@ -286,16 +409,16 @@ export default function BillEditForm({ bill, locations, vendors, onSave, onCance
                     </div>
                     <div className="form-grid">
                       <div className="form-group full-width">
-                        <label className="form-label">BILL NAME / CHARGE IDENTITY</label>
-                        <input className="form-input" value={formData.charge_name} onChange={(e) => handleInputChange('charge_name', e.target.value)} required />
+                        <label className="form-label" htmlFor="bill-name">BILL NAME / CHARGE IDENTITY</label>
+                        <input id="bill-name" title="Bill Name" className="form-input" value={formData.charge_name} onChange={(e) => handleInputChange('charge_name', e.target.value)} required />
                       </div>
                       <div className="form-group">
-                        <label className="form-label">INVOICE NUMBER</label>
-                        <input className="form-input" value={formData.invoice_number || ''} onChange={(e) => handleInputChange('invoice_number', e.target.value)} placeholder="INV-0000" />
+                        <label className="form-label" htmlFor="invoice-number">INVOICE NUMBER</label>
+                        <input id="invoice-number" title="Invoice Number" className="form-input" value={formData.invoice_number || ''} onChange={(e) => handleInputChange('invoice_number', e.target.value)} placeholder="INV-0000" />
                       </div>
                       <div className="form-group">
-                        <label className="form-label">CATEGORY MATRIX</label>
-                        <select className="form-select" value={formData.category} onChange={(e) => handleInputChange('category', e.target.value)}>
+                        <label className="form-label" htmlFor="category-matrix">CATEGORY MATRIX</label>
+                        <select id="category-matrix" title="Category" className="form-select" value={formData.category} onChange={(e) => handleInputChange('category', e.target.value)}>
                           <option value="Rent">Rent</option>
                           <option value="Utilities">Utilities</option>
                           <option value="Insurance">Insurance</option>
@@ -304,8 +427,8 @@ export default function BillEditForm({ bill, locations, vendors, onSave, onCance
                         </select>
                       </div>
                       <div className="form-group full-width">
-                        <label className="form-label">SETTLEMENT STATUS</label>
-                        <select className="form-select" value={formData.status} onChange={(e) => handleInputChange('status', e.target.value)}>
+                        <label className="form-label" htmlFor="settlement-status">SETTLEMENT STATUS</label>
+                        <select id="settlement-status" title="Status" className="form-select" value={formData.status} onChange={(e) => handleInputChange('status', e.target.value)}>
                           <option value="Pending">Pending Orchestration</option>
                           <option value="Paid">Settled (Paid)</option>
                           <option value="Overdue">High Risk (Overdue)</option>
@@ -322,23 +445,23 @@ export default function BillEditForm({ bill, locations, vendors, onSave, onCance
                     </div>
                     <div className="form-grid">
                       <div className="form-group full-width">
-                        <label className="form-label">SUBTOTAL (BASE AMOUNT)</label>
-                        <div style={{ position: 'relative' }}>
-                          <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', fontWeight: 800, color: 'var(--text-secondary)' }}>$</span>
-                          <input type="number" step="0.01" className="form-input" style={{ paddingLeft: '2rem' }} value={formData.subtotal} onChange={(e) => handleInputChange('subtotal', parseFloat(e.target.value) || 0)} required />
+                        <label className="form-label" htmlFor="subtotal-matrix">SUBTOTAL (BASE AMOUNT)</label>
+                        <div className="input-container">
+                          <span className="input-prefix">$</span>
+                          <input id="subtotal-matrix" title="Subtotal" type="number" step="0.01" className="form-input input-with-prefix" value={formData.subtotal} onChange={(e) => handleInputChange('subtotal', parseFloat(e.target.value) || 0)} required />
                         </div>
                       </div>
                       <div className="form-group">
-                        <label className="form-label">GST / VAT (5%)</label>
-                        <input type="number" step="0.01" className="form-input" value={formData.gst_amount} onChange={(e) => handleInputChange('gst_amount', parseFloat(e.target.value) || 0)} />
+                        <label className="form-label" htmlFor="gst-amount">GST / VAT (5%)</label>
+                        <input id="gst-amount" title="GST Amount" type="number" step="0.01" className="form-input" value={formData.gst_amount} onChange={(e) => handleInputChange('gst_amount', parseFloat(e.target.value) || 0)} />
                       </div>
                       <div className="form-group">
-                        <label className="form-label">PST / LOCAL (7%)</label>
-                        <input type="number" step="0.01" className="form-input" value={formData.pst_amount} onChange={(e) => handleInputChange('pst_amount', parseFloat(e.target.value) || 0)} />
+                        <label className="form-label" htmlFor="pst-amount">PST / LOCAL (7%)</label>
+                        <input id="pst-amount" title="PST Amount" type="number" step="0.01" className="form-input" value={formData.pst_amount} onChange={(e) => handleInputChange('pst_amount', parseFloat(e.target.value) || 0)} />
                       </div>
                       <div className="form-group full-width">
-                        <label className="form-label">PAYMENT INSTRUMENT</label>
-                        <select className="form-select" value={formData.payment_method || ''} onChange={(e) => handleInputChange('payment_method', e.target.value)}>
+                        <label className="form-label" htmlFor="payment-instrument">PAYMENT INSTRUMENT</label>
+                        <select id="payment-instrument" title="Payment Method" className="form-select" value={formData.payment_method || ''} onChange={(e) => handleInputChange('payment_method', e.target.value)}>
                           <option value="">Select Method</option>
                           <option value="Bank Transfer">Bank Transfer (EFT)</option>
                           <option value="Credit Card">Credit Card</option>
@@ -364,20 +487,20 @@ export default function BillEditForm({ bill, locations, vendors, onSave, onCance
                     </div>
                     <div className="form-grid">
                       <div className="form-group">
-                        <label className="form-label">INVOICE / BILL DATE</label>
-                        <input type="date" className="form-input" value={formData.date} onChange={(e) => handleInputChange('date', e.target.value)} />
+                        <label className="form-label" htmlFor="bill-date">INVOICE / BILL DATE</label>
+                        <input id="bill-date" title="Bill Date" type="date" className="form-input" value={formData.date} onChange={(e) => handleInputChange('date', e.target.value)} />
                       </div>
                       <div className="form-group">
-                        <label className="form-label">DUE DATE</label>
-                        <input type="date" className="form-input" value={formData.due_date} onChange={(e) => handleInputChange('due_date', e.target.value)} />
+                        <label className="form-label" htmlFor="due-date">DUE DATE</label>
+                        <input id="due-date" title="Due Date" type="date" className="form-input" value={formData.due_date} onChange={(e) => handleInputChange('due_date', e.target.value)} />
                       </div>
                       
-                      <div className="form-group full-width" style={{ marginTop: '1rem', padding: '1.25rem', background: 'var(--surface-soft)', borderRadius: '16px', border: '1px solid var(--border)' }}>
-                        <label style={{ display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer' }}>
-                          <input type="checkbox" checked={formData.is_recurring} onChange={(e) => handleInputChange('is_recurring', e.target.checked)} style={{ width: '22px', height: '22px', accentColor: 'var(--primary)' }} />
+                      <div className="form-group full-width recurring-section">
+                        <label className="recurring-label-inner" htmlFor="is-recurring">
+                          <input id="is-recurring" title="Recurring Toggle" type="checkbox" checked={formData.is_recurring} onChange={(e) => handleInputChange('is_recurring', e.target.checked)} className="recurring-checkbox" />
                           <div>
-                            <p style={{ fontWeight: 800, fontSize: '0.9rem' }}>ENABLE RECURRING ORCHESTRATION</p>
-                            <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Automatically generate the next liability entry in the ledger.</p>
+                            <p className="recurring-text-main">ENABLE RECURRING ORCHESTRATION</p>
+                            <p className="recurring-text-sub">Automatically generate the next liability entry in the ledger.</p>
                           </div>
                         </label>
                       </div>
@@ -385,8 +508,8 @@ export default function BillEditForm({ bill, locations, vendors, onSave, onCance
                       {formData.is_recurring && (
                         <>
                           <div className="form-group">
-                            <label className="form-label">RECURRENCE FREQUENCY</label>
-                            <select className="form-select" value={formData.recurring_frequency} onChange={(e) => handleInputChange('recurring_frequency', e.target.value)}>
+                            <label className="form-label" htmlFor="recurring-frequency">RECURRENCE FREQUENCY</label>
+                            <select id="recurring-frequency" title="Frequency" className="form-select" value={formData.recurring_frequency} onChange={(e) => handleInputChange('recurring_frequency', e.target.value)}>
                               <option value="monthly">Monthly</option>
                               <option value="weekly">Weekly</option>
                               <option value="quarterly">Quarterly</option>
@@ -394,8 +517,8 @@ export default function BillEditForm({ bill, locations, vendors, onSave, onCance
                             </select>
                           </div>
                           <div className="form-group">
-                            <label className="form-label">TERMINATION DATE</label>
-                            <input type="date" className="form-input" value={formData.recurring_end_date || ''} onChange={(e) => handleInputChange('recurring_end_date', e.target.value)} />
+                            <label className="form-label" htmlFor="recurring-end-date">TERMINATION DATE</label>
+                            <input id="recurring-end-date" title="End Date" type="date" className="form-input" value={formData.recurring_end_date || ''} onChange={(e) => handleInputChange('recurring_end_date', e.target.value)} />
                           </div>
                         </>
                       )}
@@ -410,21 +533,21 @@ export default function BillEditForm({ bill, locations, vendors, onSave, onCance
                     </div>
                     <div className="form-grid">
                       <div className="form-group">
-                        <label className="form-label">LOCATION COORDINATE</label>
-                        <select className="form-select" value={formData.location_id} onChange={(e) => handleInputChange('location_id', e.target.value)}>
+                        <label className="form-label" htmlFor="location-coordinate">LOCATION COORDINATE</label>
+                        <select id="location-coordinate" title="Location" className="form-select" value={formData.location_id} onChange={(e) => handleInputChange('location_id', e.target.value)}>
                           {locations.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
                         </select>
                       </div>
                       <div className="form-group">
-                        <label className="form-label">VENDOR IDENTITY</label>
-                        <select className="form-select" value={formData.vendor_id || ''} onChange={(e) => handleInputChange('vendor_id', e.target.value)}>
+                        <label className="form-label" htmlFor="vendor-identity">VENDOR IDENTITY</label>
+                        <select id="vendor-identity" title="Vendor" className="form-select" value={formData.vendor_id || ''} onChange={(e) => handleInputChange('vendor_id', e.target.value)}>
                           <option value="">No Vendor Assigned</option>
                           {vendors.map(v => <option key={v.id} value={v.id}>{v.name}</option>)}
                         </select>
                       </div>
                       <div className="form-group full-width">
-                        <label className="form-label">OPERATIONAL NOTES</label>
-                        <textarea className="form-textarea" style={{ minHeight: '120px' }} value={formData.notes || ''} onChange={(e) => handleInputChange('notes', e.target.value)} placeholder="Technical details, dispute logs, or internal comments..." />
+                        <label className="form-label" htmlFor="operational-notes">OPERATIONAL NOTES</label>
+                        <textarea id="operational-notes" className="form-textarea textarea-fixed" value={formData.notes || ''} onChange={(e) => handleInputChange('notes', e.target.value)} placeholder="Technical details, dispute logs, or internal comments..." title="Notes" />
                       </div>
                     </div>
                   </motion.div>
@@ -434,10 +557,10 @@ export default function BillEditForm({ bill, locations, vendors, onSave, onCance
           </main>
         </div>
 
-        <div className="bill-modal-footer" style={{ padding: '1.5rem 2rem', borderTop: '1px solid var(--border)', background: 'var(--surface-soft)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div className="modal-footer">
           <button type="button" onClick={onCancel} className="button-secondary">DISCARD CHANGES</button>
-          <div style={{ display: 'flex', gap: '1rem' }}>
-             <button type="submit" form="bill-edit-form" disabled={loading} className="button-primary" style={{ minWidth: '200px', fontWeight: 900 }}>
+          <div className="footer-actions">
+             <button type="submit" form="bill-edit-form" disabled={loading} className="button-primary commit-button">
                {loading ? 'COMMITING...' : 'COMMIT CHANGES'}
              </button>
           </div>

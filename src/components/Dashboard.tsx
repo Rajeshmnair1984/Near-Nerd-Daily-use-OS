@@ -1,7 +1,6 @@
 import { memo, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import {
-  TrendingUp,
   AlertCircle,
   CheckCircle2,
   Clock,
@@ -19,15 +18,12 @@ import {
 import {
   BarChart,
   Bar,
-  LineChart,
-  Line,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
   Cell,
-  Legend,
   AreaChart,
   Area,
 } from 'recharts';
@@ -48,61 +44,43 @@ const StatCard = memo(({ title, value, icon: Icon, color, trend, subtitle }: Sta
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
-    className="glass-card premium-stat-card"
-    style={{ 
-      padding: '1.75rem', 
-      flex: 1, 
-      minWidth: '280px',
-      position: 'relative',
-      overflow: 'hidden'
-    }}
+    className="glass-card premium-stat-card stat-card-shell"
   >
-    <div style={{ position: 'absolute', top: '-10px', right: '-10px', opacity: 0.03, transform: 'scale(4)' }}>
-      <Icon size={40} />
+    <div className="stat-card-bg-icon">
+      <Icon size={40} aria-hidden="true" />
     </div>
     
-    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
+    <div className="stat-card-header">
       <div
+        className="stat-card-icon-box"
         style={{
           background: `linear-gradient(135deg, ${color}20, ${color}05)`,
-          padding: '0.85rem',
-          borderRadius: '16px',
           color: color,
           border: `1px solid ${color}30`,
         }}
       >
-        <Icon size={24} />
+        <Icon size={24} aria-hidden="true" />
       </div>
-      {trend && (
+      {trend !== undefined && (
         <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.25rem',
-            color: trend > 0 ? '#10b981' : '#ef4444',
-            fontSize: '0.8rem',
-            fontWeight: 800,
-            padding: '0.35rem 0.75rem',
-            background: trend > 0 ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-            borderRadius: '100px',
-            height: 'fit-content'
-          }}
+          className={`stat-trend-badge ${trend > 0 ? 'trend-up' : 'trend-down'}`}
+          title={`${trend > 0 ? 'Increase' : 'Decrease'} of ${Math.abs(trend)}%`}
         >
-          {trend > 0 ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
-          {Math.abs(trend)}%
+          {trend > 0 ? <ArrowUpRight size={14} aria-hidden="true" /> : <ArrowDownRight size={14} aria-hidden="true" />}
+          <span aria-label={`${Math.abs(trend)} percent`}>{Math.abs(trend)}%</span>
         </div>
       )}
     </div>
     
     <div className="stat-content">
-      <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>
+      <p className="stat-label-text">
         {title}
       </p>
-      <h3 style={{ fontSize: '2.25rem', fontWeight: 900, letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>
+      <h3 className="stat-value-text">
         {formatCurrency(value)}
       </h3>
       {subtitle && (
-        <p style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', marginTop: '0.5rem', fontWeight: 500 }}>
+        <p className="stat-subtitle-text">
           {subtitle}
         </p>
       )}
@@ -205,6 +183,100 @@ function Dashboard({ stats, bills, loading }: DashboardProps) {
           position: relative;
         }
 
+        .dashboard-premium-page .hero-eyebrow {
+          color: var(--primary);
+          font-weight: 900;
+        }
+
+        .dashboard-premium-page .hero-meta {
+          display: flex;
+          gap: 1rem;
+          z-index: 1;
+        }
+
+        .dashboard-premium-page .system-health-box {
+          text-align: right;
+        }
+
+        .dashboard-premium-page .system-health-label {
+          font-size: 0.75rem;
+          font-weight: 800;
+          color: var(--text-secondary);
+          text-transform: uppercase;
+        }
+
+        .dashboard-premium-page .system-health-status {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          color: #10b981;
+          font-weight: 900;
+        }
+
+        .stat-card-shell {
+          padding: 1.75rem;
+          flex: 1;
+          min-width: 280px;
+          position: relative;
+          overflow: hidden;
+        }
+
+        .stat-card-bg-icon {
+          position: absolute;
+          top: -10px;
+          right: -10px;
+          opacity: 0.03;
+          transform: scale(4);
+        }
+
+        .stat-card-header {
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: 1.25rem;
+        }
+
+        .stat-card-icon-box {
+          padding: 0.85rem;
+          border-radius: 16px;
+        }
+
+        .stat-trend-badge {
+          display: flex;
+          align-items: center;
+          gap: 0.25rem;
+          font-size: 0.8rem;
+          font-weight: 800;
+          padding: 0.35rem 0.75rem;
+          border-radius: 100px;
+          height: fit-content;
+        }
+
+        .trend-up { color: #10b981; background: rgba(16, 185, 129, 0.1); }
+        .trend-down { color: #ef4444; background: rgba(239, 68, 68, 0.1); }
+
+        .stat-label-text {
+          color: var(--text-secondary);
+          font-size: 0.8rem;
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          margin-bottom: 0.5rem;
+        }
+
+        .stat-value-text {
+          font-size: 2.25rem;
+          font-weight: 900;
+          letter-spacing: -0.02em;
+          color: var(--text-primary);
+        }
+
+        .stat-subtitle-text {
+          color: var(--text-secondary);
+          font-size: 0.75rem;
+          margin-top: 0.5rem;
+          font-weight: 500;
+        }
+
         .chart-container-premium {
           background: var(--bg-card);
           border-radius: 28px;
@@ -228,6 +300,16 @@ function Dashboard({ stats, bills, loading }: DashboardProps) {
           gap: 0.75rem;
         }
 
+        .chart-sub-text {
+          color: var(--text-secondary);
+          font-size: 0.85rem;
+        }
+
+        .chart-viewport {
+          width: 100%;
+          height: 350px;
+        }
+
         .activity-card-premium {
           background: var(--surface-soft);
           border-radius: 20px;
@@ -245,19 +327,113 @@ function Dashboard({ stats, bills, loading }: DashboardProps) {
           border-color: var(--primary);
           transform: translateX(4px);
         }
+
+        .activity-icon-box {
+          width: 44px;
+          height: 44px;
+          border-radius: 12px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .activity-info-area {
+          flex: 1;
+        }
+
+        .activity-primary-text {
+          font-weight: 800;
+          font-size: 0.9rem;
+        }
+
+        .activity-secondary-text {
+          color: var(--text-secondary);
+          font-size: 0.75rem;
+          font-weight: 600;
+        }
+
+        .activity-value-text {
+          font-weight: 900;
+          color: var(--text-primary);
+        }
+
+        .dashboard-grid-layout {
+          display: flex;
+          flex-direction: column;
+          gap: 2.5rem;
+        }
+
+        .stat-grid-row {
+          display: flex;
+          gap: 1.5rem;
+          flex-wrap: wrap;
+        }
+
+        .chart-grid-row {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+          gap: 1.5rem;
+        }
+
+        .activity-grid-row {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+          gap: 2.5rem;
+        }
+
+        .section-header {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          margin-bottom: 1.5rem;
+        }
+
+        .section-icon-box {
+          padding: 0.5rem;
+          border-radius: 10px;
+        }
+
+        .section-title {
+          font-size: 1.25rem;
+          font-weight: 900;
+        }
+
+        .intervention-card {
+          padding: 0;
+        }
+
+        .intervention-item {
+          display: flex;
+          flex-direction: column;
+          gap: 0.75rem;
+        }
+
+        .priority-value-area {
+          text-align: right;
+        }
+
+        .priority-amount {
+          font-weight: 900;
+          font-size: 1.15rem;
+        }
+
+        .priority-status-badge {
+          font-size: 0.6rem;
+          font-weight: 900;
+        }
       `}</style>
 
       <header className="page-hero">
         <div className="hero-content">
-          <p className="eyebrow" style={{ color: 'var(--primary)', fontWeight: 900 }}>COMMAND CENTER</p>
+          <p className="eyebrow hero-eyebrow">COMMAND CENTER</p>
           <h1>Operational Intelligence</h1>
           <p>Global oversight of locations, commitments, and critical infrastructure metrics.</p>
         </div>
-        <div style={{ display: 'flex', gap: '1rem', zIndex: 1 }}>
-          <div style={{ textAlign: 'right' }}>
-            <p style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>System Health</p>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#10b981', fontWeight: 900 }}>
-              <ShieldCheck size={18} />
+        <div className="hero-meta">
+          <div className="system-health-box">
+            <p className="system-health-label">System Health</p>
+            <div className="system-health-status">
+              <ShieldCheck size={18} aria-hidden="true" />
               OPTIMIZED
             </div>
           </div>
@@ -266,12 +442,12 @@ function Dashboard({ stats, bills, loading }: DashboardProps) {
 
       {loading ? (
         <div className="empty-state" style={{ padding: '8rem' }}>
-          <Zap size={48} className="animate-pulse" color="var(--primary)" />
+          <Zap size={48} className="animate-pulse" color="var(--primary)" aria-hidden="true" />
           <h2 style={{ marginTop: '1.5rem', fontWeight: 900 }}>ORCHESTRATING DATA MATRIX...</h2>
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
-          <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
+        <div className="dashboard-grid-layout">
+          <div className="stat-grid-row">
             <StatCard
               title="Liquidity Deployment"
               value={stats.totalPaid}
@@ -298,16 +474,16 @@ function Dashboard({ stats, bills, loading }: DashboardProps) {
             />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(450px, 1fr))', gap: '1.5rem' }}>
-            <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="chart-container-premium">
-              <div className="chart-header-premium">
+          <div className="chart-grid-row">
+            <motion.section initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="chart-container-premium">
+              <header className="chart-header-premium">
                 <div>
-                  <h3><Activity size={20} className="text-primary" /> Temporal Analytics</h3>
-                  <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Financial flow across temporal coordinates</p>
+                  <h3><Activity size={20} className="text-primary" aria-hidden="true" /> Temporal Analytics</h3>
+                  <p className="chart-sub-text">Financial flow across temporal coordinates</p>
                 </div>
-                <PieChart size={20} className="text-secondary" />
-              </div>
-              <div style={{ width: '100%', height: '350px' }}>
+                <PieChart size={20} className="text-secondary" aria-hidden="true" />
+              </header>
+              <div className="chart-viewport">
                 <ResponsiveContainer>
                   <AreaChart data={monthlyTrendData}>
                     <defs>
@@ -331,17 +507,17 @@ function Dashboard({ stats, bills, loading }: DashboardProps) {
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
-            </motion.div>
+            </motion.section>
 
-            <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="chart-container-premium">
-              <div className="chart-header-premium">
+            <motion.section initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="chart-container-premium">
+              <header className="chart-header-premium">
                 <div>
-                  <h3><BarChart3 size={20} className="text-primary" /> Allocation Intelligence</h3>
-                  <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Resource distribution by category matrix</p>
+                  <h3><BarChart3 size={20} className="text-primary" aria-hidden="true" /> Allocation Intelligence</h3>
+                  <p className="chart-sub-text">Resource distribution by category matrix</p>
                 </div>
-                <LayoutDashboard size={20} className="text-secondary" />
-              </div>
-              <div style={{ width: '100%', height: '350px' }}>
+                <LayoutDashboard size={20} className="text-secondary" aria-hidden="true" />
+              </header>
+              <div className="chart-viewport">
                 <ResponsiveContainer>
                   <BarChart data={categoryChartData}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.05)" />
@@ -351,82 +527,80 @@ function Dashboard({ stats, bills, loading }: DashboardProps) {
                        contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '16px' }}
                     />
                     <Bar dataKey="value" radius={[12, 12, 0, 0]} barSize={40}>
-                      {categoryChartData.map((entry, index) => (
+                      {categoryChartData.map((_entry, index) => (
                         <Cell key={`cell-${index}`} fill={index === 0 ? 'var(--primary)' : 'rgba(0, 113, 227, 0.4)'} />
                       ))}
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
               </div>
-            </motion.div>
+            </motion.section>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '2.5rem' }}>
+          <div className="activity-grid-row">
             <section>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
-                 <div style={{ padding: '0.5rem', background: 'rgba(0, 113, 227, 0.1)', borderRadius: '10px', color: 'var(--primary)' }}>
-                   <Activity size={20} />
+              <header className="section-header">
+                 <div className="section-icon-box" style={{ background: 'rgba(0, 113, 227, 0.1)', color: 'var(--primary)' }}>
+                   <Activity size={20} aria-hidden="true" />
                  </div>
-                 <h3 style={{ fontSize: '1.25rem', fontWeight: 900 }}>Neural Activity Stream</h3>
-              </div>
-              <div>
+                 <h3 className="section-title">Neural Activity Stream</h3>
+              </header>
+              <div role="list">
                 {bills
                   .sort((a, b) => new Date(b.created_at || b.date).getTime() - new Date(a.created_at || a.date).getTime())
                   .slice(0, 5)
                   .map((bill) => (
-                  <div key={bill.id} className="activity-card-premium">
-                    <div style={{ 
-                      width: '44px', height: '44px', borderRadius: '12px', 
+                  <article key={bill.id} className="activity-card-premium" role="listitem">
+                    <div className="activity-icon-box" style={{ 
                       background: bill.status === 'Paid' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(0, 113, 227, 0.1)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
                       color: bill.status === 'Paid' ? '#10b981' : 'var(--primary)',
                       border: bill.status === 'Paid' ? '1px solid rgba(16, 185, 129, 0.2)' : '1px solid rgba(0, 113, 227, 0.2)'
                     }}>
-                      {bill.status === 'Paid' ? <CheckCircle2 size={20} /> : <Receipt size={20} />}
+                      {bill.status === 'Paid' ? <CheckCircle2 size={20} aria-hidden="true" /> : <Receipt size={20} aria-hidden="true" />}
                     </div>
-                    <div style={{ flex: 1 }}>
-                      <p style={{ fontWeight: 800, fontSize: '0.9rem' }}>
+                    <div className="activity-info-area">
+                      <p className="activity-primary-text">
                         {bill.status === 'Paid' ? 'Settle Orchestration' : 'New Commitment Indexed'}
                       </p>
-                      <p style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', fontWeight: 600 }}>
+                      <p className="activity-secondary-text">
                         {bill.charge_name} • {bill.date}
                       </p>
                     </div>
                     <div style={{ textAlign: 'right' }}>
-                      <p style={{ fontWeight: 900, color: 'var(--text-primary)' }}>{formatCurrency(bill.amount)}</p>
+                      <p className="activity-value-text">{formatCurrency(bill.amount)}</p>
                     </div>
-                  </div>
+                  </article>
                 ))}
               </div>
             </section>
 
             <section>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
-                 <div style={{ padding: '0.5rem', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '10px', color: 'var(--error)' }}>
-                   <AlertCircle size={20} />
+              <header className="section-header">
+                 <div className="section-icon-box" style={{ background: 'rgba(239, 68, 68, 0.1)', color: 'var(--error)' }}>
+                   <AlertCircle size={20} aria-hidden="true" />
                  </div>
-                 <h3 style={{ fontSize: '1.25rem', fontWeight: 900 }}>Priority Interventions</h3>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                 <h3 className="section-title">Priority Interventions</h3>
+              </header>
+              <div className="intervention-item" role="list">
                 {bills
                   .filter((b) => b.status !== 'Paid')
                   .slice(0, 5)
                   .map((bill) => (
-                  <div key={bill.id} className="activity-card-premium" style={{ borderLeft: `6px solid ${bill.status === 'Overdue' ? 'var(--error)' : 'var(--primary)'}` }}>
-                    <div style={{ flex: 1 }}>
-                      <p style={{ fontWeight: 900, fontSize: '1rem', color: 'var(--text-primary)' }}>{bill.charge_name}</p>
+                  <article key={bill.id} className="activity-card-premium" role="listitem" style={{ borderLeft: `6px solid ${bill.status === 'Overdue' ? 'var(--error)' : 'var(--primary)'}` }}>
+                    <div className="activity-info-area">
+                      <p className="activity-value-text" style={{ fontSize: '1rem' }}>{bill.charge_name}</p>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.25rem' }}>
-                        <Calendar size={14} className="text-secondary" />
-                        <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 700 }}>DUE: {bill.date}</span>
+                        <Calendar size={14} className="text-secondary" aria-hidden="true" />
+                        <span className="activity-secondary-text" style={{ fontWeight: 700 }}>DUE: {bill.date}</span>
                       </div>
                     </div>
-                    <div style={{ textAlign: 'right' }}>
-                      <p style={{ fontWeight: 900, fontSize: '1.15rem' }}>{formatCurrency(bill.amount)}</p>
-                      <span className={`status-badge status-${bill.status.toLowerCase()}`} style={{ fontSize: '0.6rem', fontWeight: 900 }}>
+                    <div className="priority-value-area">
+                      <p className="priority-amount">{formatCurrency(bill.amount)}</p>
+                      <span className={`status-badge status-${bill.status.toLowerCase()} priority-status-badge`}>
                         {bill.status.toUpperCase()}
                       </span>
                     </div>
-                  </div>
+                  </article>
                 ))}
               </div>
             </section>

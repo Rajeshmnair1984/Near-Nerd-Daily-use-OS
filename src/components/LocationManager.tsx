@@ -1,5 +1,5 @@
 import { memo, useMemo, useState } from 'react';
-import { MapPin, Plus, Search, Trash2, Building2, Edit, ChevronRight, Calendar, Zap, Globe, Shield, Activity } from 'lucide-react';
+import { MapPin, Plus, Search, Trash2, Building2, Edit, Calendar, Zap, Globe, Shield, Activity } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { CreateLocationInput, Location } from '@/types/location';
 import { Modal } from './ui/Modal';
@@ -274,6 +274,82 @@ function LocationManager({
           margin-top: auto;
         }
 
+        .matrix-page .bill-toolbar {
+          margin-bottom: 2rem;
+        }
+
+        .matrix-page .search-field {
+          border-radius: 100px;
+          background: var(--bg-main);
+        }
+
+        .matrix-page .loading-ring {
+          width: 40px;
+          height: 40px;
+          border: 3px solid var(--primary);
+          border-radius: 50%;
+          animation: pulse 2s infinite;
+        }
+
+        .matrix-page .sync-text {
+          font-weight: 700;
+          margin-top: 1rem;
+        }
+
+        .matrix-page .empty-state-wrap {
+          padding: 4rem 0;
+        }
+
+        .matrix-page .empty-icon {
+          opacity: 0.1;
+          margin-bottom: 1.5rem;
+        }
+
+        .matrix-page .empty-title {
+          font-size: 1.5rem;
+          font-weight: 800;
+          margin-bottom: 0.5rem;
+        }
+
+        .matrix-page .empty-sub {
+          color: var(--text-secondary);
+          max-width: 400px;
+        }
+
+        .matrix-page .empty-btn {
+          margin-top: 2rem;
+        }
+
+        .matrix-page .asset-icon-box.master {
+          background: rgba(0, 113, 227, 0.1);
+          color: var(--primary);
+        }
+
+        .matrix-page .asset-icon-box.generic {
+          background: var(--surface-soft);
+          color: var(--text-secondary);
+        }
+
+        .matrix-page .detail-text {
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .matrix-page .manage-btn {
+          flex: 1;
+          height: 3rem;
+          border-radius: 14px;
+          font-size: 0.85rem;
+        }
+
+        .matrix-page .delete-btn {
+          width: 3rem;
+          height: 3rem;
+          border-radius: 14px;
+          background: var(--surface-soft);
+        }
+
         .matrix-page .init-button {
           padding: 1rem 2rem;
           background: var(--primary);
@@ -301,8 +377,8 @@ function LocationManager({
           <h1>Infrastructure Matrix</h1>
           <p>Real-time orchestration of core assets, lease terms, and operational synchronization across the global network.</p>
         </div>
-        <button className="init-button" onClick={() => setIsModalOpen(true)}>
-          <Zap size={20} fill="currentColor" />
+        <button className="init-button" onClick={() => setIsModalOpen(true)} title="Initialize a new infrastructure asset">
+          <Zap size={20} fill="currentColor" aria-hidden="true" />
           <span>INITIALIZE NEW ASSET</span>
         </button>
       </header>
@@ -311,21 +387,21 @@ function LocationManager({
 
       <div className="metric-strip">
         <div className="metric-card">
-          <div className="metric-icon"><Globe size={24} /></div>
+          <div className="metric-icon"><Globe size={24} aria-hidden="true" /></div>
           <div className="metric-info">
             <span>Operational Assets</span>
             <strong>{locations.length}</strong>
           </div>
         </div>
         <div className="metric-card">
-          <div className="metric-icon"><Shield size={24} /></div>
+          <div className="metric-icon"><Shield size={24} aria-hidden="true" /></div>
           <div className="metric-info">
             <span>Store Masters</span>
             <strong>{locations.filter(l => l.is_store_master).length}</strong>
           </div>
         </div>
         <div className="metric-card">
-          <div className="metric-icon"><Activity size={24} /></div>
+          <div className="metric-icon"><Activity size={24} aria-hidden="true" /></div>
           <div className="metric-info">
             <span>Risk Monitoring</span>
             <strong>{locations.filter(l => l.operational_status === 'Under Construction').length}</strong>
@@ -334,34 +410,36 @@ function LocationManager({
       </div>
 
       <section className="panel bill-panel">
-        <div className="bill-toolbar" style={{ marginBottom: '2rem' }}>
-          <label className="search-field" style={{ borderRadius: '100px', background: 'var(--bg-main)' }}>
-            <Search size={19} />
+        <div className="bill-toolbar">
+          <label className="search-field" htmlFor="matrix-search">
+            <Search size={19} aria-hidden="true" />
             <input
+              id="matrix-search"
               type="text"
               placeholder="Filter assets by name, code, brand, or geographic coordinates..."
               value={query}
               onChange={(event) => setQuery(event.target.value)}
+              title="Filter assets"
             />
           </label>
         </div>
 
         {loading ? (
-          <div className="empty-state">
-             <div className="pulse-ring" style={{ width: '40px', height: '40px', border: '3px solid var(--primary)', borderRadius: '50%', animation: 'pulse 2s infinite' }}></div>
-             <p style={{ fontWeight: 700, marginTop: '1rem' }}>Synchronizing Core Matrix...</p>
+          <div className="empty-state" aria-busy="true">
+             <div className="loading-ring"></div>
+             <p className="sync-text">Synchronizing Core Matrix...</p>
           </div>
         ) : filteredLocations.length === 0 ? (
-          <div className="empty-state" style={{ padding: '4rem 0' }}>
-            <Building2 size={64} style={{ opacity: 0.1, marginBottom: '1.5rem' }} />
-            <h3 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '0.5rem' }}>No Assets Identified</h3>
-            <p style={{ color: 'var(--text-secondary)', maxWidth: '400px' }}>Your infrastructure matrix is currently empty. Initialize your first asset to begin orchestration.</p>
-            <button className="init-button" onClick={() => setIsModalOpen(true)} style={{ marginTop: '2rem' }}>
-              <Plus size={20} /> INITIALIZE FIRST ASSET
+          <div className="empty-state empty-state-wrap">
+            <Building2 size={64} className="empty-icon" aria-hidden="true" />
+            <h3 className="empty-title">No Assets Identified</h3>
+            <p className="empty-sub">Your infrastructure matrix is currently empty. Initialize your first asset to begin orchestration.</p>
+            <button className="init-button empty-btn" onClick={() => setIsModalOpen(true)} title="Add your first infrastructure asset">
+              <Plus size={20} aria-hidden="true" /> INITIALIZE FIRST ASSET
             </button>
           </div>
         ) : (
-          <div className="asset-grid">
+          <div className="asset-grid" role="list">
             {filteredLocations.map((item) => (
               <motion.article 
                 layout
@@ -369,15 +447,19 @@ function LocationManager({
                 animate={{ opacity: 1, scale: 1 }}
                 className="asset-card" 
                 key={item.id}
+                role="listitem"
               >
                 <div className="asset-header">
-                  <div className="asset-icon-box" style={{ background: item.is_store_master ? 'rgba(0, 113, 227, 0.1)' : 'var(--surface-soft)', color: item.is_store_master ? 'var(--primary)' : 'var(--text-secondary)' }}>
-                    {item.is_store_master ? <Zap size={22} fill="currentColor" /> : <Building2 size={22} />}
+                  <div className={`asset-icon-box ${item.is_store_master ? 'master' : 'generic'}`}>
+                    {item.is_store_master ? <Zap size={22} fill="currentColor" aria-hidden="true" /> : <Building2 size={22} aria-hidden="true" />}
                   </div>
-                  <span className={`asset-badge ${
-                    item.operational_status === 'Active' ? 'badge-active' : 
-                    item.operational_status === 'Under Construction' ? 'badge-construction' : 'badge-closed'
-                  }`}>
+                  <span 
+                    className={`asset-badge ${
+                      item.operational_status === 'Active' ? 'badge-active' : 
+                      item.operational_status === 'Under Construction' ? 'badge-construction' : 'badge-closed'
+                    }`}
+                    aria-label={`Status: ${item.operational_status || 'Active'}`}
+                  >
                     {(item.operational_status || 'Active').toUpperCase()}
                   </span>
                 </div>
@@ -389,32 +471,32 @@ function LocationManager({
                 
                 <div className="asset-details">
                   <div className="detail-row">
-                    <MapPin size={14} color="var(--primary)" />
-                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.address || 'Coordinates Not Set'}</span>
+                    <MapPin size={14} color="var(--primary)" aria-hidden="true" />
+                    <span className="detail-text">{item.address || 'Coordinates Not Set'}</span>
                   </div>
                   <div className="detail-row">
-                    <Calendar size={14} color="var(--primary)" />
+                    <Calendar size={14} color="var(--primary)" aria-hidden="true" />
                     <span>Opened: {item.opening_date || 'TBD'}</span>
                   </div>
                 </div>
                 
                 <div className="asset-actions">
                   <button
-                    className="button-primary"
-                    style={{ flex: 1, height: '3rem', borderRadius: '14px', fontSize: '0.85rem' }}
+                    className="button-primary manage-btn"
                     onClick={() => setEditingLocation(item)}
+                    title={`Manage infrastructure matrix for ${item.name}`}
                   >
-                    <Edit size={16} />
+                    <Edit size={16} aria-hidden="true" />
                     MANAGE MATRIX
                   </button>
                   <button
-                    className="icon-button danger"
-                    style={{ width: '3rem', height: '3rem', borderRadius: '14px', background: 'var(--surface-soft)' }}
+                    className="icon-button danger delete-btn"
                     aria-label={`Decommission ${item.name}`}
+                    title={`Decommission ${item.name}`}
                     disabled={deleteLoading === item.id}
                     onClick={() => setConfirmDelete(item.id)}
                   >
-                    {deleteLoading === item.id ? '...' : <Trash2 size={18} />}
+                    {deleteLoading === item.id ? '...' : <Trash2 size={18} aria-hidden="true" />}
                   </button>
                 </div>
               </motion.article>

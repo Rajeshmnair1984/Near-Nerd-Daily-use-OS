@@ -1,5 +1,5 @@
 import { memo, useMemo, useState } from 'react'
-import { Plus, Search, Receipt, Trash2, CalendarDays, Repeat2, Edit, Download, Wallet, CreditCard, PieChart, TrendingUp, Filter, ChevronDown, X } from 'lucide-react'
+import { Plus, Search, Receipt, Trash2, CalendarDays, Repeat2, Edit, Download, Wallet, CreditCard, PieChart, TrendingUp, Filter, X, MapPin } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Bill, BillStatus, CreateBillInput, UpdateBillInput } from '@/types/bill'
 import { Location } from '@/types/location'
@@ -45,7 +45,6 @@ function BillManager({
   const [showModal, setShowModal] = useState(false)
   const [editingBill, setEditingBill] = useState<Bill | null>(null)
   const [editLoading, setEditLoading] = useState(false)
-  const [addLoading, setAddLoading] = useState(false)
   const [deleteLoading, setDeleteLoading] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
@@ -100,7 +99,6 @@ function BillManager({
   }, [bills]);
 
   const handleAddBill = async (bill: CreateBillInput) => {
-    setAddLoading(true)
     setError(null)
     try {
       await onAddBill(bill)
@@ -108,8 +106,6 @@ function BillManager({
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Failed to add bill'
       setError(errorMsg)
-    } finally {
-      setAddLoading(false)
     }
   }
 
@@ -370,7 +366,156 @@ function BillManager({
           <div className="metric-icon"><PieChart size={24} /></div>
           <div className="metric-info">
             <span>High Risk (Overdue)</span>
-            <strong style={{ color: 'var(--error)' }}>{formatCurrency(stats.overdue)}</strong>
+        .bill-matrix-page .overdue-text {
+          color: var(--error);
+        }
+
+        .bill-matrix-page .segmented-control-wrapper {
+          border-radius: 100px;
+          padding: 0.4rem;
+        }
+
+        .bill-matrix-page .segmented-button {
+          border-radius: 100px;
+          min-height: 34px;
+        }
+
+        .bill-matrix-page .filter-overflow {
+          overflow: hidden;
+        }
+
+        .bill-matrix-page .reset-button {
+          width: 100%;
+          justify-content: center;
+          height: 38px;
+          color: var(--error);
+        }
+
+        .bill-matrix-page .stats-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+
+        .bill-matrix-page .stats-text {
+          font-size: 0.8rem;
+          font-weight: 700;
+          color: var(--text-secondary);
+        }
+
+        .bill-matrix-page .stats-count {
+          color: var(--primary);
+        }
+
+        .bill-matrix-page .bill-icon-status {
+          border-radius: 12px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 36px;
+          height: 36px;
+        }
+
+        .bill-matrix-page .title-main {
+          font-size: 0.95rem;
+        }
+
+        .bill-matrix-page .title-sub {
+          display: flex;
+          align-items: center;
+          gap: 0.4rem;
+        }
+
+        .bill-matrix-page .recurring-tag {
+          color: var(--primary);
+          font-weight: 800;
+          font-size: 0.65rem;
+        }
+
+        .bill-matrix-page .location-cell {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+        }
+
+        .bill-matrix-page .location-name {
+          font-weight: 600;
+        }
+
+        .bill-matrix-page .money-cell {
+          font-size: 1rem;
+        }
+
+        .bill-matrix-page .date-badge {
+          background: var(--surface-soft);
+          border: 1px solid var(--border);
+        }
+
+        .bill-matrix-page .status-select {
+          border: none;
+          cursor: pointer;
+          font-weight: 800;
+        }
+
+        .bill-matrix-page .action-group {
+          display: flex;
+          gap: 0.5rem;
+        }
+
+        .bill-matrix-page .edit-button {
+          background: var(--surface-soft);
+        }
+
+        .bill-matrix-page .empty-state-container {
+          padding: 4rem 0;
+        }
+
+        .bill-matrix-page .empty-state-icon {
+          opacity: 0.1;
+          margin-bottom: 1rem;
+        }
+
+        .bill-matrix-page .empty-state-title {
+          font-weight: 800;
+        }
+
+        .bill-matrix-page .empty-state-sub {
+          color: var(--text-secondary);
+        }
+      `}</style>
+
+      <header className="page-hero">
+        <div className="hero-content">
+          <p className="eyebrow">Financial Orchestration</p>
+          <h1>Bill Management</h1>
+          <p>Global oversight of commitments, recurring liabilities, and location-based operational expenses.</p>
+        </div>
+        <button className="premium-button button-primary" onClick={() => setShowModal(true)} title="Create new bill entry">
+          <Plus size={20} aria-hidden="true" />
+          <span>INITIALIZE NEW BILL</span>
+        </button>
+      </header>
+
+      <div className="metric-strip">
+        <div className="metric-card">
+          <div className="metric-icon"><Wallet size={24} aria-hidden="true" /></div>
+          <div className="metric-info">
+            <span>Total Liabilities</span>
+            <strong>{formatCurrency(stats.total)}</strong>
+          </div>
+        </div>
+        <div className="metric-card">
+          <div className="metric-icon"><CreditCard size={24} aria-hidden="true" /></div>
+          <div className="metric-info">
+            <span>Pending Clearance</span>
+            <strong>{formatCurrency(stats.pending)}</strong>
+          </div>
+        </div>
+        <div className="metric-card">
+          <div className="metric-icon"><PieChart size={24} aria-hidden="true" /></div>
+          <div className="metric-info">
+            <span>High Risk (Overdue)</span>
+            <strong className="overdue-text">{formatCurrency(stats.overdue)}</strong>
           </div>
         </div>
       </div>
@@ -381,22 +526,23 @@ function BillManager({
         <div className="bill-toolbar-premium">
           <div className="main-tools">
             <div className="search-field-premium">
-              <Search size={19} className="text-secondary" />
+              <Search size={19} className="text-secondary" aria-hidden="true" />
               <input
                 type="text"
                 placeholder="Locate liabilities by name, location, or category..."
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
+                title="Search bills"
               />
             </div>
             
-            <div className="segmented-control" style={{ borderRadius: '100px', padding: '0.4rem' }}>
+            <div className="segmented-control segmented-control-wrapper" role="group" aria-label="Filter by status">
               {statusOptions.map((status) => (
                 <button
                   key={status}
                   onClick={() => setFilterStatus(status)}
-                  className={filterStatus === status ? 'active' : ''}
-                  style={{ borderRadius: '100px', minHeight: '34px' }}
+                  className={`segmented-button ${filterStatus === status ? 'active' : ''}`}
+                  aria-pressed={filterStatus === status}
                 >
                   {status}
                 </button>
@@ -406,9 +552,10 @@ function BillManager({
             <button 
               className={`export-button ${showFilters ? 'active' : ''}`}
               onClick={() => setShowFilters(!showFilters)}
-              style={{ padding: '0.75rem 1.25rem' }}
+              title={showFilters ? 'Hide filters' : 'Show filters'}
+              aria-expanded={showFilters}
             >
-              <Filter size={18} />
+              <Filter size={18} aria-hidden="true" />
               {showFilters ? 'HIDE FILTERS' : 'ADVANCED FILTERS'}
             </button>
           </div>
@@ -419,45 +566,45 @@ function BillManager({
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: 'auto', opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
-                style={{ overflow: 'hidden' }}
+                className="filter-overflow"
               >
                 <div className="advanced-filters">
                   <div className="filter-group">
-                    <label>Location Coordinate</label>
-                    <select className="filter-select" value={filterLocation} onChange={(e) => setFilterLocation(e.target.value)}>
+                    <label htmlFor="filter-location">Location Coordinate</label>
+                    <select id="filter-location" className="filter-select" value={filterLocation} onChange={(e) => setFilterLocation(e.target.value)}>
                       <option value="All">All Locations</option>
                       {locations.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
                     </select>
                   </div>
                   <div className="filter-group">
-                    <label>Vendor Identity</label>
-                    <select className="filter-select" value={filterVendor} onChange={(e) => setFilterVendor(e.target.value)}>
+                    <label htmlFor="filter-vendor">Vendor Identity</label>
+                    <select id="filter-vendor" className="filter-select" value={filterVendor} onChange={(e) => setFilterVendor(e.target.value)}>
                       <option value="All">All Vendors</option>
                       {vendors.map((v) => <option key={v.id} value={v.id}>{v.name}</option>)}
                     </select>
                   </div>
                   <div className="filter-group">
-                    <label>Category Matrix</label>
-                    <select className="filter-select" value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)}>
+                    <label htmlFor="filter-category">Category Matrix</label>
+                    <select id="filter-category" className="filter-select" value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)}>
                       {uniqueCategories.map((c) => <option key={c} value={c}>{c === 'All' ? 'All Categories' : c}</option>)}
                     </select>
                   </div>
                   <div className="filter-group">
-                    <label>Temporal Range (Start)</label>
-                    <input type="date" className="filter-select" value={dateRangeFrom} onChange={(e) => setDateRangeFrom(e.target.value)} />
+                    <label htmlFor="date-from">Temporal Range (Start)</label>
+                    <input id="date-from" type="date" className="filter-select" value={dateRangeFrom} onChange={(e) => setDateRangeFrom(e.target.value)} />
                   </div>
                   <div className="filter-group">
-                    <label>Temporal Range (End)</label>
-                    <input type="date" className="filter-select" value={dateRangeTo} onChange={(e) => setDateRangeTo(e.target.value)} />
+                    <label htmlFor="date-to">Temporal Range (End)</label>
+                    <input id="date-to" type="date" className="filter-select" value={dateRangeTo} onChange={(e) => setDateRangeTo(e.target.value)} />
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+                  <div className="filter-actions-box">
                     {isFiltered && (
                       <button 
                         onClick={() => { setFilterLocation('All'); setFilterVendor('All'); setFilterCategory('All'); setDateRangeFrom(''); setDateRangeTo(''); }}
-                        className="export-button"
-                        style={{ width: '100%', justifyContent: 'center', height: '38px', color: 'var(--error)' }}
+                        className="export-button reset-button"
+                        title="Reset all filters"
                       >
-                        <X size={14} /> RESET COORDINATES
+                        <X size={14} aria-hidden="true" /> RESET COORDINATES
                       </button>
                     )}
                   </div>
@@ -466,62 +613,65 @@ function BillManager({
             )}
           </AnimatePresence>
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <p style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-secondary)' }}>
-              IDENTIFIED <span style={{ color: 'var(--primary)' }}>{filteredBills.length}</span> LIABILITIES
+          <div className="stats-row">
+            <p className="stats-text">
+              IDENTIFIED <span className="stats-count">{filteredBills.length}</span> LIABILITIES
             </p>
-            <div className="export-group">
-              <button className="export-button" onClick={() => exportService.exportBillsToCSV(filteredBills)}><Download size={14} /> CSV</button>
-              <button className="export-button" onClick={() => exportService.exportBillsSummaryToCSV(filteredBills)}><Download size={14} /> SUMMARY</button>
-              <button className="export-button" onClick={() => exportService.exportBillsToText(filteredBills)}><Download size={14} /> REPORT</button>
+            <div className="export-group" role="group" aria-label="Export options">
+              <button className="export-button" onClick={() => exportService.exportBillsToCSV(filteredBills)} title="Export to CSV"><Download size={14} aria-hidden="true" /> CSV</button>
+              <button className="export-button" onClick={() => exportService.exportBillsSummaryToCSV(filteredBills)} title="Export summary to CSV"><Download size={14} aria-hidden="true" /> SUMMARY</button>
+              <button className="export-button" onClick={() => exportService.exportBillsToText(filteredBills)} title="Export to text report"><Download size={14} aria-hidden="true" /> REPORT</button>
             </div>
           </div>
         </div>
 
         {loading ? (
-          <div className="empty-state">Synchronizing Financial Matrix...</div>
+          <div className="empty-state" aria-busy="true">Synchronizing Financial Matrix...</div>
         ) : (
           <div className="table-wrap">
             <table className="premium-table">
               <thead>
                 <tr>
-                  <th>Charge Identity</th>
-                  <th>Location</th>
-                  <th>Amount</th>
-                  <th>Temporal Coordinate</th>
-                  <th>Status</th>
-                  <th aria-label="Actions" />
+                  <th scope="col">Charge Identity</th>
+                  <th scope="col">Location</th>
+                  <th scope="col">Amount</th>
+                  <th scope="col">Temporal Coordinate</th>
+                  <th scope="col">Status</th>
+                  <th scope="col" aria-label="Actions" />
                 </tr>
               </thead>
               <tbody>
                 {filteredBills.map((bill) => {
                   const location = locationById.get(bill.location_id);
+                  const isOverdue = bill.status === 'Overdue';
                   return (
                     <motion.tr key={bill.id} layout initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                       <td>
                         <div className="bill-title">
-                          <span className="bill-icon" style={{ background: bill.status === 'Overdue' ? 'rgba(217, 45, 32, 0.1)' : 'rgba(0, 113, 227, 0.1)', color: bill.status === 'Overdue' ? 'var(--error)' : 'var(--primary)' }}>
-                            {bill.is_recurring ? <Repeat2 size={18} /> : <Receipt size={18} />}
+                          <span 
+                            className={`bill-icon bill-icon-status ${isOverdue ? 'icon-overdue' : 'icon-normal'}`}
+                          >
+                            {bill.is_recurring ? <Repeat2 size={18} aria-hidden="true" /> : <Receipt size={18} aria-hidden="true" />}
                           </span>
                           <span>
-                            <strong style={{ fontSize: '0.95rem' }}>{bill.charge_name}</strong>
-                            <small style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                            <strong className="title-main">{bill.charge_name}</strong>
+                            <small className="title-sub">
                               {bill.category}
-                              {bill.is_recurring && <span style={{ color: 'var(--primary)', fontWeight: 800, fontSize: '0.65rem' }}>• RECURRING</span>}
+                              {bill.is_recurring && <span className="recurring-tag">• RECURRING</span>}
                             </small>
                           </span>
                         </div>
                       </td>
                       <td>
-                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                           <MapPin size={14} className="text-secondary" />
-                           <span style={{ fontWeight: 600 }}>{location?.name || 'Unassigned'}</span>
+                         <div className="location-cell">
+                           <MapPin size={14} className="text-secondary" aria-hidden="true" />
+                           <span className="location-name">{location?.name || 'Unassigned'}</span>
                          </div>
                       </td>
-                      <td className="money" style={{ fontSize: '1rem' }}>{formatCurrency(bill.amount)}</td>
+                      <td className="money money-cell">{formatCurrency(bill.amount)}</td>
                       <td>
-                        <span className="date-pill" style={{ background: 'var(--surface-soft)', border: '1px solid var(--border)' }}>
-                          <CalendarDays size={14} />
+                        <span className="date-pill date-badge">
+                          <CalendarDays size={14} aria-hidden="true" />
                           {bill.date}
                         </span>
                       </td>
@@ -529,8 +679,8 @@ function BillManager({
                         <select
                           value={bill.status}
                           onChange={(event) => onUpdateStatus(bill.id, event.target.value as BillStatus)}
-                          className={`status-badge status-${bill.status.toLowerCase()}`}
-                          style={{ border: 'none', cursor: 'pointer', fontWeight: 800 }}
+                          className={`status-badge status-${bill.status.toLowerCase()} status-select`}
+                          aria-label={`Change status for ${bill.charge_name}`}
                         >
                           <option value="Paid">PAID</option>
                           <option value="Pending">PENDING</option>
@@ -538,20 +688,23 @@ function BillManager({
                         </select>
                       </td>
                       <td>
-                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <div className="action-group">
                           <button
-                            className="icon-button"
+                            className="icon-button edit-button"
                             onClick={() => setEditingBill(bill)}
-                            style={{ background: 'var(--surface-soft)' }}
+                            title={`Edit liability ${bill.charge_name}`}
+                            aria-label={`Edit ${bill.charge_name}`}
                           >
-                            <Edit size={16} />
+                            <Edit size={16} aria-hidden="true" />
                           </button>
                           <button
                             className="icon-button danger"
                             disabled={deleteLoading === bill.id}
                             onClick={() => setConfirmDelete(bill.id)}
+                            title={`Archive liability ${bill.charge_name}`}
+                            aria-label={`Archive ${bill.charge_name}`}
                           >
-                            <Trash2 size={16} />
+                            <Trash2 size={16} aria-hidden="true" />
                           </button>
                         </div>
                       </td>
@@ -562,15 +715,32 @@ function BillManager({
             </table>
 
             {filteredBills.length === 0 && (
-              <div className="empty-state" style={{ padding: '4rem 0' }}>
-                <TrendingUp size={48} style={{ opacity: 0.1, marginBottom: '1rem' }} />
-                <h3 style={{ fontWeight: 800 }}>No Financial Coordinates Found</h3>
-                <p style={{ color: 'var(--text-secondary)' }}>Adjust your filters or initialize a new liability entry.</p>
+              <div className="empty-state empty-state-container">
+                <TrendingUp size={48} className="empty-state-icon" aria-hidden="true" />
+                <h3 className="empty-state-title">No Financial Coordinates Found</h3>
+                <p className="empty-state-sub">Adjust your filters or initialize a new liability entry.</p>
               </div>
             )}
           </div>
         )}
       </section>
+
+      <style>{`
+        .bill-matrix-page .filter-actions-box {
+          display: flex;
+          align-items: flex-end;
+        }
+
+        .bill-matrix-page .icon-overdue {
+          background: rgba(217, 45, 32, 0.1);
+          color: var(--error);
+        }
+
+        .bill-matrix-page .icon-normal {
+          background: rgba(0, 113, 227, 0.1);
+          color: var(--primary);
+        }
+      `}</style>
 
       <Modal isOpen={showModal} onClose={() => setShowModal(false)} maxWidth="1000px">
         <BillForm

@@ -46,16 +46,16 @@ describe('dataService local workspace fallback', () => {
 
     const vendor = await dataService.addVendor({
       name: 'Test Vendor',
-      type: 'Utility',
-      contact_person: 'John',
+      category: 'Utility',
+      contact_name: 'John',
       email: 'john@vendor.com',
       phone: '555-0000',
     });
 
     const updated = await dataService.updateVendor(vendor.id, {
       name: 'Updated Vendor',
-      type: 'Service',
-      contact_person: 'Jane',
+      category: 'Service',
+      contact_name: 'Jane',
       email: 'jane@vendor.com',
       phone: '555-1111',
     });
@@ -73,7 +73,7 @@ describe('dataService local workspace fallback', () => {
       title: 'Test Doc',
       category: 'Legal',
       owner: 'Admin',
-      document_link: 'https://example.com/doc.pdf',
+      file_url: 'https://example.com/doc.pdf',
       status: 'Active',
       renewal_date: '2027-01-01',
     });
@@ -82,7 +82,7 @@ describe('dataService local workspace fallback', () => {
       title: 'Updated Doc',
       category: 'Insurance',
       owner: 'Manager',
-      document_link: 'https://example.com/updated.pdf',
+      file_url: 'https://example.com/updated.pdf',
       status: 'Needs Review',
       renewal_date: '2027-06-01',
     });
@@ -113,7 +113,7 @@ describe('dataService local workspace fallback', () => {
   it('calculates dashboard stats correctly', async () => {
     const { dataService } = await import('./dataService');
 
-    const bill1 = await dataService.addBill({
+    await dataService.addBill({
       charge_name: 'Rent',
       amount: 5000,
       date: '2026-05-01',
@@ -123,7 +123,7 @@ describe('dataService local workspace fallback', () => {
       is_recurring: true,
     });
 
-    const bill2 = await dataService.addBill({
+    await dataService.addBill({
       charge_name: 'Utilities',
       amount: 500,
       date: '2026-05-15',
@@ -133,7 +133,7 @@ describe('dataService local workspace fallback', () => {
       is_recurring: false,
     });
 
-    const bill3 = await dataService.addBill({
+    await dataService.addBill({
       charge_name: 'Insurance',
       amount: 300,
       date: '2026-04-01',
@@ -155,7 +155,7 @@ describe('dataService local workspace fallback', () => {
   it('detects overdue bills when loaded from cache', async () => {
     const { dataService } = await import('./dataService');
 
-    const pastBill = await dataService.addBill({
+    await dataService.addBill({
       charge_name: 'Past Bill',
       amount: 2000,
       date: '2020-01-01',
@@ -174,7 +174,7 @@ describe('dataService local workspace fallback', () => {
   it('persists data in localStorage with correct keys', async () => {
     const { dataService } = await import('./dataService');
 
-    const location = await dataService.addLocation({
+    await dataService.addLocation({
       name: 'Persistent Location',
       address: '999 Memory Lane',
       contact: 'Storage',

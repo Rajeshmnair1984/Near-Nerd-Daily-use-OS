@@ -3,20 +3,18 @@ import { exportService } from './exportService';
 import { Bill } from '@/types/bill';
 
 describe('exportService', () => {
-  let mockBlob: Blob;
   let mockUrl: string;
   let mockLink: HTMLAnchorElement;
 
   beforeEach(() => {
     mockUrl = 'blob:mock-url';
-    mockBlob = new Blob();
 
     vi.spyOn(URL, 'createObjectURL').mockReturnValue(mockUrl);
     vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
 
     mockLink = document.createElement('a');
     vi.spyOn(mockLink, 'click');
-    vi.spyOn(document, 'createElement').mockReturnValue(mockLink as any);
+    vi.spyOn(document, 'createElement').mockReturnValue(mockLink);
     vi.spyOn(document.body, 'appendChild');
     vi.spyOn(document.body, 'removeChild');
   });
@@ -35,8 +33,6 @@ describe('exportService', () => {
           vendor_id: 'vendor-1',
           is_recurring: true,
           created_at: '2026-01-01T00:00:00Z',
-          user_id: 'user-1',
-          organization_id: 'org-1',
         },
       ];
 
@@ -59,14 +55,12 @@ describe('exportService', () => {
           vendor_id: 'vendor-1',
           is_recurring: false,
           created_at: '2026-01-01T00:00:00Z',
-          user_id: 'user-1',
-          organization_id: 'org-1',
         },
       ];
 
       exportService.exportBillsToCSV(bills, { includeTimestamp: false });
 
-      const callArgs = (URL.createObjectURL as any).mock.calls[0];
+      const callArgs = (URL.createObjectURL as unknown as { mock: { calls: Blob[][] } }).mock.calls[0];
       const blob = callArgs[0];
       expect(blob).toBeInstanceOf(Blob);
     });
@@ -84,8 +78,6 @@ describe('exportService', () => {
           vendor_id: 'vendor-1',
           is_recurring: false,
           created_at: '2026-01-01T00:00:00Z',
-          user_id: 'user-1',
-          organization_id: 'org-1',
         },
       ];
 
@@ -133,8 +125,6 @@ describe('exportService', () => {
           vendor_id: 'vendor-1',
           is_recurring: false,
           created_at: '2026-01-01T00:00:00Z',
-          user_id: 'user-1',
-          organization_id: 'org-1',
         },
         {
           id: '2',
@@ -147,8 +137,6 @@ describe('exportService', () => {
           vendor_id: 'vendor-1',
           is_recurring: true,
           created_at: '2026-01-02T00:00:00Z',
-          user_id: 'user-1',
-          organization_id: 'org-1',
         },
       ];
 
@@ -171,8 +159,6 @@ describe('exportService', () => {
           vendor_id: 'vendor-1',
           is_recurring: false,
           created_at: '2026-01-01T00:00:00Z',
-          user_id: 'user-1',
-          organization_id: 'org-1',
         },
         {
           id: '2',
@@ -185,8 +171,6 @@ describe('exportService', () => {
           vendor_id: 'vendor-1',
           is_recurring: false,
           created_at: '2026-01-02T00:00:00Z',
-          user_id: 'user-1',
-          organization_id: 'org-1',
         },
       ];
 
@@ -209,8 +193,6 @@ describe('exportService', () => {
           vendor_id: 'vendor-1',
           is_recurring: true,
           created_at: '2026-01-01T00:00:00Z',
-          user_id: 'user-1',
-          organization_id: 'org-1',
         },
         {
           id: '2',
@@ -223,8 +205,6 @@ describe('exportService', () => {
           vendor_id: 'vendor-1',
           is_recurring: true,
           created_at: '2026-01-02T00:00:00Z',
-          user_id: 'user-1',
-          organization_id: 'org-1',
         },
         {
           id: '3',
@@ -237,8 +217,6 @@ describe('exportService', () => {
           vendor_id: 'vendor-1',
           is_recurring: false,
           created_at: '2026-01-03T00:00:00Z',
-          user_id: 'user-1',
-          organization_id: 'org-1',
         },
       ];
 
@@ -264,7 +242,7 @@ describe('exportService', () => {
     it('should handle missing data values', () => {
       const data = [
         { id: '1', name: 'Item 1', value: 100 },
-        { id: '2', name: 'Item 2' } as any,
+        { id: '2', name: 'Item 2' } as { id: string; name: string; value: number },
       ];
 
       exportService.exportAsCSV(data, 'test', ['id', 'name', 'value'], { includeTimestamp: false });
@@ -295,8 +273,6 @@ describe('exportService', () => {
           vendor_id: 'vendor-1',
           is_recurring: true,
           created_at: '2026-01-01T00:00:00Z',
-          user_id: 'user-1',
-          organization_id: 'org-1',
         },
       ];
 
@@ -319,8 +295,6 @@ describe('exportService', () => {
           vendor_id: 'vendor-1',
           is_recurring: false,
           created_at: '2026-01-01T00:00:00Z',
-          user_id: 'user-1',
-          organization_id: 'org-1',
         },
       ];
 
@@ -353,7 +327,7 @@ describe('exportService', () => {
 
       exportService.exportBillsToCSV(bills, { includeTimestamp: false });
 
-      const createBlobCall = (URL.createObjectURL as any).mock.calls[0];
+      const createBlobCall = (URL.createObjectURL as unknown as { mock: { calls: Blob[][] } }).mock.calls[0];
       const blob = createBlobCall[0];
       expect(blob.type).toBe('text/csv');
     });
@@ -364,7 +338,7 @@ describe('exportService', () => {
 
       exportService.exportBillsToText(bills, { includeTimestamp: false });
 
-      const createBlobCall = (URL.createObjectURL as any).mock.calls[0];
+      const createBlobCall = (URL.createObjectURL as unknown as { mock: { calls: Blob[][] } }).mock.calls[0];
       const blob = createBlobCall[0];
       expect(blob.type).toBe('text/plain');
     });

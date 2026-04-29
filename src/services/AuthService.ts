@@ -1,4 +1,5 @@
 import { supabase } from './supabaseClient'
+import type { User } from '@supabase/supabase-js'
 
 export interface SignUpData {
   email: string
@@ -258,12 +259,12 @@ class AuthService {
       email: data.email,
       fullName: data.full_name,
       avatarUrl: data.avatar_url,
-      role: data.role,
+      role: data.role as 'super_admin' | 'admin' | 'manager' | 'staff' | 'viewer',
       isActive: data.is_active,
     }
   }
 
-  private mapAuthUserFallback(authUser: any): UserProfile {
+  private mapAuthUserFallback(authUser: User): UserProfile {
     return {
       id: authUser.id,
       organizationId: authUser.user_metadata?.organization_id || '',
@@ -276,7 +277,7 @@ class AuthService {
   }
 
   // Helper: Map database organization to interface
-  private mapOrganization(data: any): Organization {
+  private mapOrganization(data: { id: string; name: string; slug: string; description: string | null; is_active: boolean }): Organization {
     return {
       id: data.id,
       name: data.name,

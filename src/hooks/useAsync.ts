@@ -1,4 +1,6 @@
+ 
 import { useState, useEffect, useCallback } from 'react';
+
 import { ApiError } from '@/types/common';
 
 interface UseAsyncState<T> {
@@ -31,8 +33,10 @@ export function useAsync<T>(
       setState({ data: null, loading: false, error });
       throw error;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/use-memo
   }, dependencies);
+
+
 
   useEffect(() => {
     if (immediate) {

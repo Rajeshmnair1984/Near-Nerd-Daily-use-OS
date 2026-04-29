@@ -32,6 +32,7 @@ function SettingsView({
   const [isTestingZapier, setIsTestingZapier] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setName(user?.fullName || '');
     setEmail(user?.email || '');
     setRole(user?.role || '');
@@ -39,6 +40,7 @@ function SettingsView({
 
   useEffect(() => {
     const settings = zapierService.getSettings();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setZapierWebhookUrl(settings.webhookUrl);
     setIsZapierEnabled(settings.enabled);
   }, []);
@@ -170,6 +172,157 @@ function SettingsView({
           font-weight: 900;
           color: var(--primary);
         }
+
+        .settings-premium-page .saved-status {
+          padding: 0.75rem 1.5rem;
+          background: rgba(52, 168, 83, 0.1);
+          color: #34a853;
+          border-radius: 100px;
+          font-weight: 800;
+          font-size: 0.85rem;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          border: 1px solid rgba(52, 168, 83, 0.2);
+        }
+
+        .settings-premium-page .icon-box {
+          padding: 0.5rem;
+          border-radius: 10px;
+        }
+
+        .settings-premium-page .icon-blue { background: rgba(0, 113, 227, 0.1); color: var(--primary); }
+        .settings-premium-page .icon-orange { background: rgba(255, 149, 0, 0.1); color: #ff9500; }
+        .settings-premium-page .icon-red { background: rgba(255, 76, 0, 0.1); color: #ff4c00; }
+        .settings-premium-page .icon-green { background: rgba(52, 168, 83, 0.1); color: #34a853; }
+
+        .settings-premium-page .settings-form {
+          display: flex;
+          flex-direction: column;
+          gap: 1.5rem;
+        }
+
+        .settings-premium-page .form-input-readonly {
+          background: var(--surface-soft);
+          cursor: not-allowed;
+        }
+
+        .settings-premium-page .role-box {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          padding: 0.8rem 1.25rem;
+          background: var(--surface-soft);
+          border-radius: 12px;
+          border: 1px solid var(--border);
+        }
+
+        .settings-premium-page .role-text {
+          font-weight: 800;
+          color: var(--text-primary);
+          font-size: 0.9rem;
+        }
+
+        .settings-premium-page .full-width-btn {
+          width: 100%;
+          font-weight: 900;
+          margin-top: 1rem;
+        }
+
+        .settings-premium-page .info-banner {
+          padding: 1.25rem;
+          background: rgba(255, 149, 0, 0.05);
+          border-radius: 16px;
+          border: 1px solid rgba(255, 149, 0, 0.1);
+          font-size: 0.85rem;
+          color: #856404;
+          fontWeight: 600;
+        }
+
+        .settings-premium-page .info-banner-content {
+          display: flex;
+          gap: 0.75rem;
+        }
+
+        .settings-premium-page .info-banner-icon {
+          flex-shrink: 0;
+        }
+
+        .settings-premium-page .zapier-form {
+          display: flex;
+          flex-direction: column;
+          gap: 1.25rem;
+        }
+
+        .settings-premium-page .checkbox-label {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          padding: 0.9rem 1rem;
+          background: var(--surface-soft);
+          border-radius: 12px;
+          border: 1px solid var(--border);
+          cursor: pointer;
+        }
+
+        .settings-premium-page .checkbox-input {
+          width: 18px;
+          height: 18px;
+        }
+
+        .settings-premium-page .checkbox-text {
+          font-size: 0.9rem;
+          font-weight: 800;
+          color: var(--text-primary);
+        }
+
+        .settings-premium-page .btn-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 0.75rem;
+        }
+
+        .settings-premium-page .btn-bold {
+          font-weight: 900;
+        }
+
+        .settings-premium-page .btn-test {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.5rem;
+        }
+
+        .settings-premium-page .grid-full {
+          grid-column: 1 / -1;
+        }
+
+        .settings-premium-page .data-chip-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+          gap: 1.5rem;
+          margin-bottom: 2rem;
+        }
+
+        .settings-premium-page .health-optimized {
+          color: #34a853;
+        }
+
+        .settings-premium-page .supabase-banner {
+          padding: 1.5rem;
+          background: rgba(0, 113, 227, 0.05);
+          border-radius: 16px;
+          border: 1px solid rgba(0, 113, 227, 0.1);
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+        }
+
+        .settings-premium-page .supabase-banner-text {
+          font-size: 0.875rem;
+          font-weight: 700;
+          color: var(--text-primary);
+        }
       `}</style>
 
       <header className="page-hero">
@@ -182,7 +335,9 @@ function SettingsView({
           <motion.div 
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            style={{ padding: '0.75rem 1.5rem', background: 'rgba(52, 168, 83, 0.1)', color: '#34a853', borderRadius: '100px', fontWeight: 800, fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem', border: '1px solid rgba(52, 168, 83, 0.2)' }}
+            className="saved-status"
+            role="status"
+            aria-live="polite"
           >
             <CheckCircle2 size={16} /> {savedMessage}
           </motion.div>
@@ -192,40 +347,43 @@ function SettingsView({
       <div className="settings-grid">
         <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="settings-card">
           <div className="card-header">
-            <div style={{ padding: '0.5rem', background: 'rgba(0, 113, 227, 0.1)', borderRadius: '10px', color: 'var(--primary)' }}>
+            <div className="icon-box icon-blue">
               <Fingerprint size={20} />
             </div>
             <h2>Identity Protocol</h2>
           </div>
           
-          <form onSubmit={handleProfileSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          <form onSubmit={handleProfileSubmit} className="settings-form">
             <div className="form-group">
-              <label className="form-label">FULL IDENTITY NAME</label>
+              <label className="form-label" htmlFor="settings-full-name">FULL IDENTITY NAME</label>
               <input
+                id="settings-full-name"
                 className="form-input"
                 value={name}
                 onChange={(event) => setName(event.target.value)}
                 placeholder="e.g., Alex Rivers"
+                title="Full Name"
               />
             </div>
             <div className="form-group">
-              <label className="form-label">COMMUNICATION ENDPOINT (EMAIL)</label>
+              <label className="form-label" htmlFor="settings-email">COMMUNICATION ENDPOINT (EMAIL)</label>
               <input
-                className="form-input"
+                id="settings-email"
+                className="form-input form-input-readonly"
                 type="email"
                 value={email}
                 readOnly
-                style={{ background: 'var(--surface-soft)', cursor: 'not-allowed' }}
+                title="Email Address (read-only)"
               />
             </div>
             <div className="form-group">
-              <label className="form-label">AUTHORIZATION ROLE</label>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.8rem 1.25rem', background: 'var(--surface-soft)', borderRadius: '12px', border: '1px solid var(--border)' }}>
+              <label className="form-label" htmlFor="settings-role-display">AUTHORIZATION ROLE</label>
+              <div id="settings-role-display" className="role-box">
                  <ShieldCheck size={18} className="text-primary" />
-                 <span style={{ fontWeight: 800, color: 'var(--text-primary)', fontSize: '0.9rem' }}>{role || 'Standard Entity'}</span>
+                 <span className="role-text">{role || 'Standard Entity'}</span>
               </div>
             </div>
-            <button className="button-primary" type="submit" disabled={isSaving} style={{ width: '100%', fontWeight: 900, marginTop: '1rem' }}>
+            <button className="button-primary full-width-btn" type="submit" disabled={isSaving} title="Commit changes to profile">
               {isSaving ? 'COMMITING...' : 'COMMIT PROFILE UPDATES'}
             </button>
           </form>
@@ -233,27 +391,31 @@ function SettingsView({
 
         <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="settings-card">
           <div className="card-header">
-            <div style={{ padding: '0.5rem', background: 'rgba(255, 149, 0, 0.1)', borderRadius: '10px', color: '#ff9500' }}>
+            <div className="icon-box icon-orange">
               <Zap size={20} />
             </div>
             <h2>Workspace Parameters</h2>
           </div>
           
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          <div className="settings-form">
             <div className="form-group">
-              <label className="form-label">WORKSPACE DESIGNATION</label>
+              <label className="form-label" htmlFor="settings-workspace-name">WORKSPACE DESIGNATION</label>
               <input
+                id="settings-workspace-name"
                 className="form-input"
                 value={workspaceName}
                 onChange={(event) => setWorkspaceName(event.target.value)}
+                title="Workspace Name"
               />
             </div>
             <div className="form-group">
-              <label className="form-label">FINANCIAL CURRENCY MATRIX</label>
+              <label className="form-label" htmlFor="settings-currency">FINANCIAL CURRENCY MATRIX</label>
               <select
+                id="settings-currency"
                 className="form-select"
                 value={currency}
                 onChange={(event) => setCurrency(event.target.value)}
+                title="System Currency"
               >
                 <option value="USD">USD - US Dollar</option>
                 <option value="CAD">CAD - Canadian Dollar</option>
@@ -261,9 +423,9 @@ function SettingsView({
                 <option value="GBP">GBP - British Pound</option>
               </select>
             </div>
-            <div style={{ padding: '1.25rem', background: 'rgba(255, 149, 0, 0.05)', borderRadius: '16px', border: '1px solid rgba(255, 149, 0, 0.1)', fontSize: '0.85rem', color: '#856404', fontWeight: 600 }}>
-              <div style={{ display: 'flex', gap: '0.75rem' }}>
-                <Activity size={18} style={{ flexShrink: 0 }} />
+            <div className="info-banner">
+              <div className="info-banner-content">
+                <Activity size={18} className="info-banner-icon" />
                 <p>Workspace synchronization is currently anchored to this session coordinate. Data persistence is optimized for current location parameters.</p>
               </div>
             </div>
@@ -272,46 +434,49 @@ function SettingsView({
 
         <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="settings-card">
           <div className="card-header">
-            <div style={{ padding: '0.5rem', background: 'rgba(255, 76, 0, 0.1)', borderRadius: '10px', color: '#ff4c00' }}>
+            <div className="icon-box icon-red">
               <Link size={20} />
             </div>
             <h2>Zapier Connection</h2>
           </div>
 
-          <form onSubmit={handleZapierSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          <form onSubmit={handleZapierSubmit} className="zapier-form">
             <div className="form-group">
-              <label className="form-label">ZAPIER CATCH HOOK URL</label>
+              <label className="form-label" htmlFor="settings-zapier-webhook">ZAPIER CATCH HOOK URL</label>
               <input
+                id="settings-zapier-webhook"
                 className="form-input"
                 type="url"
                 value={zapierWebhookUrl}
                 onChange={(event) => setZapierWebhookUrl(event.target.value)}
                 placeholder="https://hooks.zapier.com/hooks/catch/..."
+                title="Zapier Webhook URL"
               />
             </div>
 
-            <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.9rem 1rem', background: 'var(--surface-soft)', borderRadius: '12px', border: '1px solid var(--border)', cursor: 'pointer' }}>
+            <label className="checkbox-label" htmlFor="settings-zapier-toggle">
               <input
+                id="settings-zapier-toggle"
                 type="checkbox"
                 checked={isZapierEnabled}
                 onChange={(event) => setIsZapierEnabled(event.target.checked)}
-                style={{ width: '18px', height: '18px' }}
+                className="checkbox-input"
               />
-              <span style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+              <span className="checkbox-text">
                 Send bill, location, vendor, and document changes to Zapier
               </span>
             </label>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-              <button className="button-primary" type="submit" style={{ fontWeight: 900 }}>
+            <div className="btn-grid">
+              <button className="button-primary btn-bold" type="submit" title="Save Zapier configuration">
                 SAVE ZAPIER
               </button>
               <button
-                className="button-secondary"
+                className="button-secondary btn-bold btn-test"
                 type="button"
                 onClick={handleZapierTest}
                 disabled={isTestingZapier}
-                style={{ fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+                title="Test Zapier connection"
               >
                 <Send size={16} />
                 {isTestingZapier ? 'TESTING...' : 'TEST'}
@@ -320,15 +485,15 @@ function SettingsView({
           </form>
         </motion.section>
 
-        <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="settings-card" style={{ gridColumn: '1 / -1' }}>
+        <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="settings-card grid-full">
           <div className="card-header">
-            <div style={{ padding: '0.5rem', background: 'rgba(52, 168, 83, 0.1)', borderRadius: '10px', color: '#34a853' }}>
+            <div className="icon-box icon-green">
               <Database size={20} />
             </div>
             <h2>Neural Data Overview</h2>
           </div>
           
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
+          <div className="data-chip-grid">
             <div className="data-chip">
               <span>Indexed Liabilities</span>
               <strong>{billsCount}</strong>
@@ -343,13 +508,13 @@ function SettingsView({
             </div>
             <div className="data-chip">
               <span>System Health</span>
-              <strong style={{ color: '#34a853' }}>OPTIMIZED</strong>
+              <strong className="health-optimized">OPTIMIZED</strong>
             </div>
           </div>
 
-          <div style={{ padding: '1.5rem', background: 'rgba(0, 113, 227, 0.05)', borderRadius: '16px', border: '1px solid rgba(0, 113, 227, 0.1)', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div className="supabase-banner">
              <ShieldAlert size={24} className="text-primary" />
-             <p style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+             <p className="supabase-banner-text">
                Synchronized with Supabase Cloud Infrastructure. If orchestration failures occur, verify your neural schema mapping.
              </p>
           </div>

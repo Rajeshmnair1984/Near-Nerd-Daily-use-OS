@@ -1,5 +1,5 @@
 import { FormEvent, memo, useMemo, useState } from 'react';
-import { Building2, Mail, Phone, Plus, Search, Trash2, Edit, Globe, Users, Star, Filter, X } from 'lucide-react';
+import { Building2, Mail, Plus, Search, Trash2, Edit, Globe, Users, Star, Phone } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CreateVendorInput, Vendor } from '@/types/vendor';
 import { Modal } from './ui/Modal';
@@ -81,6 +81,32 @@ function VendorManager({ vendors, onAddVendor, onUpdateVendor, onDeleteVendor, l
       setError(errorMsg);
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleEditVendor = async (updates: CreateVendorInput) => {
+    if (!editingVendor || !onUpdateVendor) return;
+    setEditLoading(true);
+    setError(null);
+    try {
+      await onUpdateVendor(editingVendor.id, updates);
+      setEditingVendor(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update vendor');
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
+  const handleDeleteVendor = async (id: string) => {
+    setDeleteLoading(id);
+    setError(null);
+    try {
+      await onDeleteVendor(id);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete vendor');
+    } finally {
+      setDeleteLoading(null);
     }
   };
 
@@ -180,6 +206,225 @@ function VendorManager({ vendors, onAddVendor, onUpdateVendor, onDeleteVendor, l
           gap: 0.6rem;
           transition: var(--transition);
         }
+
+        .vendor-matrix-page .metric-icon-wrap {
+          width: 48px;
+          height: 48px;
+          border-radius: 12px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .vendor-matrix-page .metric-icon-blue { background: rgba(0, 113, 227, 0.08); color: var(--primary); }
+        .vendor-matrix-page .metric-icon-green { background: rgba(52, 168, 83, 0.08); color: #34a853; }
+        .vendor-matrix-page .metric-icon-orange { background: rgba(255, 149, 0, 0.08); color: #ff9500; }
+
+        .vendor-matrix-page .metric-label {
+          display: block;
+          font-size: 0.7rem;
+          font-weight: 800;
+          color: var(--text-secondary);
+          text-transform: uppercase;
+        }
+
+        .vendor-matrix-page .metric-value {
+          display: block;
+          font-size: 1.5rem;
+          font-weight: 900;
+        }
+
+        .vendor-matrix-page .search-section {
+          margin-bottom: 2rem;
+        }
+
+        .vendor-matrix-page .search-field-premium {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          background: var(--bg-card);
+          border: 1px solid var(--border);
+          border-radius: 100px;
+          padding: 0.8rem 1.5rem;
+        }
+
+        .vendor-matrix-page .search-input-premium {
+          width: 100%;
+          border: 0;
+          outline: 0;
+          background: transparent;
+          font-size: 0.95rem;
+        }
+
+        .vendor-matrix-page .empty-state-padding {
+          padding: 5rem 0;
+        }
+
+        .vendor-matrix-page .empty-icon {
+          opacity: 0.1;
+          margin-bottom: 1.5rem;
+        }
+
+        .vendor-matrix-page .empty-title {
+          font-weight: 800;
+        }
+
+        .vendor-matrix-page .empty-sub {
+          color: var(--text-secondary);
+        }
+
+        .vendor-matrix-page .vendor-card-top {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+        }
+
+        .vendor-matrix-page .vendor-name {
+          font-size: 1.25rem;
+          font-weight: 900;
+          color: var(--text-primary);
+        }
+
+        .vendor-matrix-page .vendor-cat {
+          font-size: 0.75rem;
+          font-weight: 800;
+          color: var(--primary);
+          text-transform: uppercase;
+        }
+
+        .vendor-matrix-page .vendor-status-badge {
+          font-weight: 800;
+          font-size: 0.65rem;
+        }
+
+        .vendor-matrix-page .vendor-info-strip {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 0.75rem;
+          padding: 1.25rem;
+          background: var(--surface-soft);
+          border-radius: 16px;
+          border: 1px solid var(--border);
+        }
+
+        .vendor-matrix-page .info-row {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          font-size: 0.85rem;
+        }
+
+        .vendor-matrix-page .info-name {
+          font-weight: 700;
+        }
+
+        .vendor-matrix-page .info-link-primary {
+          color: var(--primary);
+          font-weight: 600;
+        }
+
+        .vendor-matrix-page .info-link-text {
+          color: var(--text-primary);
+          font-weight: 600;
+        }
+
+        .vendor-matrix-page .info-link-secondary {
+          color: var(--text-secondary);
+        }
+
+        .vendor-matrix-page .vendor-notes {
+          font-size: 0.85rem;
+          color: var(--text-secondary);
+          line-clamp: 2;
+          display: -webkit-box;
+          WebkitLineClamp: 2;
+          WebkitBoxOrient: vertical;
+          overflow: hidden;
+        }
+
+        .vendor-matrix-page .vendor-actions {
+          margin-top: auto;
+          display: flex;
+          gap: 0.75rem;
+          padding-top: 1rem;
+          border-top: 1px solid var(--border);
+        }
+
+        .vendor-matrix-page .orchestrate-btn {
+          flex: 1;
+          padding: 0.6rem;
+          border-radius: 10px;
+          font-size: 0.8rem;
+          font-weight: 800;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          gap: 0.5rem;
+        }
+
+        .vendor-matrix-page .delete-btn {
+          border-radius: 10px;
+        }
+
+        /* Modal specific styles */
+        .vendor-modal-padding {
+          padding: 2.5rem;
+        }
+
+        .vendor-modal-header-wrap {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+          margin-bottom: 2.5rem;
+        }
+
+        .vendor-modal-icon {
+          width: 50px;
+          height: 50px;
+          border-radius: 14px;
+          background: rgba(0, 113, 227, 0.1);
+          color: var(--primary);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .vendor-modal-title {
+          font-size: 1.5rem;
+          font-weight: 900;
+        }
+
+        .vendor-modal-sub {
+          color: var(--text-secondary);
+          font-size: 0.9rem;
+        }
+
+        .vendor-form {
+          display: flex;
+          flex-direction: column;
+          gap: 1.5rem;
+        }
+
+        .vendor-form-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 1.5rem;
+        }
+
+        .vendor-form-footer {
+          display: flex;
+          gap: 1rem;
+          margin-top: 1rem;
+        }
+
+        .vendor-cancel-btn {
+          flex: 1;
+        }
+
+        .vendor-commit-btn {
+          flex: 2;
+          font-weight: 900;
+        }
       `}</style>
 
       <header className="page-hero">
@@ -188,61 +433,63 @@ function VendorManager({ vendors, onAddVendor, onUpdateVendor, onDeleteVendor, l
           <h1>Vendor Matrix</h1>
           <p>Orchestrate your global network of suppliers, service partners, and operational business contacts.</p>
         </div>
-        <button className="premium-button button-primary" onClick={() => setIsModalOpen(true)}>
-          <Plus size={20} />
+        <button className="premium-button button-primary" onClick={() => setIsModalOpen(true)} title="Initialize a new vendor partner">
+          <Plus size={20} aria-hidden="true" />
           <span>INITIALIZE VENDOR</span>
         </button>
       </header>
 
-      <div className="metric-strip">
-        <div className="metric-card">
-          <div className="metric-icon" style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(0, 113, 227, 0.08)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Users size={22} /></div>
+      <div className="metric-strip" role="list">
+        <div className="metric-card" role="listitem">
+          <div className="metric-icon-wrap metric-icon-blue"><Users size={22} aria-hidden="true" /></div>
           <div>
-            <span style={{ fontSize: '0.7rem', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Network Scale</span>
-            <strong style={{ display: 'block', fontSize: '1.5rem', fontWeight: 900 }}>{vendors.length} Partners</strong>
+            <span className="metric-label">Network Scale</span>
+            <strong className="metric-value">{vendors.length} Partners</strong>
           </div>
         </div>
-        <div className="metric-card">
-          <div className="metric-icon" style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(52, 168, 83, 0.08)', color: '#34a853', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Star size={22} /></div>
+        <div className="metric-card" role="listitem">
+          <div className="metric-icon-wrap metric-icon-green"><Star size={22} aria-hidden="true" /></div>
           <div>
-            <span style={{ fontSize: '0.7rem', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Active Orchestration</span>
-            <strong style={{ display: 'block', fontSize: '1.5rem', fontWeight: 900 }}>{activeCount} Operational</strong>
+            <span className="metric-label">Active Orchestration</span>
+            <strong className="metric-value">{activeCount} Operational</strong>
           </div>
         </div>
-        <div className="metric-card">
-          <div className="metric-icon" style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(255, 149, 0, 0.08)', color: '#ff9500', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Building2 size={22} /></div>
+        <div className="metric-card" role="listitem">
+          <div className="metric-icon-wrap metric-icon-orange"><Building2 size={22} aria-hidden="true" /></div>
           <div>
-            <span style={{ fontSize: '0.7rem', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Category Matrix</span>
-            <strong style={{ display: 'block', fontSize: '1.5rem', fontWeight: 900 }}>{categoryCount} Types</strong>
+            <span className="metric-label">Category Matrix</span>
+            <strong className="metric-value">{categoryCount} Types</strong>
           </div>
         </div>
       </div>
 
       <ErrorBanner error={error} onDismiss={() => setError(null)} />
 
-      <section style={{ marginBottom: '2rem' }}>
-        <div className="search-field-premium" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '100px', padding: '0.8rem 1.5rem' }}>
-          <Search size={19} className="text-secondary" />
+      <section className="search-section" aria-label="Search and filter vendors">
+        <div className="search-field-premium">
+          <Search size={19} className="text-secondary" aria-hidden="true" />
+          <label htmlFor="vendor-search" className="sr-only">Search vendors</label>
           <input
+            id="vendor-search"
             type="text"
             placeholder="Search vendor identities, contact entities, or categories..."
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            style={{ width: '100%', border: '0', outline: '0', background: 'transparent', fontSize: '0.95rem' }}
+            className="search-input-premium"
           />
         </div>
       </section>
 
       {loading ? (
-        <div className="empty-state">Synchronizing Vendor Network...</div>
+        <div className="empty-state" aria-busy="true">Synchronizing Vendor Network...</div>
       ) : filteredVendors.length === 0 ? (
-        <div className="empty-state" style={{ padding: '5rem 0' }}>
-          <Building2 size={64} style={{ opacity: 0.1, marginBottom: '1.5rem' }} />
-          <h3 style={{ fontWeight: 800 }}>No Vendor Identities Found</h3>
-          <p style={{ color: 'var(--text-secondary)' }}>Adjust your search or initialize a new partner record.</p>
+        <div className="empty-state empty-state-padding">
+          <Building2 size={64} className="empty-icon" aria-hidden="true" />
+          <h3 className="empty-title">No Vendor Identities Found</h3>
+          <p className="empty-sub">Adjust your search or initialize a new partner record.</p>
         </div>
       ) : (
-        <div className="vendor-grid-premium">
+        <div className="vendor-grid-premium" role="list" aria-label="Vendor partner cards">
           {filteredVendors.map((item) => (
             <motion.article 
               layout
@@ -250,70 +497,74 @@ function VendorManager({ vendors, onAddVendor, onUpdateVendor, onDeleteVendor, l
               animate={{ opacity: 1, y: 0 }}
               className="premium-vendor-card" 
               key={item.id}
+              role="listitem"
+              aria-labelledby={`vendor-name-${item.id}`}
             >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <div className="vendor-card-top">
                 <div className="vendor-identity">
-                  <div className="vendor-logo">
+                  <div className="vendor-logo" aria-hidden="true">
                     <Building2 size={28} />
                   </div>
                   <div>
-                    <h2 style={{ fontSize: '1.25rem', fontWeight: 900, color: 'var(--text-primary)' }}>{item.name}</h2>
-                    <p style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--primary)', textTransform: 'uppercase' }}>{item.category}</p>
+                    <h2 className="vendor-name" id={`vendor-name-${item.id}`}>{item.name}</h2>
+                    <p className="vendor-cat">{item.category}</p>
                   </div>
                 </div>
-                <span className={`status-badge status-${item.status.toLowerCase()}`} style={{ fontWeight: 800, fontSize: '0.65rem' }}>
+                <span className={`status-badge status-${item.status.toLowerCase()} vendor-status-badge`} role="status">
                   {item.status.toUpperCase()}
                 </span>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '0.75rem', padding: '1.25rem', background: 'var(--surface-soft)', borderRadius: '16px', border: '1px solid var(--border)' }}>
+              <div className="vendor-info-strip">
                 {item.contact_name && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.85rem' }}>
-                    <Users size={16} className="text-secondary" />
-                    <span style={{ fontWeight: 700 }}>{item.contact_name}</span>
+                  <div className="info-row">
+                    <Users size={16} className="text-secondary" aria-hidden="true" />
+                    <span className="info-name" aria-label={`Contact person: ${item.contact_name}`}>{item.contact_name}</span>
                   </div>
                 )}
                 {item.email && (
-                  <a href={`mailto:${item.email}`} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.85rem', color: 'var(--primary)', fontWeight: 600 }}>
-                    <Mail size={16} />
+                  <a href={`mailto:${item.email}`} className="info-row info-link-primary" aria-label={`Email ${item.name} at ${item.email}`}>
+                    <Mail size={16} aria-hidden="true" />
                     {item.email}
                   </a>
                 )}
                 {item.phone && (
-                  <a href={`tel:${item.phone}`} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.85rem', color: 'var(--text-primary)', fontWeight: 600 }}>
-                    <Phone size={16} />
+                  <a href={`tel:${item.phone}`} className="info-row info-link-text" aria-label={`Call ${item.name} at ${item.phone}`}>
+                    <Phone size={16} aria-hidden="true" />
                     {item.phone}
                   </a>
                 )}
                 {item.website && (
-                  <a href={item.website} target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                    <Globe size={16} />
+                  <a href={item.website} target="_blank" rel="noreferrer" className="info-row info-link-secondary" aria-label={`Visit ${item.name} website`}>
+                    <Globe size={16} aria-hidden="true" />
                     {item.website.replace(/^https?:\/\//, '')}
                   </a>
                 )}
               </div>
 
               {item.notes && (
-                <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineClamp: 2, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxDirection: 'vertical', overflow: 'hidden' }}>
+                <p className="vendor-notes">
                   {item.notes}
                 </p>
               )}
 
-              <div style={{ marginTop: 'auto', display: 'flex', gap: '0.75rem', paddingTop: '1rem', borderTop: '1px solid var(--border)' }}>
+              <div className="vendor-actions">
                 <button
-                  className="button-primary"
+                  className="button-primary orchestrate-btn"
                   onClick={() => setEditingVendor(item)}
-                  style={{ flex: 1, padding: '0.6rem', borderRadius: '10px', fontSize: '0.8rem', fontWeight: 800, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem' }}
+                  title={`Orchestrate matrix for ${item.name}`}
+                  aria-label={`Edit ${item.name}`}
                 >
-                  <Edit size={14} /> ORCHESTRATE
+                  <Edit size={14} aria-hidden="true" /> ORCHESTRATE
                 </button>
                 <button
-                  className="icon-button danger"
+                  className="icon-button danger delete-btn"
                   disabled={deleteLoading === item.id}
                   onClick={() => setConfirmDelete(item.id)}
-                  style={{ borderRadius: '10px' }}
+                  title={`Sever partner link for ${item.name}`}
+                  aria-label={`Archive ${item.name}`}
                 >
-                  <Trash2 size={16} />
+                  <Trash2 size={16} aria-hidden="true" />
                 </button>
               </div>
             </motion.article>
@@ -322,43 +573,48 @@ function VendorManager({ vendors, onAddVendor, onUpdateVendor, onDeleteVendor, l
       )}
 
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} maxWidth="700px">
-        <div style={{ padding: '2.5rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2.5rem' }}>
-            <div style={{ width: '50px', height: '50px', borderRadius: '14px', background: 'rgba(0, 113, 227, 0.1)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div className="vendor-modal-padding">
+          <div className="vendor-modal-header-wrap">
+            <div className="vendor-modal-icon" aria-hidden="true">
               <Plus size={24} />
             </div>
             <div>
-              <h2 style={{ fontSize: '1.5rem', fontWeight: 900 }}>Initialize Partner</h2>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Securely add a new vendor or service partner to the network.</p>
+              <h2 className="vendor-modal-title">Initialize Partner</h2>
+              <p className="vendor-modal-sub">Securely add a new vendor or service partner to the network.</p>
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          <form onSubmit={handleSubmit} className="vendor-form">
             <div className="form-group">
-              <label className="form-label">VENDOR IDENTITY / NAME</label>
+              <label className="form-label" htmlFor="new-vendor-name">VENDOR IDENTITY / NAME</label>
               <input
+                id="new-vendor-name"
                 className="form-input"
                 required
+                aria-required="true"
                 placeholder="e.g., Global Logistics Corp"
                 value={vendor.name}
                 onChange={(event) => setVendor({ ...vendor, name: event.target.value })}
               />
             </div>
             
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+            <div className="vendor-form-grid">
               <div className="form-group">
-                <label className="form-label">CATEGORY MATRIX</label>
+                <label className="form-label" htmlFor="new-vendor-cat">CATEGORY MATRIX</label>
                 <input
+                  id="new-vendor-cat"
                   className="form-input"
                   required
+                  aria-required="true"
                   placeholder="Supplier, Service, Maintenance..."
                   value={vendor.category}
                   onChange={(event) => setVendor({ ...vendor, category: event.target.value })}
                 />
               </div>
               <div className="form-group">
-                <label className="form-label">OPERATIONAL STATUS</label>
+                <label className="form-label" htmlFor="new-vendor-status">OPERATIONAL STATUS</label>
                 <select
+                  id="new-vendor-status"
                   className="form-select"
                   value={vendor.status}
                   onChange={(event) =>
@@ -371,10 +627,11 @@ function VendorManager({ vendors, onAddVendor, onUpdateVendor, onDeleteVendor, l
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+            <div className="vendor-form-grid">
               <div className="form-group">
-                <label className="form-label">PRIMARY CONTACT ENTITY</label>
+                <label className="form-label" htmlFor="new-vendor-contact">PRIMARY CONTACT ENTITY</label>
                 <input
+                  id="new-vendor-contact"
                   className="form-input"
                   placeholder="Contact Name"
                   value={vendor.contact_name}
@@ -382,8 +639,9 @@ function VendorManager({ vendors, onAddVendor, onUpdateVendor, onDeleteVendor, l
                 />
               </div>
               <div className="form-group">
-                <label className="form-label">COMMUNICATION EMAIL</label>
+                <label className="form-label" htmlFor="new-vendor-email">COMMUNICATION EMAIL</label>
                 <input
+                  id="new-vendor-email"
                   className="form-input"
                   type="email"
                   placeholder="contact@vendor.com"
@@ -393,10 +651,11 @@ function VendorManager({ vendors, onAddVendor, onUpdateVendor, onDeleteVendor, l
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+            <div className="vendor-form-grid">
               <div className="form-group">
-                <label className="form-label">TELEPHONIC COORDINATE</label>
+                <label className="form-label" htmlFor="new-vendor-phone">TELEPHONIC COORDINATE</label>
                 <input
+                  id="new-vendor-phone"
                   className="form-input"
                   placeholder="+1 (555) 000-0000"
                   value={vendor.phone}
@@ -404,8 +663,9 @@ function VendorManager({ vendors, onAddVendor, onUpdateVendor, onDeleteVendor, l
                 />
               </div>
               <div className="form-group">
-                <label className="form-label">DIGITAL DOMAIN (WEBSITE)</label>
+                <label className="form-label" htmlFor="new-vendor-web">DIGITAL DOMAIN (WEBSITE)</label>
                 <input
+                  id="new-vendor-web"
                   className="form-input"
                   placeholder="https://vendor.com"
                   value={vendor.website}
@@ -415,8 +675,9 @@ function VendorManager({ vendors, onAddVendor, onUpdateVendor, onDeleteVendor, l
             </div>
 
             <div className="form-group">
-              <label className="form-label">ORCHESTRATION NOTES</label>
+              <label className="form-label" htmlFor="new-vendor-notes">ORCHESTRATION NOTES</label>
               <textarea
+                id="new-vendor-notes"
                 className="form-textarea"
                 rows={3}
                 placeholder="Internal references, terms, or historical context..."
@@ -425,11 +686,11 @@ function VendorManager({ vendors, onAddVendor, onUpdateVendor, onDeleteVendor, l
               />
             </div>
 
-            <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-              <button type="button" className="button-secondary" style={{ flex: 1 }} onClick={() => setIsModalOpen(false)}>
+            <div className="vendor-form-footer">
+              <button type="button" className="button-secondary vendor-cancel-btn" onClick={() => setIsModalOpen(false)}>
                 DISCARD
               </button>
-              <button type="submit" className="button-primary" style={{ flex: 2, fontWeight: 900 }} disabled={isSaving}>
+              <button type="submit" className="button-primary vendor-commit-btn" disabled={isSaving}>
                 {isSaving ? 'INITIALIZING...' : 'COMMIT TO NETWORK'}
               </button>
             </div>

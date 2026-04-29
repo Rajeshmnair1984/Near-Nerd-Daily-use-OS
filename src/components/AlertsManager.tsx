@@ -181,6 +181,107 @@ const AlertsManager: FC<AlertsManagerProps> = ({ bills, documents, loading }) =>
           cursor: pointer;
           border: none;
         }
+
+        .alerts-premium-page .header-metric-box {
+          display: flex;
+          gap: 1rem;
+        }
+
+        .alerts-premium-page .metric-badge-premium {
+          padding: 0.75rem 1.25rem;
+          background: var(--bg-card);
+          border: 1px solid var(--border);
+          border-radius: 16px;
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+        }
+
+        .alerts-premium-page .metric-badge-label {
+          font-size: 0.6rem;
+          font-weight: 900;
+          color: var(--text-secondary);
+          text-transform: uppercase;
+        }
+
+        .alerts-premium-page .metric-badge-value {
+          font-size: 1.25rem;
+          font-weight: 900;
+        }
+
+        .alerts-premium-page .loading-state-padding {
+          padding: 8rem;
+        }
+
+        .alerts-premium-page .loading-title {
+          margin-top: 1.5rem;
+          font-weight: 900;
+        }
+
+        .alerts-premium-page .empty-state-card {
+          padding: 8rem;
+          background: var(--bg-card);
+          border-radius: 32px;
+          border: 1px solid var(--border);
+        }
+
+        .alerts-premium-page .empty-state-icon {
+          opacity: 0.1;
+          margin-bottom: 1.5rem;
+        }
+
+        .alerts-premium-page .empty-state-title {
+          font-weight: 950;
+        }
+
+        .alerts-premium-page .empty-state-sub {
+          color: var(--text-secondary);
+          font-size: 1.1rem;
+        }
+
+        .alerts-premium-page .alert-card-title-row {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          margin-bottom: 0.25rem;
+        }
+
+        .alerts-premium-page .alert-card-title {
+          font-weight: 900;
+          font-size: 1.1rem;
+          letter-spacing: -0.02em;
+        }
+
+        .alerts-premium-page .severity-badge {
+          font-size: 0.65rem;
+          font-weight: 900;
+          padding: 0.25rem 0.6rem;
+          border-radius: 4px;
+          text-transform: uppercase;
+        }
+
+        .alerts-premium-page .alert-card-desc {
+          color: var(--text-secondary);
+          font-size: 0.85rem;
+          font-weight: 600;
+        }
+
+        .alerts-premium-page .footer-banner {
+          margin-top: 2.5rem;
+          padding: 1.5rem;
+          background: var(--surface-soft);
+          border-radius: 20px;
+          border: 1px solid var(--border);
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+        }
+
+        .alerts-premium-page .footer-banner-text {
+          font-size: 0.8rem;
+          color: var(--text-secondary);
+          font-weight: 600;
+        }
       `}</style>
 
       <header className="page-hero">
@@ -189,12 +290,12 @@ const AlertsManager: FC<AlertsManagerProps> = ({ bills, documents, loading }) =>
           <h1>Threat Intel Matrix</h1>
           <p>Real-time synchronization of upcoming liabilities, expiring intel, and system interventions.</p>
         </div>
-        <div style={{ display: 'flex', gap: '1rem' }}>
-          <div className="metric-badge" style={{ padding: '0.75rem 1.25rem', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        <div className="header-metric-box">
+          <div className="metric-badge-premium">
             <Activity size={18} className="text-primary" />
             <div>
-              <p style={{ fontSize: '0.6rem', fontWeight: 900, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Active Threats</p>
-              <p style={{ fontSize: '1.25rem', fontWeight: 900 }}>{alerts.length}</p>
+              <p className="metric-badge-label">Active Threats</p>
+              <p className="metric-badge-value">{alerts.length}</p>
             </div>
           </div>
         </div>
@@ -202,49 +303,54 @@ const AlertsManager: FC<AlertsManagerProps> = ({ bills, documents, loading }) =>
 
       <section>
         {loading ? (
-          <div className="empty-state" style={{ padding: '8rem' }}>
+          <div className="empty-state loading-state-padding">
             <Zap size={48} className="animate-pulse" color="var(--primary)" />
-            <h2 style={{ marginTop: '1.5rem', fontWeight: 900 }}>SCANNING THREAT VECTORS...</h2>
+            <h2 className="loading-title">SCANNING THREAT VECTORS...</h2>
           </div>
         ) : alerts.length === 0 ? (
-          <div className="empty-state" style={{ padding: '8rem', background: 'var(--bg-card)', borderRadius: '32px', border: '1px solid var(--border)' }}>
-            <BellRing size={64} style={{ opacity: 0.1, marginBottom: '1.5rem' }} />
-            <h2 style={{ fontWeight: 950 }}>ALL CLEAR</h2>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem' }}>The operational matrix is fully optimized. No pending threats detected.</p>
+          <div className="empty-state empty-state-card">
+            <BellRing size={64} className="empty-state-icon" />
+            <h2 className="empty-state-title">ALL CLEAR</h2>
+            <p className="empty-state-sub">The operational matrix is fully optimized. No pending threats detected.</p>
           </div>
         ) : (
-          <div className="threat-matrix">
+          <div className="threat-matrix" role="list">
             <AnimatePresence>
               {alerts.map((alert, index) => {
                 const Icon = alert.icon
                 return (
-                  <motion.div
+                  <motion.article
                     key={alert.id}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.05 }}
                     className="premium-alert-card"
+                    role="listitem"
                   >
                     <div className="alert-severity-indicator" style={{ background: alert.color }} />
                     
                     <div className="alert-icon-box" style={{ background: `${alert.color}10`, color: alert.color, border: `1px solid ${alert.color}20` }}>
-                      <Icon size={24} />
+                      <Icon size={24} aria-hidden="true" />
                     </div>
 
                     <div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.25rem' }}>
-                        <h3 style={{ fontWeight: 900, fontSize: '1.1rem', letterSpacing: '-0.02em' }}>{alert.title}</h3>
-                        <span style={{ fontSize: '0.65rem', fontWeight: 900, padding: '0.25rem 0.6rem', background: `${alert.color}15`, color: alert.color, borderRadius: '4px', textTransform: 'uppercase' }}>
+                      <div className="alert-card-title-row">
+                        <h3 className="alert-card-title">{alert.title}</h3>
+                        <span className="severity-badge" style={{ background: `${alert.color}15`, color: alert.color }}>
                           {alert.severity} PRIORITY
                         </span>
                       </div>
-                      <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', fontWeight: 600 }}>{alert.description}</p>
+                      <p className="alert-card-desc">{alert.description}</p>
                     </div>
 
-                    <button className="action-trigger" style={{ background: alert.color, color: 'white', boxShadow: `0 8px 16px ${alert.color}30` }}>
-                      {alert.actionItem} <ArrowRight size={14} />
+                    <button 
+                      className="action-trigger" 
+                      style={{ background: alert.color, color: 'white', boxShadow: `0 8px 16px ${alert.color}30` }}
+                      title={`Execute action: ${alert.actionItem} for ${alert.title}`}
+                    >
+                      {alert.actionItem} <ArrowRight size={14} aria-hidden="true" />
                     </button>
-                  </motion.div>
+                  </motion.article>
                 )
               })}
             </AnimatePresence>
@@ -252,9 +358,9 @@ const AlertsManager: FC<AlertsManagerProps> = ({ bills, documents, loading }) =>
         )}
       </section>
 
-      <div style={{ marginTop: '2.5rem', padding: '1.5rem', background: 'var(--surface-soft)', borderRadius: '20px', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+      <div className="footer-banner">
         <ShieldAlert size={20} className="text-secondary" />
-        <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
+        <p className="footer-banner-text">
           This matrix represents prioritized operational interventions. System audits are performed every 24 hours to identify new threat vectors.
         </p>
       </div>

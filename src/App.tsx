@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import Sidebar from './components/Sidebar'
 import Dashboard from './components/Dashboard'
 import BillManager from './components/BillManager'
@@ -20,7 +20,6 @@ import { CreateVendorInput, Vendor } from '@/types/vendor'
 import { DashboardStats } from '@/types/common'
 import { useUser } from '@/context/UserContext'
 import { useToast } from '@/context/ToastContext'
-import { UserProfile } from '@/services/AuthService'
 
 function AppContent() {
   const [activeView, setActiveView] = useState<string>('dashboard');
@@ -85,6 +84,7 @@ function AppContent() {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadData();
   }, [loadData]);
 

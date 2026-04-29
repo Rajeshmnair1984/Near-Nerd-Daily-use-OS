@@ -1,10 +1,11 @@
 import { describe, it, expect } from 'vitest'
 import { render } from '@testing-library/react'
 import Dashboard from '../Dashboard'
+import { Bill } from '@/types/bill'
 
-const mockBills = [
-  { id: '1', name: 'Rent', amount: 5000, dueDate: '2026-05-01', status: 'paid', category: 'Rent', vendor: 'Test Vendor', location: 'HQ' },
-  { id: '2', name: 'Utilities', amount: 500, dueDate: '2026-05-05', status: 'pending', category: 'Utilities', vendor: 'Test Vendor', location: 'HQ' },
+const mockBills: Bill[] = [
+  { id: '1', charge_name: 'Rent', amount: 5000, date: '2026-05-01', status: 'Paid', category: 'Rent', vendor_id: 'v1', location_id: 'HQ' },
+  { id: '2', charge_name: 'Utilities', amount: 500, date: '2026-05-05', status: 'Pending', category: 'Utilities', vendor_id: 'v1', location_id: 'HQ' },
 ]
 
 const mockStats = {

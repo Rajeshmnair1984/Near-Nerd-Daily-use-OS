@@ -11,11 +11,11 @@ interface UseFormValidationState<T> {
 
 interface UseFormValidationOptions<T> {
   initialValues: T;
-  validationSchema: yup.ObjectSchema<any>;
+  validationSchema: yup.AnyObjectSchema;
   onSubmit: (values: T) => Promise<void> | void;
 }
 
-export function useFormValidation<T extends Record<string, any>>({
+export function useFormValidation<T extends Record<string, unknown>>({
   initialValues,
   validationSchema,
   onSubmit,
@@ -29,7 +29,7 @@ export function useFormValidation<T extends Record<string, any>>({
   });
 
   const validateField = useCallback(
-    async (name: keyof T, value: any) => {
+    async (name: keyof T, value: unknown) => {
       try {
         await validationSchema.validateAt(String(name), { [name]: value });
         return '';
@@ -130,7 +130,7 @@ export function useFormValidation<T extends Record<string, any>>({
     });
   }, [initialValues]);
 
-  const setFieldValue = useCallback((name: keyof T, value: any) => {
+  const setFieldValue = useCallback((name: keyof T, value: unknown) => {
     setState((prev) => ({
       ...prev,
       values: { ...prev.values, [name]: value },

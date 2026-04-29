@@ -5,14 +5,10 @@ import {
   ShieldCheck, 
   FileText, 
   User, 
-  Wallet, 
   Zap, 
-  Calendar,
   Activity,
   CheckCircle2,
   AlertCircle,
-  Phone,
-  Mail,
   Scale,
   Clock,
   Flame,
@@ -31,6 +27,18 @@ interface InfrastructureMatrixFormProps {
 }
 
 type TabType = 'identity' | 'location' | 'lease' | 'insurance' | 'ops';
+
+const IntelSyncBadge = ({ active, onClick, section }: { active: boolean, onClick: () => void, section: string }) => (
+  <div 
+    className={`intel-sync-toggle ${active ? 'active' : ''}`}
+    onClick={onClick}
+    title={`Toggle AI Intelligence Sync for ${section}`}
+  >
+    <div className="pulse-ring"></div>
+    <Wifi size={14} />
+    <span>{active ? 'AI SYNC ACTIVE' : 'AI SYNC DISABLED'}</span>
+  </div>
+);
 
 const InfrastructureMatrixForm: React.FC<InfrastructureMatrixFormProps> = ({ 
   onSave, 
@@ -126,195 +134,242 @@ const InfrastructureMatrixForm: React.FC<InfrastructureMatrixFormProps> = ({
     { id: 'ops', label: 'Operations', icon: <Activity size={18} /> },
   ];
 
-  const IntelSyncBadge = ({ active, onClick, section }: { active: boolean, onClick: () => void, section: string }) => (
-    <div 
-      className={`intel-sync-toggle ${active ? 'active' : ''}`}
-      onClick={onClick}
-      title={`Toggle AI Intelligence Sync for ${section}`}
-    >
-      <div className="pulse-ring"></div>
-      <Wifi size={14} />
-      <span>{active ? 'AI SYNC ACTIVE' : 'AI SYNC DISABLED'}</span>
-    </div>
-  );
+
 
   return (
     <div className="matrix-form-container">
-      <style>{`
-        .matrix-form-container {
-          display: flex;
-          flex-direction: column;
-          height: 100%;
-          color: var(--text-primary);
-        }
+          .matrix-header-left {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.5rem;
+          }
 
-        .matrix-header {
-          padding: 1.5rem 2rem;
-          border-bottom: 1px solid var(--border);
-          background: var(--surface-soft);
-        }
+          .matrix-header-icon-wrap {
+            padding: 0.5rem;
+            background: var(--primary);
+            border-radius: 8px;
+            color: white;
+            display: flex;
+            align-items: center;
+          }
 
-        .matrix-header h1 {
-          font-size: 1.5rem;
-          font-weight: 800;
-          letter-spacing: -0.02em;
-          margin-bottom: 0.25rem;
-        }
+          .matrix-sidebar-footer {
+            margin-top: auto;
+            padding: 1rem;
+            background: var(--surface);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+          }
 
-        .matrix-header p {
-          font-size: 0.875rem;
-          color: var(--text-secondary);
-        }
+          .matrix-sidebar-footer .progress-label {
+            font-size: 0.65rem;
+            font-weight: 800;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+          }
 
-        .matrix-body {
-          display: grid;
-          grid-template-columns: 240px 1fr;
-          flex: 1;
-          min-height: 500px;
-        }
+          .matrix-sidebar-footer .progress-track {
+            height: 6px;
+            background: var(--surface-soft);
+            border-radius: 3px;
+            overflow: hidden;
+          }
 
-        .matrix-sidebar {
-          padding: 1.5rem 1rem;
-          background: var(--bg-main);
-          border-right: 1px solid var(--border);
-          display: flex;
-          flex-direction: column;
-          gap: 0.5rem;
-        }
+          .matrix-sidebar-footer .progress-fill {
+            height: 100%;
+            background: var(--primary);
+          }
 
-        .tab-button {
-          display: flex;
-          align-items: center;
-          gap: 0.75rem;
-          padding: 0.75rem 1rem;
-          border-radius: var(--radius-md);
-          font-size: 0.875rem;
-          font-weight: 600;
-          color: var(--text-secondary);
-          transition: var(--transition);
-          text-align: left;
-          width: 100%;
-        }
+          .matrix-sidebar-footer .progress-text {
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-top: 0.4rem;
+          }
 
-        .tab-button:hover {
-          background: var(--surface-soft);
-          color: var(--text-primary);
-        }
+          .matrix-master-asset-banner {
+            margin-top: 2rem;
+            padding: 1.25rem;
+            background: var(--surface-soft);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+          }
 
-        .tab-button.active {
-          background: var(--primary);
-          color: white;
-          box-shadow: 0 4px 12px rgba(0, 113, 227, 0.2);
-        }
+          .matrix-master-asset-banner label {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            cursor: pointer;
+          }
 
-        .matrix-content {
-          padding: 2rem;
-          overflow-y: auto;
-          max-height: 600px;
-        }
+          .matrix-master-asset-banner input {
+            width: 22px;
+            height: 22px;
+            accent-color: var(--primary);
+          }
 
-        .matrix-section-title {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          margin-bottom: 2rem;
-          padding-bottom: 1rem;
-          border-bottom: 1px solid var(--border);
-        }
+          .matrix-master-asset-banner .banner-title {
+            font-weight: 700;
+            font-size: 0.9rem;
+          }
 
-        .matrix-section-title h2 {
-          font-size: 1.25rem;
-          font-weight: 700;
-          display: flex;
-          align-items: center;
-          gap: 0.75rem;
-        }
+          .matrix-master-asset-banner .banner-sub {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+          }
 
-        .intel-sync-toggle {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          padding: 0.4rem 0.8rem;
-          border-radius: 100px;
-          background: var(--surface-soft);
-          border: 1px solid var(--border);
-          font-size: 0.7rem;
-          font-weight: 800;
-          color: var(--text-secondary);
-          cursor: pointer;
-          transition: var(--transition);
-          position: relative;
-        }
+          .spacer-sm {
+            height: 1.5rem;
+          }
 
-        .intel-sync-toggle.active {
-          background: rgba(0, 113, 227, 0.05);
-          border-color: var(--primary);
-          color: var(--primary);
-        }
+          .spacer-md {
+            height: 2rem;
+          }
 
-        .intel-sync-toggle.active .pulse-ring {
-          position: absolute;
-          width: 100%;
-          height: 100%;
-          border: 2px solid var(--primary);
-          border-radius: 100px;
-          left: 0;
-          top: 0;
-          animation: pulse 2s infinite;
-          opacity: 0;
-        }
+          .matrix-sub-header {
+            font-size: 0.8rem;
+            font-weight: 800;
+            color: var(--text-secondary);
+            margin-bottom: 1.25rem;
+            letter-spacing: 0.05em;
+          }
 
-        @keyframes pulse {
-          0% { transform: scale(1); opacity: 0.5; }
-          100% { transform: scale(1.1); opacity: 0; }
-        }
+          .currency-input-wrap {
+            position: relative;
+          }
 
-        .matrix-footer {
-          padding: 1.5rem 2rem;
-          border-top: 1px solid var(--border);
-          background: var(--surface-soft);
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-        }
+          .currency-symbol {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-weight: 700;
+            color: var(--text-secondary);
+          }
 
-        .form-grid {
-          display: grid;
-          grid-template-columns: repeat(2, 1fr);
-          gap: 1.5rem;
-        }
+          .currency-input {
+            padding-left: 2rem;
+          }
 
-        .form-grid-3 {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 1.5rem;
-        }
+          .textarea-matrix {
+            min-height: 100px;
+          }
 
-        .full-width {
-          grid-column: 1 / -1;
-        }
+          .upload-zone-matrix {
+            margin-top: 2rem;
+            padding: 2rem;
+            border: 2px dashed var(--border);
+            border-radius: 16px;
+            text-align: center;
+            background: var(--surface-soft);
+          }
 
-        .matrix-info-box {
-          margin-top: 2rem;
-          padding: 1rem;
-          background: rgba(0, 113, 227, 0.03);
-          border: 1px solid rgba(0, 113, 227, 0.1);
-          border-radius: var(--radius-md);
-          display: flex;
-          gap: 0.75rem;
-          font-size: 0.8rem;
-          color: var(--text-secondary);
-        }
+          .upload-icon-matrix {
+            margin-bottom: 1rem;
+            opacity: 0.5;
+            margin-inline: auto;
+          }
 
-        .matrix-info-box svg {
-          color: var(--primary);
-          flex-shrink: 0;
-        }
-      `}</style>
+          .upload-title-matrix {
+            font-weight: 800;
+            font-size: 0.9rem;
+            margin-bottom: 0.25rem;
+          }
+
+          .upload-sub-matrix {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+          }
+
+          .upload-btn-matrix {
+            margin-top: 1rem;
+            margin-inline: auto;
+          }
+
+          .compliance-icon-wrap {
+            position: relative;
+          }
+
+          .compliance-icon {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+          }
+
+          .matrix-info-box-danger {
+            margin-top: 2.5rem;
+            background: rgba(217, 45, 32, 0.03);
+            border: 1px solid rgba(217, 45, 32, 0.1);
+          }
+
+          .text-danger {
+            color: var(--error);
+          }
+
+          .staff-input-wrap {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+          }
+
+          .ops-finalize-banner {
+            margin-top: 3rem;
+            padding: 1.5rem;
+            background: var(--surface);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+          }
+
+          .ops-finalize-icon-wrap {
+            width: 60px;
+            height: 60px;
+            background: rgba(0, 113, 227, 0.1);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+          }
+
+          .ops-finalize-title {
+            font-weight: 800;
+            margin-bottom: 0.25rem;
+          }
+
+          .ops-finalize-sub {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+          }
+
+          .footer-btn-group {
+            display: flex;
+            gap: 1rem;
+          }
+
+          .footer-abort-btn {
+            padding-inline: 2rem;
+          }
+
+          .footer-next-btn {
+            padding-inline: 2rem;
+          }
+
+          .footer-commit-btn {
+            padding-inline: 3rem;
+            background: var(--success);
+          }
+        `}</style>
 
       <div className="matrix-header">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
-          <div style={{ padding: '0.5rem', background: 'var(--primary)', borderRadius: '8px', color: 'white' }}>
+        <div className="matrix-header-left">
+          <div className="matrix-header-icon-wrap">
             <Zap size={20} fill="currentColor" />
           </div>
           <div>
@@ -331,18 +386,19 @@ const InfrastructureMatrixForm: React.FC<InfrastructureMatrixFormProps> = ({
               key={tab.id}
               className={`tab-button ${activeTab === tab.id ? 'active' : ''}`}
               onClick={() => setActiveTab(tab.id)}
+              title={`Go to ${tab.label} section`}
             >
               {tab.icon}
               {tab.label}
             </button>
           ))}
           
-          <div style={{ marginTop: 'auto', padding: '1rem', background: 'var(--surface)', borderRadius: '12px', border: '1px solid var(--border)' }}>
-            <p style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-secondary)', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Completion</p>
-            <div style={{ height: '6px', background: 'var(--surface-soft)', borderRadius: '3px', overflow: 'hidden' }}>
-              <div style={{ width: '40%', height: '100%', background: 'var(--primary)' }}></div>
+          <div className="matrix-sidebar-footer">
+            <p className="progress-label">Completion</p>
+            <div className="progress-track">
+              <div className="progress-fill" style={{ width: '40%' }}></div>
             </div>
-            <p style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--primary)', marginTop: '0.4rem' }}>40% Coordinates Locked</p>
+            <p className="progress-text">40% Coordinates Locked</p>
           </div>
         </aside>
 
@@ -362,24 +418,24 @@ const InfrastructureMatrixForm: React.FC<InfrastructureMatrixFormProps> = ({
                   
                   <div className="form-grid">
                     <div className="form-group full-width">
-                      <label className="form-label">LOCATION NAME</label>
-                      <input name="name" required className="form-input" value={formData.name} onChange={handleChange} placeholder="e.g. Near Nerd Global HQ" />
+                      <label className="form-label" htmlFor="matrix-loc-name">LOCATION NAME</label>
+                      <input id="matrix-loc-name" name="name" required className="form-input" value={formData.name} onChange={handleChange} placeholder="e.g. Near Nerd Global HQ" title="Location Name" />
                     </div>
                     <div className="form-group">
-                      <label className="form-label">STORE CODE</label>
-                      <input name="store_code" className="form-input" value={formData.store_code} onChange={handleChange} placeholder="NN-XXX" />
+                      <label className="form-label" htmlFor="matrix-store-code">STORE CODE</label>
+                      <input id="matrix-store-code" name="store_code" className="form-input" value={formData.store_code} onChange={handleChange} placeholder="NN-XXX" title="Store Code" />
                     </div>
                     <div className="form-group">
-                      <label className="form-label">BRAND NAME</label>
-                      <input name="brand_name" className="form-input" value={formData.brand_name} onChange={handleChange} placeholder="Official Brand Identity" />
+                      <label className="form-label" htmlFor="matrix-brand-name">BRAND NAME</label>
+                      <input id="matrix-brand-name" name="brand_name" className="form-input" value={formData.brand_name} onChange={handleChange} placeholder="Official Brand Identity" title="Brand Name" />
                     </div>
                     <div className="form-group">
-                      <label className="form-label">OPENING DATE</label>
-                      <input name="opening_date" type="date" className="form-input" value={formData.opening_date} onChange={handleChange} />
+                      <label className="form-label" htmlFor="matrix-opening-date">OPENING DATE</label>
+                      <input id="matrix-opening-date" name="opening_date" type="date" className="form-input" value={formData.opening_date} onChange={handleChange} title="Opening Date" />
                     </div>
                     <div className="form-group">
-                      <label className="form-label">OPERATIONAL STATUS</label>
-                      <select name="operational_status" className="form-select" value={formData.operational_status} onChange={handleChange}>
+                      <label className="form-label" htmlFor="matrix-ops-status">OPERATIONAL STATUS</label>
+                      <select id="matrix-ops-status" name="operational_status" className="form-select" value={formData.operational_status} onChange={handleChange} title="Operational Status">
                         <option value="Active">Active</option>
                         <option value="Under Construction">Under Construction</option>
                         <option value="Closed">Closed</option>
@@ -388,18 +444,19 @@ const InfrastructureMatrixForm: React.FC<InfrastructureMatrixFormProps> = ({
                     </div>
                   </div>
 
-                  <div style={{ marginTop: '2rem', padding: '1.25rem', background: 'var(--surface-soft)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer' }}>
+                  <div className="matrix-master-asset-banner">
+                    <label htmlFor="matrix-store-master">
                       <input 
+                        id="matrix-store-master"
                         type="checkbox" 
                         name="is_store_master" 
                         checked={formData.is_store_master} 
                         onChange={handleChange} 
-                        style={{ width: '22px', height: '22px', accentColor: 'var(--primary)' }} 
+                        title="Mark as Store Master Asset"
                       />
                       <div>
-                        <p style={{ fontWeight: 700, fontSize: '0.9rem' }}>MARK AS STORE MASTER ASSET</p>
-                        <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Designates this location as a primary administrative hub.</p>
+                        <p className="banner-title">MARK AS STORE MASTER ASSET</p>
+                        <p className="banner-sub">Designates this location as a primary administrative hub.</p>
                       </div>
                     </label>
                   </div>
@@ -424,44 +481,44 @@ const InfrastructureMatrixForm: React.FC<InfrastructureMatrixFormProps> = ({
 
                   <div className="form-grid">
                     <div className="form-group full-width">
-                      <label className="form-label">STREET ADDRESS</label>
-                      <input name="street_address" className="form-input" value={formData.street_address} onChange={handleChange} placeholder="Unit #, Street Address" />
+                      <label className="form-label" htmlFor="matrix-street">STREET ADDRESS</label>
+                      <input id="matrix-street" name="street_address" className="form-input" value={formData.street_address} onChange={handleChange} placeholder="Unit #, Street Address" title="Street Address" />
                     </div>
                     <div className="form-group">
-                      <label className="form-label">CITY</label>
-                      <input name="city" className="form-input" value={formData.city} onChange={handleChange} />
+                      <label className="form-label" htmlFor="matrix-city">CITY</label>
+                      <input id="matrix-city" name="city" className="form-input" value={formData.city} onChange={handleChange} title="City" />
                     </div>
                     <div className="form-grid" style={{ gap: '0.75rem' }}>
                       <div className="form-group">
-                        <label className="form-label">PROVINCE</label>
-                        <input name="province" className="form-input" value={formData.province} onChange={handleChange} />
+                        <label className="form-label" htmlFor="matrix-province">PROVINCE</label>
+                        <input id="matrix-province" name="province" className="form-input" value={formData.province} onChange={handleChange} title="Province" />
                       </div>
                       <div className="form-group">
-                        <label className="form-label">POSTAL CODE</label>
-                        <input name="postal_code" className="form-input" value={formData.postal_code} onChange={handleChange} />
+                        <label className="form-label" htmlFor="matrix-postal">POSTAL CODE</label>
+                        <input id="matrix-postal" name="postal_code" className="form-input" value={formData.postal_code} onChange={handleChange} title="Postal Code" />
                       </div>
                     </div>
                   </div>
 
-                  <div style={{ height: '1.5rem' }}></div>
-                  <h3 style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--text-secondary)', marginBottom: '1.25rem', letterSpacing: '0.05em' }}>LANDLORD & PROPERTY MANAGEMENT</h3>
+                  <div className="spacer-sm"></div>
+                  <h3 className="matrix-sub-header">LANDLORD & PROPERTY MANAGEMENT</h3>
                   
                   <div className="form-grid">
                     <div className="form-group">
-                      <label className="form-label">LANDLORD COMPANY</label>
-                      <input name="landlord_company" className="form-input" value={formData.landlord_company} onChange={handleChange} />
+                      <label className="form-label" htmlFor="matrix-landlord-co">LANDLORD COMPANY</label>
+                      <input id="matrix-landlord-co" name="landlord_company" className="form-input" value={formData.landlord_company} onChange={handleChange} title="Landlord Company" />
                     </div>
                     <div className="form-group">
-                      <label className="form-label">PRIMARY CONTACT NAME</label>
-                      <input name="landlord_name" className="form-input" value={formData.landlord_name} onChange={handleChange} />
+                      <label className="form-label" htmlFor="matrix-landlord-name">PRIMARY CONTACT NAME</label>
+                      <input id="matrix-landlord-name" name="landlord_name" className="form-input" value={formData.landlord_name} onChange={handleChange} title="Landlord Name" />
                     </div>
                     <div className="form-group">
-                      <label className="form-label">EMAIL ADDRESS</label>
-                      <input name="landlord_email" type="email" className="form-input" value={formData.landlord_email} onChange={handleChange} />
+                      <label className="form-label" htmlFor="matrix-landlord-email">EMAIL ADDRESS</label>
+                      <input id="matrix-landlord-email" name="landlord_email" type="email" className="form-input" value={formData.landlord_email} onChange={handleChange} title="Landlord Email" />
                     </div>
                     <div className="form-group">
-                      <label className="form-label">PHONE NUMBER</label>
-                      <input name="landlord_phone" className="form-input" value={formData.landlord_phone} onChange={handleChange} />
+                      <label className="form-label" htmlFor="matrix-landlord-phone">PHONE NUMBER</label>
+                      <input id="matrix-landlord-phone" name="landlord_phone" className="form-input" value={formData.landlord_phone} onChange={handleChange} title="Landlord Phone" />
                     </div>
                   </div>
 
@@ -490,60 +547,60 @@ const InfrastructureMatrixForm: React.FC<InfrastructureMatrixFormProps> = ({
 
                   <div className="form-grid-3">
                     <div className="form-group">
-                      <label className="form-label">LEASE START</label>
-                      <input name="lease_start" type="date" className="form-input" value={formData.lease_start} onChange={handleChange} />
+                      <label className="form-label" htmlFor="matrix-lease-start">LEASE START</label>
+                      <input id="matrix-lease-start" name="lease_start" type="date" className="form-input" value={formData.lease_start} onChange={handleChange} title="Lease Start" />
                     </div>
                     <div className="form-group">
-                      <label className="form-label">LEASE EXPIRY</label>
-                      <input name="lease_expiry" type="date" className="form-input" value={formData.lease_expiry} onChange={handleChange} />
+                      <label className="form-label" htmlFor="matrix-lease-expiry">LEASE EXPIRY</label>
+                      <input id="matrix-lease-expiry" name="lease_expiry" type="date" className="form-input" value={formData.lease_expiry} onChange={handleChange} title="Lease Expiry" />
                     </div>
                     <div className="form-grid" style={{ gap: '0.75rem' }}>
                       <div className="form-group">
-                        <label className="form-label">TERM (YRS)</label>
-                        <input name="lease_term_years" type="number" className="form-input" value={formData.lease_term_years} onChange={handleChange} />
+                        <label className="form-label" htmlFor="matrix-lease-term">TERM (YRS)</label>
+                        <input id="matrix-lease-term" name="lease_term_years" type="number" className="form-input" value={formData.lease_term_years} onChange={handleChange} title="Lease Term" />
                       </div>
                       <div className="form-group">
-                        <label className="form-label">NOTICE (MOS)</label>
-                        <input name="lease_notice_months" type="number" className="form-input" value={formData.lease_notice_months} onChange={handleChange} />
+                        <label className="form-label" htmlFor="matrix-lease-notice">NOTICE (MOS)</label>
+                        <input id="matrix-lease-notice" name="lease_notice_months" type="number" className="form-input" value={formData.lease_notice_months} onChange={handleChange} title="Notice Months" />
                       </div>
                     </div>
                   </div>
 
-                  <div style={{ height: '2rem' }}></div>
+                  <div className="spacer-md"></div>
                   <div className="form-grid-3">
                     <div className="form-group">
-                      <label className="form-label">BASE RENT ($)</label>
-                      <div style={{ position: 'relative' }}>
-                        <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', fontWeight: 700, color: 'var(--text-secondary)' }}>$</span>
-                        <input name="base_rent" type="number" className="form-input" style={{ paddingLeft: '2rem' }} value={formData.base_rent} onChange={handleChange} />
+                      <label className="form-label" htmlFor="matrix-base-rent">BASE RENT ($)</label>
+                      <div className="currency-input-wrap">
+                        <span className="currency-symbol">$</span>
+                        <input id="matrix-base-rent" name="base_rent" type="number" className="form-input currency-input" value={formData.base_rent} onChange={handleChange} title="Base Rent" />
                       </div>
                     </div>
                     <div className="form-group">
-                      <label className="form-label">CAM / TAX ($)</label>
-                      <div style={{ position: 'relative' }}>
-                        <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', fontWeight: 700, color: 'var(--text-secondary)' }}>$</span>
-                        <input name="additional_rent_cam" type="number" className="form-input" style={{ paddingLeft: '2rem' }} value={formData.additional_rent_cam} onChange={handleChange} />
+                      <label className="form-label" htmlFor="matrix-cam-rent">CAM / TAX ($)</label>
+                      <div className="currency-input-wrap">
+                        <span className="currency-symbol">$</span>
+                        <input id="matrix-cam-rent" name="additional_rent_cam" type="number" className="form-input currency-input" value={formData.additional_rent_cam} onChange={handleChange} title="Additional Rent" />
                       </div>
                     </div>
                     <div className="form-group">
-                      <label className="form-label">DEPOSIT ($)</label>
-                      <div style={{ position: 'relative' }}>
-                        <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', fontWeight: 700, color: 'var(--text-secondary)' }}>$</span>
-                        <input name="deposit_amount" type="number" className="form-input" style={{ paddingLeft: '2rem' }} value={formData.deposit_amount} onChange={handleChange} />
+                      <label className="form-label" htmlFor="matrix-deposit">DEPOSIT ($)</label>
+                      <div className="currency-input-wrap">
+                        <span className="currency-symbol">$</span>
+                        <input id="matrix-deposit" name="deposit_amount" type="number" className="form-input currency-input" value={formData.deposit_amount} onChange={handleChange} title="Deposit Amount" />
                       </div>
                     </div>
                   </div>
 
                   <div className="form-group" style={{ marginTop: '1.5rem' }}>
-                    <label className="form-label">RENEWAL TERMS</label>
-                    <textarea name="renewal_terms" className="form-textarea" style={{ minHeight: '100px' }} value={formData.renewal_terms} onChange={handleChange} placeholder="Outline renewal options, indexation, and special conditions..." />
+                    <label className="form-label" htmlFor="matrix-renewal-terms">RENEWAL TERMS</label>
+                    <textarea id="matrix-renewal-terms" name="renewal_terms" className="form-textarea textarea-matrix" value={formData.renewal_terms} onChange={handleChange} placeholder="Outline renewal options, indexation, and special conditions..." title="Renewal Terms" />
                   </div>
 
-                  <div style={{ marginTop: '2rem', padding: '2rem', border: '2px dashed var(--border)', borderRadius: '16px', textAlign: 'center', background: 'var(--surface-soft)' }}>
-                    <FileText size={32} color="var(--text-secondary)" style={{ marginBottom: '1rem', opacity: 0.5 }} />
-                    <p style={{ fontWeight: 800, fontSize: '0.9rem', marginBottom: '0.25rem' }}>Upload Signed Lease Agreement</p>
-                    <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>PDF or Scan required for Intelligence Sync validation.</p>
-                    <button type="button" className="button-secondary" style={{ marginTop: '1rem', marginInline: 'auto' }}>Select File</button>
+                  <div className="upload-zone-matrix">
+                    <FileText size={32} color="var(--text-secondary)" className="upload-icon-matrix" />
+                    <p className="upload-title-matrix">Upload Signed Lease Agreement</p>
+                    <p className="upload-sub-matrix">PDF or Scan required for Intelligence Sync validation.</p>
+                    <button type="button" className="button-secondary upload-btn-matrix" title="Select lease file">Select File</button>
                   </div>
                 </motion.div>
               )}
@@ -566,42 +623,42 @@ const InfrastructureMatrixForm: React.FC<InfrastructureMatrixFormProps> = ({
 
                   <div className="form-grid">
                     <div className="form-group">
-                      <label className="form-label">INSURANCE CARRIER</label>
-                      <input name="insurance_company" className="form-input" value={formData.insurance_company} onChange={handleChange} />
+                      <label className="form-label" htmlFor="matrix-ins-carrier">INSURANCE CARRIER</label>
+                      <input id="matrix-ins-carrier" name="insurance_company" className="form-input" value={formData.insurance_company} onChange={handleChange} title="Insurance Company" />
                     </div>
                     <div className="form-group">
-                      <label className="form-label">POLICY NUMBER</label>
-                      <input name="policy_number" className="form-input" value={formData.policy_number} onChange={handleChange} />
+                      <label className="form-label" htmlFor="matrix-policy-num">POLICY NUMBER</label>
+                      <input id="matrix-policy-num" name="policy_number" className="form-input" value={formData.policy_number} onChange={handleChange} title="Policy Number" />
                     </div>
                   </div>
 
-                  <div style={{ height: '2rem' }}></div>
-                  <h3 style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--text-secondary)', marginBottom: '1.25rem', letterSpacing: '0.05em' }}>CRITICAL COMPLIANCE MONITORING</h3>
+                  <div className="spacer-md"></div>
+                  <h3 className="matrix-sub-header">CRITICAL COMPLIANCE MONITORING</h3>
                   
                   <div className="form-grid-3">
                     <div className="form-group">
-                      <label className="form-label">BIZ LICENSE EXPIRY</label>
-                      <div style={{ position: 'relative' }}>
-                        <Clock size={16} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
-                        <input name="biz_license_expiry" type="date" className="form-input" value={formData.biz_license_expiry} onChange={handleChange} />
+                      <label className="form-label" htmlFor="matrix-license-expiry">BIZ LICENSE EXPIRY</label>
+                      <div className="compliance-icon-wrap">
+                        <Clock size={16} className="compliance-icon" />
+                        <input id="matrix-license-expiry" name="biz_license_expiry" type="date" className="form-input" value={formData.biz_license_expiry} onChange={handleChange} title="License Expiry" />
                       </div>
                     </div>
                     <div className="form-group">
-                      <label className="form-label">FIRE INSPECTION DUE</label>
-                      <div style={{ position: 'relative' }}>
-                        <Flame size={16} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
-                        <input name="fire_inspection_due" type="date" className="form-input" value={formData.fire_inspection_due} onChange={handleChange} />
+                      <label className="form-label" htmlFor="matrix-fire-inspect">FIRE INSPECTION DUE</label>
+                      <div className="compliance-icon-wrap">
+                        <Flame size={16} className="compliance-icon" />
+                        <input id="matrix-fire-inspect" name="fire_inspection_due" type="date" className="form-input" value={formData.fire_inspection_due} onChange={handleChange} title="Fire Inspection Due" />
                       </div>
                     </div>
                     <div className="form-group">
-                      <label className="form-label">FIRE EXT. EXPIRY</label>
-                      <input name="fire_extinguisher_expiry" type="date" className="form-input" value={formData.fire_extinguisher_expiry} onChange={handleChange} />
+                      <label className="form-label" htmlFor="matrix-fire-ext">FIRE EXT. EXPIRY</label>
+                      <input id="matrix-fire-ext" name="fire_extinguisher_expiry" type="date" className="form-input" value={formData.fire_extinguisher_expiry} onChange={handleChange} title="Fire Extinguisher Expiry" />
                     </div>
                   </div>
 
-                  <div className="matrix-info-box" style={{ marginTop: '2.5rem', background: 'rgba(217, 45, 32, 0.03)', border: '1px solid rgba(217, 45, 32, 0.1)' }}>
-                    <AlertCircle size={16} style={{ color: 'var(--error)' }} />
-                    <p style={{ color: 'var(--error)' }}>Missing compliance dates will trigger "High Risk" status in the Master Operations Dashboard.</p>
+                  <div className="matrix-info-box matrix-info-box-danger">
+                    <AlertCircle size={16} className="text-danger" />
+                    <p className="text-danger">Missing compliance dates will trigger "High Risk" status in the Master Operations Dashboard.</p>
                   </div>
                 </motion.div>
               )}
@@ -624,33 +681,33 @@ const InfrastructureMatrixForm: React.FC<InfrastructureMatrixFormProps> = ({
 
                   <div className="form-grid">
                     <div className="form-group full-width">
-                      <label className="form-label">STORE MANAGER NAME</label>
-                      <input name="store_manager_name" className="form-input" value={formData.store_manager_name} onChange={handleChange} placeholder="Full Legal Name" />
+                      <label className="form-label" htmlFor="matrix-mgr-name">STORE MANAGER NAME</label>
+                      <input id="matrix-mgr-name" name="store_manager_name" className="form-input" value={formData.store_manager_name} onChange={handleChange} placeholder="Full Legal Name" title="Manager Name" />
                     </div>
                     <div className="form-group">
-                      <label className="form-label">MANAGER EMAIL</label>
-                      <input name="manager_email" type="email" className="form-input" value={formData.manager_email} onChange={handleChange} placeholder="nn.manager@nearnerd.com" />
+                      <label className="form-label" htmlFor="matrix-mgr-email">MANAGER EMAIL</label>
+                      <input id="matrix-mgr-email" name="manager_email" type="email" className="form-input" value={formData.manager_email} onChange={handleChange} placeholder="nn.manager@nearnerd.com" title="Manager Email" />
                     </div>
                     <div className="form-group">
-                      <label className="form-label">MANAGER PHONE</label>
-                      <input name="manager_phone" className="form-input" value={formData.manager_phone} onChange={handleChange} />
+                      <label className="form-label" htmlFor="matrix-mgr-phone">MANAGER PHONE</label>
+                      <input id="matrix-mgr-phone" name="manager_phone" className="form-input" value={formData.manager_phone} onChange={handleChange} title="Manager Phone" />
                     </div>
                     <div className="form-group">
-                      <label className="form-label">STAFF COMPLEMENT (HC)</label>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                      <label className="form-label" htmlFor="matrix-staff-count">STAFF COMPLEMENT (HC)</label>
+                      <div className="staff-input-wrap">
                         <Users size={20} color="var(--text-secondary)" />
-                        <input name="staff_count" type="number" className="form-input" value={formData.staff_count} onChange={handleChange} />
+                        <input id="matrix-staff-count" name="staff_count" type="number" className="form-input" value={formData.staff_count} onChange={handleChange} title="Staff Count" />
                       </div>
                     </div>
                   </div>
 
-                  <div style={{ marginTop: '3rem', padding: '1.5rem', background: 'var(--surface)', borderRadius: '16px', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-                    <div style={{ width: '60px', height: '60px', background: 'rgba(0, 113, 227, 0.1)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyCenter: 'center', color: 'var(--primary)' }}>
+                  <div className="ops-finalize-banner">
+                    <div className="ops-finalize-icon-wrap">
                       <CheckCircle2 size={32} />
                     </div>
                     <div>
-                      <h4 style={{ fontWeight: 800, marginBottom: '0.25rem' }}>Finalize Asset Matrix</h4>
-                      <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Review all coordinates across tabs before committing to the core system.</p>
+                      <h4 className="ops-finalize-title">Finalize Asset Matrix</h4>
+                      <p className="ops-finalize-sub">Review all coordinates across tabs before committing to the core system.</p>
                     </div>
                   </div>
                 </motion.div>
@@ -661,11 +718,11 @@ const InfrastructureMatrixForm: React.FC<InfrastructureMatrixFormProps> = ({
       </div>
 
       <div className="matrix-footer">
-        <button type="button" className="button-secondary" onClick={onCancel} style={{ paddingInline: '2rem' }}>
+        <button type="button" className="button-secondary footer-abort-btn" onClick={onCancel} title="Abort initialization">
           ABORT
         </button>
         
-        <div style={{ display: 'flex', gap: '1rem' }}>
+        <div className="footer-btn-group">
            {activeTab !== 'identity' && (
              <button 
                type="button" 
@@ -674,6 +731,7 @@ const InfrastructureMatrixForm: React.FC<InfrastructureMatrixFormProps> = ({
                  const currentIndex = tabs.findIndex(t => t.id === activeTab);
                  setActiveTab(tabs[currentIndex - 1].id);
                }}
+               title="Previous section"
              >
                PREVIOUS
              </button>
@@ -682,12 +740,12 @@ const InfrastructureMatrixForm: React.FC<InfrastructureMatrixFormProps> = ({
            {activeTab !== 'ops' ? (
              <button 
                type="button" 
-               className="button-primary" 
+               className="button-primary footer-next-btn" 
                onClick={() => {
                  const currentIndex = tabs.findIndex(t => t.id === activeTab);
                  setActiveTab(tabs[currentIndex + 1].id);
                }}
-               style={{ paddingInline: '2rem' }}
+               title="Next section"
              >
                NEXT STEP <ChevronRight size={18} />
              </button>
@@ -695,9 +753,9 @@ const InfrastructureMatrixForm: React.FC<InfrastructureMatrixFormProps> = ({
              <button 
                form="matrix-form"
                type="submit" 
-               className="button-primary" 
+               className="button-primary footer-commit-btn" 
                disabled={loading} 
-               style={{ paddingInline: '3rem', background: 'var(--success)' }}
+               title="Commit matrix to system"
              >
                {loading ? 'SYNCHRONIZING...' : 'COMMIT MATRIX'}
              </button>

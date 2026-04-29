@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Building2, Users, Mail, Phone, Globe, Info, Shield, CheckCircle2, Zap } from 'lucide-react'
+import { X, Building2, Mail, Zap } from 'lucide-react'
 import { Vendor, CreateVendorInput } from '@/types/vendor'
 
 interface VendorEditFormProps {
@@ -27,7 +27,7 @@ export default function VendorEditForm({ vendor, onSave, onCancel, loading }: Ve
 
   const [error, setError] = useState<string | null>(null)
 
-  const handleInputChange = (field: keyof CreateVendorInput, value: any) => {
+  const handleInputChange = (field: keyof CreateVendorInput, value: string) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
@@ -62,17 +62,7 @@ export default function VendorEditForm({ vendor, onSave, onCancel, loading }: Ve
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      style={{
-        position: 'fixed',
-        inset: 0,
-        background: 'rgba(0, 0, 0, 0.85)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 1000,
-        padding: '1rem',
-        backdropFilter: 'blur(12px)',
-      }}
+      className="vendor-edit-backdrop"
       onClick={onCancel}
     >
       <motion.div
@@ -83,6 +73,18 @@ export default function VendorEditForm({ vendor, onSave, onCancel, loading }: Ve
         className="vendor-edit-container"
       >
         <style>{`
+          .vendor-edit-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 1rem;
+            backdrop-filter: blur(12px);
+          }
+
           .vendor-edit-container {
             background: var(--bg-card);
             border-radius: 24px;
@@ -105,9 +107,32 @@ export default function VendorEditForm({ vendor, onSave, onCancel, loading }: Ve
             align-items: center;
           }
 
+          .vendor-modal-header-left {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+          }
+
+          .vendor-icon-wrap {
+            padding: 0.5rem;
+            background: rgba(0, 113, 227, 0.1);
+            border-radius: 10px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+          }
+
           .vendor-modal-header h1 {
             font-size: 1.25rem;
             font-weight: 800;
+          }
+
+          .vendor-name-accent {
+            color: var(--primary);
+          }
+
+          .vendor-modal-close {
+            border-radius: 50%;
           }
 
           .vendor-modal-body {
@@ -154,6 +179,30 @@ export default function VendorEditForm({ vendor, onSave, onCancel, loading }: Ve
             overflow-y: auto;
           }
 
+          .vendor-error-banner {
+            background: rgba(217, 45, 32, 0.1);
+            color: var(--error);
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            font-size: 0.875rem;
+            font-weight: 700;
+          }
+
+          .vendor-section-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+          }
+
+          .vendor-section-header h2 {
+            font-size: 1.25rem;
+            font-weight: 800;
+          }
+
           .form-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -163,16 +212,34 @@ export default function VendorEditForm({ vendor, onSave, onCancel, loading }: Ve
           .full-width {
             grid-column: 1 / -1;
           }
+
+          .vendor-notes-area {
+            min-height: 200px;
+          }
+
+          .vendor-modal-footer {
+            padding: 1.5rem 2rem;
+            border-top: 1px solid var(--border);
+            background: var(--surface-soft);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          }
+
+          .vendor-submit-btn {
+            min-width: 180px;
+            font-weight: 900;
+          }
         `}</style>
 
         <div className="vendor-modal-header">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <div style={{ padding: '0.5rem', background: 'rgba(0, 113, 227, 0.1)', borderRadius: '10px', color: 'var(--primary)' }}>
+          <div className="vendor-modal-header-left">
+            <div className="vendor-icon-wrap">
               <Building2 size={20} />
             </div>
-            <h1>Partner Orchestration: <span style={{ color: 'var(--primary)' }}>{vendor.name}</span></h1>
+            <h1>Partner Orchestration: <span className="vendor-name-accent">{vendor.name}</span></h1>
           </div>
-          <button onClick={onCancel} className="icon-button" style={{ borderRadius: '50%' }}>
+          <button onClick={onCancel} className="icon-button vendor-modal-close" title="Close edit form">
             <X size={20} />
           </button>
         </div>
@@ -184,6 +251,7 @@ export default function VendorEditForm({ vendor, onSave, onCancel, loading }: Ve
                 key={tab.id}
                 className={`tab-button ${activeTab === tab.id ? 'active' : ''}`}
                 onClick={() => setActiveTab(tab.id)}
+                title={`Switch to ${tab.label} tab`}
               >
                 {tab.icon}
                 {tab.label}
@@ -193,7 +261,7 @@ export default function VendorEditForm({ vendor, onSave, onCancel, loading }: Ve
 
           <main className="vendor-modal-content">
             {error && (
-              <div style={{ background: 'rgba(217, 45, 32, 0.1)', color: 'var(--error)', padding: '1rem', borderRadius: '12px', marginBottom: '1.5rem', fontSize: '0.875rem', fontWeight: 700 }}>
+              <div className="vendor-error-banner">
                 {error}
               </div>
             )}
@@ -202,21 +270,21 @@ export default function VendorEditForm({ vendor, onSave, onCancel, loading }: Ve
               <AnimatePresence mode="wait">
                 {activeTab === 'identity' && (
                   <motion.div key="identity" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '2rem', paddingBottom: '1rem', borderBottom: '1px solid var(--border)' }}>
-                      <h2 style={{ fontSize: '1.25rem', fontWeight: 800 }}>Primary Identity</h2>
+                    <div className="vendor-section-header">
+                      <h2>Primary Identity</h2>
                     </div>
                     <div className="form-grid">
                       <div className="form-group full-width">
-                        <label className="form-label">VENDOR IDENTITY / NAME</label>
-                        <input className="form-input" value={formData.name} onChange={(e) => handleInputChange('name', e.target.value)} required />
+                        <label className="form-label" htmlFor="vendor-name-edit">VENDOR IDENTITY / NAME</label>
+                        <input id="vendor-name-edit" className="form-input" value={formData.name} onChange={(e) => handleInputChange('name', e.target.value)} required title="Vendor Name" />
                       </div>
                       <div className="form-group">
-                        <label className="form-label">CATEGORY MATRIX</label>
-                        <input className="form-input" value={formData.category} onChange={(e) => handleInputChange('category', e.target.value)} required />
+                        <label className="form-label" htmlFor="vendor-cat-edit">CATEGORY MATRIX</label>
+                        <input id="vendor-cat-edit" className="form-input" value={formData.category} onChange={(e) => handleInputChange('category', e.target.value)} required title="Category" />
                       </div>
                       <div className="form-group">
-                        <label className="form-label">OPERATIONAL STATUS</label>
-                        <select className="form-select" value={formData.status} onChange={(e) => handleInputChange('status', e.target.value)}>
+                        <label className="form-label" htmlFor="vendor-status-edit">OPERATIONAL STATUS</label>
+                        <select id="vendor-status-edit" className="form-select" value={formData.status} onChange={(e) => handleInputChange('status', e.target.value)} title="Operational Status">
                           <option value="Active">Active / Verified</option>
                           <option value="Paused">Paused / Restricted</option>
                         </select>
@@ -227,25 +295,25 @@ export default function VendorEditForm({ vendor, onSave, onCancel, loading }: Ve
 
                 {activeTab === 'contact' && (
                   <motion.div key="contact" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '2rem', paddingBottom: '1rem', borderBottom: '1px solid var(--border)' }}>
-                      <h2 style={{ fontSize: '1.25rem', fontWeight: 800 }}>Communication Protocol</h2>
+                    <div className="vendor-section-header">
+                      <h2>Communication Protocol</h2>
                     </div>
                     <div className="form-grid">
                       <div className="form-group full-width">
-                        <label className="form-label">PRIMARY CONTACT ENTITY</label>
-                        <input className="form-input" value={formData.contact_name || ''} onChange={(e) => handleInputChange('contact_name', e.target.value)} />
+                        <label className="form-label" htmlFor="vendor-contact-edit">PRIMARY CONTACT ENTITY</label>
+                        <input id="vendor-contact-edit" className="form-input" value={formData.contact_name || ''} onChange={(e) => handleInputChange('contact_name', e.target.value)} title="Contact Name" />
                       </div>
                       <div className="form-group">
-                        <label className="form-label">COMMUNICATION EMAIL</label>
-                        <input type="email" className="form-input" value={formData.email || ''} onChange={(e) => handleInputChange('email', e.target.value)} />
+                        <label className="form-label" htmlFor="vendor-email-edit">COMMUNICATION EMAIL</label>
+                        <input id="vendor-email-edit" type="email" className="form-input" value={formData.email || ''} onChange={(e) => handleInputChange('email', e.target.value)} title="Email Address" />
                       </div>
                       <div className="form-group">
-                        <label className="form-label">TELEPHONIC COORDINATE</label>
-                        <input className="form-input" value={formData.phone || ''} onChange={(e) => handleInputChange('phone', e.target.value)} />
+                        <label className="form-label" htmlFor="vendor-phone-edit">TELEPHONIC COORDINATE</label>
+                        <input id="vendor-phone-edit" className="form-input" value={formData.phone || ''} onChange={(e) => handleInputChange('phone', e.target.value)} title="Phone Number" />
                       </div>
                       <div className="form-group full-width">
-                        <label className="form-label">DIGITAL DOMAIN (WEBSITE)</label>
-                        <input type="url" className="form-input" value={formData.website || ''} onChange={(e) => handleInputChange('website', e.target.value)} />
+                        <label className="form-label" htmlFor="vendor-web-edit">DIGITAL DOMAIN (WEBSITE)</label>
+                        <input id="vendor-web-edit" type="url" className="form-input" value={formData.website || ''} onChange={(e) => handleInputChange('website', e.target.value)} title="Website URL" />
                       </div>
                     </div>
                   </motion.div>
@@ -253,13 +321,13 @@ export default function VendorEditForm({ vendor, onSave, onCancel, loading }: Ve
 
                 {activeTab === 'intelligence' && (
                   <motion.div key="intelligence" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '2rem', paddingBottom: '1rem', borderBottom: '1px solid var(--border)' }}>
-                      <h2 style={{ fontSize: '1.25rem', fontWeight: 800 }}>Network Intelligence</h2>
+                    <div className="vendor-section-header">
+                      <h2>Network Intelligence</h2>
                     </div>
                     <div className="form-grid">
                       <div className="form-group full-width">
-                        <label className="form-label">OPERATIONAL NOTES & CONTEXT</label>
-                        <textarea className="form-textarea" style={{ minHeight: '200px' }} value={formData.notes || ''} onChange={(e) => handleInputChange('notes', e.target.value)} placeholder="Terms, performance logs, or relationship history..." />
+                        <label className="form-label" htmlFor="vendor-notes-edit">OPERATIONAL NOTES & CONTEXT</label>
+                        <textarea id="vendor-notes-edit" className="form-textarea vendor-notes-area" value={formData.notes || ''} onChange={(e) => handleInputChange('notes', e.target.value)} placeholder="Terms, performance logs, or relationship history..." title="Operational Notes" />
                       </div>
                     </div>
                   </motion.div>
@@ -269,9 +337,9 @@ export default function VendorEditForm({ vendor, onSave, onCancel, loading }: Ve
           </main>
         </div>
 
-        <div style={{ padding: '1.5rem 2rem', borderTop: '1px solid var(--border)', background: 'var(--surface-soft)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <button type="button" onClick={onCancel} className="button-secondary">DISCARD</button>
-          <button type="submit" form="vendor-edit-form" disabled={loading} className="button-primary" style={{ minWidth: '180px', fontWeight: 900 }}>
+        <div className="vendor-modal-footer">
+          <button type="button" onClick={onCancel} className="button-secondary" title="Discard changes">DISCARD</button>
+          <button type="submit" form="vendor-edit-form" disabled={loading} className="button-primary vendor-submit-btn" title="Commit changes to system">
             {loading ? 'COMMITING...' : 'COMMIT CHANGES'}
           </button>
         </div>

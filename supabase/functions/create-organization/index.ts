@@ -12,7 +12,9 @@ interface RequestBody {
   adminEmail: string;
 }
 
-Deno.serve(async (req) => {
+declare const Deno: any;
+
+Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
@@ -50,7 +52,7 @@ Deno.serve(async (req) => {
     if (orgError) throw new Error(`Failed to create organization: ${orgError.message}`);
 
     // 2. Invite User with Admin Role
-    const { data: inviteData, error: inviteError } = await supabase.auth.admin.inviteUserByEmail(
+    const { error: inviteError } = await supabase.auth.admin.inviteUserByEmail(
       adminEmail,
       {
         data: {
