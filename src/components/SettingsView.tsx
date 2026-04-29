@@ -1,8 +1,9 @@
 import { FormEvent, memo, useEffect, useState } from 'react';
-import { Database, ShieldCheck, SlidersHorizontal, UserRound, Zap, Bell, Fingerprint, Activity, CheckCircle2, ShieldAlert } from 'lucide-react';
+import { Activity, CheckCircle2, Database, Fingerprint, Link, Send, ShieldAlert, ShieldCheck, Zap } from 'lucide-react';
 import { UserProfile } from '@/services/AuthService';
 import { DEFAULT_CURRENCY } from '@/utils/currency';
 import { motion } from 'framer-motion';
+import { zapierService } from '@/services/zapierService';
 
 interface SettingsViewProps {
   user: UserProfile | null;
@@ -26,12 +27,21 @@ function SettingsView({
   const [currency, setCurrency] = useState(DEFAULT_CURRENCY);
   const [savedMessage, setSavedMessage] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [zapierWebhookUrl, setZapierWebhookUrl] = useState('');
+  const [isZapierEnabled, setIsZapierEnabled] = useState(false);
+  const [isTestingZapier, setIsTestingZapier] = useState(false);
 
   useEffect(() => {
     setName(user?.fullName || '');
     setEmail(user?.email || '');
     setRole(user?.role || '');
   }, [user]);
+
+  useEffect(() => {
+    const settings = zapierService.getSettings();
+    setZapierWebhookUrl(settings.webhookUrl);
+    setIsZapierEnabled(settings.enabled);
+  }, []);
 
   const handleProfileSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -49,6 +59,37 @@ function SettingsView({
       setSavedMessage(message);
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleZapierSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    zapierService.saveSettings({
+      enabled: isZapierEnabled,
+      webhookUrl: zapierWebhookUrl,
+    });
+    setSavedMessage('Zapier connection saved');
+    window.setTimeout(() => setSavedMessage(''), 2500);
+  };
+
+  const handleZapierTest = async () => {
+    setIsTestingZapier(true);
+    setSavedMessage('');
+
+    try {
+      await zapierService.testConnection(zapierWebhookUrl);
+      zapierService.saveSettings({
+        enabled: true,
+        webhookUrl: zapierWebhookUrl,
+      });
+      setIsZapierEnabled(true);
+      setSavedMessage('Zapier test sent successfully');
+      window.setTimeout(() => setSavedMessage(''), 2500);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Could not reach Zapier';
+      setSavedMessage(message);
+    } finally {
+      setIsTestingZapier(false);
     }
   };
 
@@ -227,6 +268,56 @@ function SettingsView({
               </div>
             </div>
           </div>
+        </motion.section>
+
+        <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="settings-card">
+          <div className="card-header">
+            <div style={{ padding: '0.5rem', background: 'rgba(255, 76, 0, 0.1)', borderRadius: '10px', color: '#ff4c00' }}>
+              <Link size={20} />
+            </div>
+            <h2>Zapier Connection</h2>
+          </div>
+
+          <form onSubmit={handleZapierSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            <div className="form-group">
+              <label className="form-label">ZAPIER CATCH HOOK URL</label>
+              <input
+                className="form-input"
+                type="url"
+                value={zapierWebhookUrl}
+                onChange={(event) => setZapierWebhookUrl(event.target.value)}
+                placeholder="https://hooks.zapier.com/hooks/catch/..."
+              />
+            </div>
+
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.9rem 1rem', background: 'var(--surface-soft)', borderRadius: '12px', border: '1px solid var(--border)', cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={isZapierEnabled}
+                onChange={(event) => setIsZapierEnabled(event.target.checked)}
+                style={{ width: '18px', height: '18px' }}
+              />
+              <span style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                Send bill, location, vendor, and document changes to Zapier
+              </span>
+            </label>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+              <button className="button-primary" type="submit" style={{ fontWeight: 900 }}>
+                SAVE ZAPIER
+              </button>
+              <button
+                className="button-secondary"
+                type="button"
+                onClick={handleZapierTest}
+                disabled={isTestingZapier}
+                style={{ fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+              >
+                <Send size={16} />
+                {isTestingZapier ? 'TESTING...' : 'TEST'}
+              </button>
+            </div>
+          </form>
         </motion.section>
 
         <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="settings-card" style={{ gridColumn: '1 / -1' }}>

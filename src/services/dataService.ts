@@ -4,6 +4,7 @@ import { CreateDocumentInput, DocumentRecord } from '@/types/document';
 import { Location, CreateLocationInput } from '@/types/location';
 import { CreateVendorInput, UpdateVendorInput, Vendor } from '@/types/vendor';
 import { DashboardStats, ApiError } from '@/types/common';
+import { zapierService } from './zapierService';
 
 export interface Organization {
   id: string;
@@ -113,6 +114,23 @@ class DataService {
       id: crypto.randomUUID(),
       created_at: new Date().toISOString(),
     };
+  }
+
+  private notifyZapier<T>(
+    resource: 'bill' | 'location' | 'vendor' | 'document',
+    action: 'created' | 'updated' | 'deleted' | 'status_changed',
+    record?: T,
+    metadata?: Record<string, unknown>
+  ): void {
+    void zapierService.sendEvent({
+      resource,
+      action,
+      record,
+      recordId: record && typeof record === 'object' && 'id' in record ? String(record.id) : undefined,
+      metadata,
+    }).catch((error) => {
+      console.warn('Zapier notification failed:', error);
+    });
   }
 
   private updateLocalRecord<T extends { id: string }>(key: string, id: string, patch: Partial<T>): T {
@@ -243,6 +261,7 @@ class DataService {
       const newLocation = this.createLocalRecord(location);
       this.saveLocalRecords('locations_cache', [...this.getLocalRecords<Location>('locations_cache'), newLocation]);
       this.invalidateCache(false);
+      this.notifyZapier('location', 'created', newLocation);
       return newLocation;
     }
 
@@ -259,6 +278,7 @@ class DataService {
       const newLocation = data?.[0];
       if (newLocation) {
         this.invalidateCache();
+        this.notifyZapier('location', 'created', newLocation);
       }
       return newLocation;
     } catch (error) {
@@ -266,6 +286,7 @@ class DataService {
       const newLocation = this.createLocalRecord(location);
       this.saveLocalRecords('locations_cache', [...this.getLocalRecords<Location>('locations_cache'), newLocation]);
       this.invalidateCache(false);
+      this.notifyZapier('location', 'created', newLocation);
       return newLocation;
     }
   }
@@ -274,6 +295,7 @@ class DataService {
     if (!isSupabaseConfigured) {
       const updatedLocation = this.updateLocalRecord<Location>('locations_cache', id, location as Partial<Location>);
       this.invalidateCache(false);
+      this.notifyZapier('location', 'updated', updatedLocation);
       return updatedLocation;
     }
 
@@ -291,12 +313,14 @@ class DataService {
       const updatedLocation = data?.[0];
       if (updatedLocation) {
         this.invalidateCache();
+        this.notifyZapier('location', 'updated', updatedLocation);
       }
       return updatedLocation;
     } catch (error) {
       console.warn('Failed to update location in Supabase, updating local record instead.', error);
       const updatedLocation = this.updateLocalRecord<Location>('locations_cache', id, location as Partial<Location>);
       this.invalidateCache(false);
+      this.notifyZapier('location', 'updated', updatedLocation);
       return updatedLocation;
     }
   }
@@ -305,6 +329,7 @@ class DataService {
     if (!isSupabaseConfigured) {
       this.deleteLocalRecord<Location>('locations_cache', id);
       this.invalidateCache(false);
+      this.notifyZapier('location', 'deleted', undefined, { recordId: id });
       return;
     }
 
@@ -319,10 +344,12 @@ class DataService {
       }
 
       this.invalidateCache();
+      this.notifyZapier('location', 'deleted', undefined, { recordId: id });
     } catch (error) {
       console.warn('Failed to delete location in Supabase, deleting local record instead.', error);
       this.deleteLocalRecord<Location>('locations_cache', id);
       this.invalidateCache(false);
+      this.notifyZapier('location', 'deleted', undefined, { recordId: id });
     }
   }
 
@@ -415,6 +442,7 @@ class DataService {
       const newBill = this.createLocalRecord(bill) as Bill;
       this.saveLocalRecords('bills_cache', [...this.getLocalRecords<Bill>('bills_cache'), newBill]);
       this.invalidateCache(false);
+      this.notifyZapier('bill', 'created', newBill);
       return newBill;
     }
 
@@ -431,6 +459,7 @@ class DataService {
       const newBill = data?.[0];
       if (newBill) {
         this.invalidateCache();
+        this.notifyZapier('bill', 'created', newBill);
       }
       return newBill;
     } catch (error) {
@@ -438,6 +467,7 @@ class DataService {
       const newBill = this.createLocalRecord(bill) as Bill;
       this.saveLocalRecords('bills_cache', [...this.getLocalRecords<Bill>('bills_cache'), newBill]);
       this.invalidateCache(false);
+      this.notifyZapier('bill', 'created', newBill);
       return newBill;
     }
   }
@@ -447,6 +477,7 @@ class DataService {
       const newVendor = this.createLocalRecord({ ...vendor, status: vendor.status || 'Active' }) as Vendor;
       this.saveLocalRecords('vendors_cache', [...this.getLocalRecords<Vendor>('vendors_cache'), newVendor]);
       this.invalidateCache(false);
+      this.notifyZapier('vendor', 'created', newVendor);
       return newVendor;
     }
 
@@ -463,6 +494,7 @@ class DataService {
       const newVendor = data?.[0];
       if (newVendor) {
         this.invalidateCache();
+        this.notifyZapier('vendor', 'created', newVendor);
       }
       return newVendor;
     } catch (error) {
@@ -470,6 +502,7 @@ class DataService {
       const newVendor = this.createLocalRecord({ ...vendor, status: vendor.status || 'Active' }) as Vendor;
       this.saveLocalRecords('vendors_cache', [...this.getLocalRecords<Vendor>('vendors_cache'), newVendor]);
       this.invalidateCache(false);
+      this.notifyZapier('vendor', 'created', newVendor);
       return newVendor;
     }
   }
@@ -479,6 +512,7 @@ class DataService {
       const newDocument = this.createLocalRecord({ ...document, status: document.status || 'Active' }) as DocumentRecord;
       this.saveLocalRecords('documents_cache', [...this.getLocalRecords<DocumentRecord>('documents_cache'), newDocument]);
       this.invalidateCache(false);
+      this.notifyZapier('document', 'created', newDocument);
       return newDocument;
     }
 
@@ -495,6 +529,7 @@ class DataService {
       const newDocument = data?.[0];
       if (newDocument) {
         this.invalidateCache();
+        this.notifyZapier('document', 'created', newDocument);
       }
       return newDocument;
     } catch (error) {
@@ -502,6 +537,7 @@ class DataService {
       const newDocument = this.createLocalRecord({ ...document, status: document.status || 'Active' }) as DocumentRecord;
       this.saveLocalRecords('documents_cache', [...this.getLocalRecords<DocumentRecord>('documents_cache'), newDocument]);
       this.invalidateCache(false);
+      this.notifyZapier('document', 'created', newDocument);
       return newDocument;
     }
   }
@@ -510,6 +546,7 @@ class DataService {
     if (!isSupabaseConfigured) {
       const updatedDocument = this.updateLocalRecord<DocumentRecord>('documents_cache', id, document as Partial<DocumentRecord>);
       this.invalidateCache(false);
+      this.notifyZapier('document', 'updated', updatedDocument);
       return updatedDocument;
     }
 
@@ -527,12 +564,14 @@ class DataService {
       const updatedDocument = data?.[0];
       if (updatedDocument) {
         this.invalidateCache();
+        this.notifyZapier('document', 'updated', updatedDocument);
       }
       return updatedDocument;
     } catch (error) {
       console.warn('Failed to update document in Supabase, updating local record instead.', error);
       const updatedDocument = this.updateLocalRecord<DocumentRecord>('documents_cache', id, document as Partial<DocumentRecord>);
       this.invalidateCache(false);
+      this.notifyZapier('document', 'updated', updatedDocument);
       return updatedDocument;
     }
   }
@@ -541,6 +580,7 @@ class DataService {
     if (!isSupabaseConfigured) {
       this.deleteLocalRecord<DocumentRecord>('documents_cache', id);
       this.invalidateCache(false);
+      this.notifyZapier('document', 'deleted', undefined, { recordId: id });
       return;
     }
 
@@ -555,10 +595,12 @@ class DataService {
       }
 
       this.invalidateCache();
+      this.notifyZapier('document', 'deleted', undefined, { recordId: id });
     } catch (error) {
       console.warn('Failed to delete document in Supabase, deleting local record instead.', error);
       this.deleteLocalRecord<DocumentRecord>('documents_cache', id);
       this.invalidateCache(false);
+      this.notifyZapier('document', 'deleted', undefined, { recordId: id });
     }
   }
 
@@ -566,6 +608,7 @@ class DataService {
     if (!isSupabaseConfigured) {
       const updatedVendor = this.updateLocalRecord<Vendor>('vendors_cache', id, vendor as Partial<Vendor>);
       this.invalidateCache(false);
+      this.notifyZapier('vendor', 'updated', updatedVendor);
       return updatedVendor;
     }
 
@@ -583,12 +626,14 @@ class DataService {
       const updatedVendor = data?.[0];
       if (updatedVendor) {
         this.invalidateCache();
+        this.notifyZapier('vendor', 'updated', updatedVendor);
       }
       return updatedVendor;
     } catch (error) {
       console.warn('Failed to update vendor in Supabase, updating local record instead.', error);
       const updatedVendor = this.updateLocalRecord<Vendor>('vendors_cache', id, vendor as Partial<Vendor>);
       this.invalidateCache(false);
+      this.notifyZapier('vendor', 'updated', updatedVendor);
       return updatedVendor;
     }
   }
@@ -597,6 +642,7 @@ class DataService {
     if (!isSupabaseConfigured) {
       this.deleteLocalRecord<Vendor>('vendors_cache', id);
       this.invalidateCache(false);
+      this.notifyZapier('vendor', 'deleted', undefined, { recordId: id });
       return;
     }
 
@@ -611,10 +657,12 @@ class DataService {
       }
 
       this.invalidateCache();
+      this.notifyZapier('vendor', 'deleted', undefined, { recordId: id });
     } catch (error) {
       console.warn('Failed to delete vendor in Supabase, deleting local record instead.', error);
       this.deleteLocalRecord<Vendor>('vendors_cache', id);
       this.invalidateCache(false);
+      this.notifyZapier('vendor', 'deleted', undefined, { recordId: id });
     }
   }
 
@@ -623,6 +671,7 @@ class DataService {
       const updatedBill = this.updateLocalRecord<Bill>('bills_cache', id, { status } as Partial<Bill>);
       this.createNextLocalRecurringBill(updatedBill);
       this.invalidateCache(false);
+      this.notifyZapier('bill', 'status_changed', updatedBill, { status });
       return updatedBill;
     }
 
@@ -657,6 +706,7 @@ class DataService {
           if (nextError) console.error('Error creating next recurring bill:', nextError);
         }
         this.invalidateCache();
+        this.notifyZapier('bill', 'status_changed', updated, { status });
       }
       return updated;
     } catch (error) {
@@ -664,6 +714,7 @@ class DataService {
       const updatedBill = this.updateLocalRecord<Bill>('bills_cache', id, { status } as Partial<Bill>);
       this.createNextLocalRecurringBill(updatedBill);
       this.invalidateCache(false);
+      this.notifyZapier('bill', 'status_changed', updatedBill, { status });
       return updatedBill;
     }
   }
@@ -672,6 +723,7 @@ class DataService {
     if (!isSupabaseConfigured) {
       const updatedBill = this.updateLocalRecord<Bill>('bills_cache', id, billData as Partial<Bill>);
       this.invalidateCache(false);
+      this.notifyZapier('bill', 'updated', updatedBill);
       return updatedBill;
     }
 
@@ -689,12 +741,14 @@ class DataService {
       const updated = data?.[0];
       if (updated) {
         this.invalidateCache();
+        this.notifyZapier('bill', 'updated', updated);
       }
       return updated;
     } catch (error) {
       console.warn('Failed to update bill in Supabase, updating local record instead.', error);
       const updatedBill = this.updateLocalRecord<Bill>('bills_cache', id, billData as Partial<Bill>);
       this.invalidateCache(false);
+      this.notifyZapier('bill', 'updated', updatedBill);
       return updatedBill;
     }
   }
@@ -703,6 +757,7 @@ class DataService {
     if (!isSupabaseConfigured) {
       this.deleteLocalRecord<Bill>('bills_cache', id);
       this.invalidateCache(false);
+      this.notifyZapier('bill', 'deleted', undefined, { recordId: id });
       return;
     }
 
@@ -717,10 +772,12 @@ class DataService {
       }
 
       this.invalidateCache();
+      this.notifyZapier('bill', 'deleted', undefined, { recordId: id });
     } catch (error) {
       console.warn('Failed to delete bill in Supabase, deleting local record instead.', error);
       this.deleteLocalRecord<Bill>('bills_cache', id);
       this.invalidateCache(false);
+      this.notifyZapier('bill', 'deleted', undefined, { recordId: id });
     }
   }
 
