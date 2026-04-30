@@ -30,7 +30,7 @@
   --z-tooltip: 1500;
 }
 
-[data-theme='dark'] {
+[data-theme="dark"] {
   --bg-main: #000000;
   --bg-sidebar: rgba(18, 18, 18, 0.82);
   --bg-card: rgba(28, 28, 30, 0.85);

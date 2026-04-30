@@ -1,34 +1,35 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-describe('Form Validation Tests', () => {
+describe("Form Validation Tests", () => {
   beforeEach(() => {
     vi.resetModules();
   });
 
-  describe('Bill Form Validation', () => {
-    it('requires charge_name', () => {
+  describe("Bill Form Validation", () => {
+    it("requires charge_name", () => {
       const billData = {
-        charge_name: '',
+        charge_name: "",
         amount: 100,
-        date: '2026-05-15',
-        location_id: 'loc-1',
-        category: 'Rent',
-        status: 'Pending',
+        date: "2026-05-15",
+        location_id: "loc-1",
+        category: "Rent",
+        status: "Pending",
         is_recurring: false,
       };
 
-      const isValid = !!billData.charge_name && billData.amount > 0 && !!billData.date;
+      const isValid =
+        !!billData.charge_name && billData.amount > 0 && !!billData.date;
       expect(isValid).toBe(false);
     });
 
-    it('requires positive amount', () => {
+    it("requires positive amount", () => {
       const billData = {
-        charge_name: 'Rent',
+        charge_name: "Rent",
         amount: -100,
-        date: '2026-05-15',
-        location_id: 'loc-1',
-        category: 'Rent',
-        status: 'Pending',
+        date: "2026-05-15",
+        location_id: "loc-1",
+        category: "Rent",
+        status: "Pending",
         is_recurring: false,
       };
 
@@ -36,117 +37,128 @@ describe('Form Validation Tests', () => {
       expect(isValid).toBe(false);
     });
 
-    it('requires date', () => {
+    it("requires date", () => {
       const billData = {
-        charge_name: 'Rent',
+        charge_name: "Rent",
         amount: 100,
-        date: '',
-        location_id: 'loc-1',
-        category: 'Rent',
-        status: 'Pending',
+        date: "",
+        location_id: "loc-1",
+        category: "Rent",
+        status: "Pending",
         is_recurring: false,
       };
 
-      const isValid = !!billData.charge_name && billData.amount > 0 && !!billData.date;
+      const isValid =
+        !!billData.charge_name && billData.amount > 0 && !!billData.date;
       expect(isValid).toBe(false);
     });
 
-    it('passes with all valid data', () => {
+    it("passes with all valid data", () => {
       const billData = {
-        charge_name: 'Rent',
+        charge_name: "Rent",
         amount: 5000,
-        date: '2026-05-15',
-        location_id: 'loc-1',
-        category: 'Rent',
-        status: 'Pending',
+        date: "2026-05-15",
+        location_id: "loc-1",
+        category: "Rent",
+        status: "Pending",
         is_recurring: false,
       };
 
-      const isValid = !!billData.charge_name && billData.amount > 0 && !!billData.date && !!billData.location_id;
+      const isValid =
+        !!billData.charge_name &&
+        billData.amount > 0 &&
+        !!billData.date &&
+        !!billData.location_id;
       expect(isValid).toBe(true);
     });
   });
 
-  describe('Location Form Validation', () => {
-    it('requires name', () => {
+  describe("Location Form Validation", () => {
+    it("requires name", () => {
       const locationData = {
-        name: '',
-        address: '123 St',
-        contact: 'Manager',
+        name: "",
+        address: "123 St",
+        contact: "Manager",
       };
 
-      const isValid = !!locationData.name && !!locationData.address && !!locationData.contact;
+      const isValid =
+        !!locationData.name && !!locationData.address && !!locationData.contact;
       expect(isValid).toBe(false);
     });
 
-    it('requires address', () => {
+    it("requires address", () => {
       const locationData = {
-        name: 'HQ',
-        address: '',
-        contact: 'Manager',
+        name: "HQ",
+        address: "",
+        contact: "Manager",
       };
 
-      const isValid = !!locationData.name && !!locationData.address && !!locationData.contact;
+      const isValid =
+        !!locationData.name && !!locationData.address && !!locationData.contact;
       expect(isValid).toBe(false);
     });
 
-    it('requires contact', () => {
+    it("requires contact", () => {
       const locationData = {
-        name: 'HQ',
-        address: '123 St',
-        contact: '',
+        name: "HQ",
+        address: "123 St",
+        contact: "",
       };
 
-      const isValid = !!locationData.name && !!locationData.address && !!locationData.contact;
+      const isValid =
+        !!locationData.name && !!locationData.address && !!locationData.contact;
       expect(isValid).toBe(false);
     });
 
-    it('passes with all valid data', () => {
+    it("passes with all valid data", () => {
       const locationData = {
-        name: 'HQ',
-        address: '123 Main St',
-        contact: 'John Manager',
+        name: "HQ",
+        address: "123 Main St",
+        contact: "John Manager",
       };
 
-      const isValid = !!locationData.name && !!locationData.address && !!locationData.contact;
+      const isValid =
+        !!locationData.name && !!locationData.address && !!locationData.contact;
       expect(isValid).toBe(true);
     });
   });
 
-  describe('Vendor Form Validation', () => {
-    it('requires name', () => {
+  describe("Vendor Form Validation", () => {
+    it("requires name", () => {
       const vendorData = {
-        name: '',
-        type: 'Utility',
-        contact_person: 'John',
-        email: 'john@vendor.com',
-        phone: '555-0000',
+        name: "",
+        type: "Utility",
+        contact_person: "John",
+        email: "john@vendor.com",
+        phone: "555-0000",
       };
 
-      const isValid = !!vendorData.name && !!vendorData.type && !!vendorData.email;
+      const isValid =
+        !!vendorData.name && !!vendorData.type && !!vendorData.email;
       expect(isValid).toBe(false);
     });
 
-    it('requires type', () => {
+    it("requires type", () => {
       const vendorData = {
-        name: 'Vendor A',
-        type: '',
-        contact_person: 'John',
-        email: 'john@vendor.com',
-        phone: '555-0000',
+        name: "Vendor A",
+        type: "",
+        contact_person: "John",
+        email: "john@vendor.com",
+        phone: "555-0000",
       };
 
-      const isValid = !!vendorData.name && !!vendorData.type && !!vendorData.email;
+      const isValid =
+        !!vendorData.name && !!vendorData.type && !!vendorData.email;
       expect(isValid).toBe(false);
     });
 
-    it('validates email format', () => {
+    it("validates email format", () => {
       const vendorData = {
-        name: 'Vendor A',
-        type: 'Utility',
-        contact_person: 'John',
-        email: 'invalid-email',
-        phone: '555-0000',
+        name: "Vendor A",
+        type: "Utility",
+        contact_person: "John",
+        email: "invalid-email",
+        phone: "555-0000",
       };
 
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -154,57 +166,60 @@ describe('Form Validation Tests', () => {
       expect(isValid).toBe(false);
     });
 
-    it('passes with all valid data', () => {
+    it("passes with all valid data", () => {
       const vendorData = {
-        name: 'Vendor A',
-        type: 'Utility Provider',
-        contact_person: 'John Doe',
-        email: 'john@vendor.com',
-        phone: '555-0000',
+        name: "Vendor A",
+        type: "Utility Provider",
+        contact_person: "John Doe",
+        email: "john@vendor.com",
+        phone: "555-0000",
       };
 
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      const isValid = !!vendorData.name && !!vendorData.type && emailRegex.test(vendorData.email);
+      const isValid =
+        !!vendorData.name &&
+        !!vendorData.type &&
+        emailRegex.test(vendorData.email);
       expect(isValid).toBe(true);
     });
   });
 
-  describe('Document Form Validation', () => {
-    it('requires title', () => {
+  describe("Document Form Validation", () => {
+    it("requires title", () => {
       const docData = {
-        title: '',
-        category: 'Legal',
-        owner: 'Admin',
-        document_link: 'https://example.com/doc.pdf',
-        status: 'Active',
-        renewal_date: '2027-01-01',
+        title: "",
+        category: "Legal",
+        owner: "Admin",
+        document_link: "https://example.com/doc.pdf",
+        status: "Active",
+        renewal_date: "2027-01-01",
       };
 
       const isValid = !!docData.title && !!docData.category;
       expect(isValid).toBe(false);
     });
 
-    it('requires category', () => {
+    it("requires category", () => {
       const docData = {
-        title: 'Insurance Policy',
-        category: '',
-        owner: 'Admin',
-        document_link: 'https://example.com/doc.pdf',
-        status: 'Active',
-        renewal_date: '2027-01-01',
+        title: "Insurance Policy",
+        category: "",
+        owner: "Admin",
+        document_link: "https://example.com/doc.pdf",
+        status: "Active",
+        renewal_date: "2027-01-01",
       };
 
       const isValid = !!docData.title && !!docData.category;
       expect(isValid).toBe(false);
     });
 
-    it('validates URL format', () => {
+    it("validates URL format", () => {
       const docData = {
-        title: 'Policy',
-        category: 'Insurance',
-        owner: 'Admin',
-        document_link: 'not-a-url',
-        status: 'Active',
+        title: "Policy",
+        category: "Insurance",
+        owner: "Admin",
+        document_link: "not-a-url",
+        status: "Active",
         renewal_date: null,
       };
 
@@ -213,66 +228,77 @@ describe('Form Validation Tests', () => {
       expect(isValid).toBe(false);
     });
 
-    it('passes with all valid data', () => {
+    it("passes with all valid data", () => {
       const docData = {
-        title: 'Insurance Policy',
-        category: 'Insurance',
-        owner: 'John Admin',
-        document_link: 'https://example.com/policy.pdf',
-        status: 'Active',
-        renewal_date: '2027-06-01',
+        title: "Insurance Policy",
+        category: "Insurance",
+        owner: "John Admin",
+        document_link: "https://example.com/policy.pdf",
+        status: "Active",
+        renewal_date: "2027-06-01",
       };
 
       const urlRegex = /^https?:\/\/.+/;
-      const isValid = !!docData.title && !!docData.category && urlRegex.test(docData.document_link);
+      const isValid =
+        !!docData.title &&
+        !!docData.category &&
+        urlRegex.test(docData.document_link);
       expect(isValid).toBe(true);
     });
   });
 
-  describe('SuperAdmin Form Validation', () => {
-    it('requires organization name', () => {
+  describe("SuperAdmin Form Validation", () => {
+    it("requires organization name", () => {
       const orgData = {
-        name: '',
-        domain: 'test-rest',
-        adminEmail: 'admin@test.com',
+        name: "",
+        domain: "test-rest",
+        adminEmail: "admin@test.com",
       };
 
-      const isValid = !!orgData.name && !!orgData.domain && !!orgData.adminEmail;
+      const isValid =
+        !!orgData.name && !!orgData.domain && !!orgData.adminEmail;
       expect(isValid).toBe(false);
     });
 
-    it('requires domain', () => {
+    it("requires domain", () => {
       const orgData = {
-        name: 'Test Restaurant',
-        domain: '',
-        adminEmail: 'admin@test.com',
+        name: "Test Restaurant",
+        domain: "",
+        adminEmail: "admin@test.com",
       };
 
-      const isValid = !!orgData.name && !!orgData.domain && !!orgData.adminEmail;
+      const isValid =
+        !!orgData.name && !!orgData.domain && !!orgData.adminEmail;
       expect(isValid).toBe(false);
     });
 
-    it('requires valid email', () => {
+    it("requires valid email", () => {
       const orgData = {
-        name: 'Test Restaurant',
-        domain: 'test-rest',
-        adminEmail: 'invalid-email',
+        name: "Test Restaurant",
+        domain: "test-rest",
+        adminEmail: "invalid-email",
       };
 
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      const isValid = !!orgData.name && !!orgData.domain && emailRegex.test(orgData.adminEmail);
+      const isValid =
+        !!orgData.name &&
+        !!orgData.domain &&
+        emailRegex.test(orgData.adminEmail);
       expect(isValid).toBe(false);
     });
 
-    it('passes with all valid data', () => {
+    it("passes with all valid data", () => {
       const orgData = {
-        name: 'Test Restaurant',
-        domain: 'test-restaurant',
-        adminEmail: 'admin@test.com',
+        name: "Test Restaurant",
+        domain: "test-restaurant",
+        adminEmail: "admin@test.com",
       };
 
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      const isValid = !!orgData.name && !!orgData.domain && emailRegex.test(orgData.adminEmail);
+      const isValid =
+        !!orgData.name &&
+        !!orgData.domain &&
+        emailRegex.test(orgData.adminEmail);
       expect(isValid).toBe(true);
     });
   });

@@ -1,6 +1,6 @@
-import { ReactNode, useEffect, useRef } from 'react';
-import { X } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { ReactNode, useEffect, useRef } from "react";
+import { X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface ModalProps {
   isOpen: boolean;
@@ -11,26 +11,37 @@ interface ModalProps {
   maxWidth?: string;
 }
 
-export function Modal({ isOpen, onClose, title, children, footer, maxWidth = '500px' }: ModalProps) {
-  const titleId = title ? `modal-title-${title.replace(/\s+/g, '-').toLowerCase()}` : undefined;
+export function Modal({
+  isOpen,
+  onClose,
+  title,
+  children,
+  footer,
+  maxWidth = "500px",
+}: ModalProps) {
+  const titleId = title
+    ? `modal-title-${title.replace(/\s+/g, "-").toLowerCase()}`
+    : undefined;
   const modalRef = useRef<HTMLDivElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     if (isOpen) {
       previousFocusRef.current = document.activeElement as HTMLElement;
-      
+
       const handleEscape = (e: KeyboardEvent) => {
-        if (e.key === 'Escape') onClose();
+        if (e.key === "Escape") onClose();
       };
 
       const handleTab = (e: KeyboardEvent) => {
-        if (e.key === 'Tab' && modalRef.current) {
+        if (e.key === "Tab" && modalRef.current) {
           const focusableElements = modalRef.current.querySelectorAll(
-            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
           );
           const firstElement = focusableElements[0] as HTMLElement;
-          const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
+          const lastElement = focusableElements[
+            focusableElements.length - 1
+          ] as HTMLElement;
 
           if (e.shiftKey) {
             if (document.activeElement === firstElement) {
@@ -46,22 +57,22 @@ export function Modal({ isOpen, onClose, title, children, footer, maxWidth = '50
         }
       };
 
-      document.addEventListener('keydown', handleEscape);
-      document.addEventListener('keydown', handleTab);
+      document.addEventListener("keydown", handleEscape);
+      document.addEventListener("keydown", handleTab);
 
       // Small delay to allow framer-motion to start and ensure focus works
       const focusTimer = setTimeout(() => {
         if (modalRef.current) {
           const firstFocusable = modalRef.current.querySelector(
-            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
           ) as HTMLElement;
           firstFocusable?.focus();
         }
       }, 50);
 
       return () => {
-        document.removeEventListener('keydown', handleEscape);
-        document.removeEventListener('keydown', handleTab);
+        document.removeEventListener("keydown", handleEscape);
+        document.removeEventListener("keydown", handleTab);
         clearTimeout(focusTimer);
         previousFocusRef.current?.focus();
       };
@@ -179,36 +190,39 @@ export function Modal({ isOpen, onClose, title, children, footer, maxWidth = '50
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 20 }}
             className="glass-card modal-shell-premium"
-            style={{ 
-              '--modal-width': maxWidth,
-              '--modal-content-padding': title ? 0 : '1rem'
-            } as React.CSSProperties}
+            style={
+              {
+                "--modal-width": maxWidth,
+                "--modal-content-padding": title ? 0 : "1rem",
+              } as React.CSSProperties
+            }
             onClick={(e) => e.stopPropagation()}
             role="dialog"
             aria-modal="true"
             aria-labelledby={titleId}
           >
             {/* Header section - always show close button, title is optional */}
-            <div className={`modal-header-premium ${title ? 'modal-header-with-title' : 'modal-header-no-title'}`}>
-              {title && <h2 id={titleId} className="modal-title-text">{title}</h2>}
+            <div
+              className={`modal-header-premium ${title ? "modal-header-with-title" : "modal-header-no-title"}`}
+            >
+              {title && (
+                <h2 id={titleId} className="modal-title-text">
+                  {title}
+                </h2>
+              )}
               <button
+                type="button"
                 onClick={onClose}
-                className={`icon-button modal-close-btn ${title ? 'modal-close-btn-with-title' : 'modal-close-btn-no-title'}`}
+                className={`icon-button modal-close-btn ${title ? "modal-close-btn-with-title" : "modal-close-btn-no-title"}`}
                 aria-label="Close modal"
               >
                 <X size={20} aria-hidden="true" />
               </button>
             </div>
 
-            <div className="modal-content-area">
-              {children}
-            </div>
+            <div className="modal-content-area">{children}</div>
 
-            {footer && (
-              <div className="modal-footer-premium">
-                {footer}
-              </div>
-            )}
+            {footer && <div className="modal-footer-premium">{footer}</div>}
           </motion.div>
         </div>
       )}

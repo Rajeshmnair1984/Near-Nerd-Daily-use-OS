@@ -1,19 +1,24 @@
-import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { X, FileText, Shield, Link as LinkIcon, Zap } from 'lucide-react'
-import { DocumentRecord, CreateDocumentInput } from '@/types/document'
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { X, FileText, Shield, Link as LinkIcon, Zap } from "lucide-react";
+import { DocumentRecord, CreateDocumentInput } from "@/types/document";
 
 interface DocumentEditFormProps {
-  document: DocumentRecord
-  onSave: (updates: CreateDocumentInput) => Promise<void>
-  onCancel: () => void
-  loading?: boolean
+  document: DocumentRecord;
+  onSave: (updates: CreateDocumentInput) => Promise<void>;
+  onCancel: () => void;
+  loading?: boolean;
 }
 
-type TabType = 'identity' | 'logistics' | 'intelligence';
+type TabType = "identity" | "logistics" | "intelligence";
 
-export default function DocumentEditForm({ document: documentRecord, onSave, onCancel, loading }: DocumentEditFormProps) {
-  const [activeTab, setActiveTab] = useState<TabType>('identity');
+export default function DocumentEditForm({
+  document: documentRecord,
+  onSave,
+  onCancel,
+  loading,
+}: DocumentEditFormProps) {
+  const [activeTab, setActiveTab] = useState<TabType>("identity");
   const [formData, setFormData] = useState<CreateDocumentInput>({
     title: documentRecord.title,
     category: documentRecord.category,
@@ -22,46 +27,63 @@ export default function DocumentEditForm({ document: documentRecord, onSave, onC
     renewal_date: documentRecord.renewal_date,
     status: documentRecord.status,
     notes: documentRecord.notes,
-  })
+  });
 
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onCancel();
+      if (e.key === "Escape") onCancel();
     };
-    document.addEventListener('keydown', handleEscape);
-    return () => document.removeEventListener('keydown', handleEscape);
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
   }, [onCancel]);
 
-  const handleInputChange = (field: keyof CreateDocumentInput, value: string) => {
+  const handleInputChange = (
+    field: keyof CreateDocumentInput,
+    value: string,
+  ) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
-    }))
-    setError(null)
-  }
+    }));
+    setError(null);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError(null)
+    e.preventDefault();
+    setError(null);
 
     if (!formData.title || !formData.category) {
-      setError('Document title and category are required for vault indexing')
-      return
+      setError("Document title and category are required for vault indexing");
+      return;
     }
 
     try {
-      await onSave(formData)
+      await onSave(formData);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to commit vault update')
+      setError(
+        err instanceof Error ? err.message : "Failed to commit vault update",
+      );
     }
-  }
+  };
 
   const tabs: { id: TabType; label: string; icon: React.ReactNode }[] = [
-    { id: 'identity', label: 'Identity', icon: <FileText size={18} aria-hidden="true" /> },
-    { id: 'logistics', label: 'Logistics', icon: <LinkIcon size={18} aria-hidden="true" /> },
-    { id: 'intelligence', label: 'Intelligence', icon: <Zap size={18} aria-hidden="true" /> },
+    {
+      id: "identity",
+      label: "Identity",
+      icon: <FileText size={18} aria-hidden="true" />,
+    },
+    {
+      id: "logistics",
+      label: "Logistics",
+      icon: <LinkIcon size={18} aria-hidden="true" />,
+    },
+    {
+      id: "intelligence",
+      label: "Intelligence",
+      icon: <Zap size={18} aria-hidden="true" />,
+    },
   ];
 
   return (
@@ -253,22 +275,33 @@ export default function DocumentEditForm({ document: documentRecord, onSave, onC
             <div className="header-icon-wrapper" aria-hidden="true">
               <Shield size={20} />
             </div>
-            <h1 className="header-title-text" id="doc-edit-title">Vault Orchestration: <span>{document.title}</span></h1>
+            <h1 className="header-title-text" id="doc-edit-title">
+              Vault Orchestration: <span>{document.title}</span>
+            </h1>
           </div>
-          <button onClick={onCancel} className="icon-button close-icon-button" aria-label="Close vault update">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="icon-button close-icon-button"
+            aria-label="Close vault update"
+          >
             <X size={20} aria-hidden="true" />
           </button>
         </div>
 
         <div className="doc-modal-body">
-          <aside className="doc-modal-sidebar" role="tablist" aria-label="Document sections">
+          <aside
+            className="doc-modal-sidebar"
+            role="tablist"
+            aria-label="Document sections"
+          >
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 role="tab"
                 aria-selected={activeTab === tab.id}
                 aria-controls={`section-${tab.id}`}
-                className={`tab-button ${activeTab === tab.id ? 'active' : ''}`}
+                className={`tab-button ${activeTab === tab.id ? "active" : ""}`}
                 onClick={() => setActiveTab(tab.id)}
               >
                 {tab.icon}
@@ -286,13 +319,13 @@ export default function DocumentEditForm({ document: documentRecord, onSave, onC
 
             <form id="doc-edit-form" onSubmit={handleSubmit}>
               <AnimatePresence mode="wait">
-                {activeTab === 'identity' && (
-                  <motion.div 
-                    key="identity" 
+                {activeTab === "identity" && (
+                  <motion.div
+                    key="identity"
                     id="section-identity"
                     role="tabpanel"
-                    initial={{ opacity: 0, y: 10 }} 
-                    animate={{ opacity: 1, y: 0 }} 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                   >
                     <div className="section-header-wrap">
@@ -300,12 +333,34 @@ export default function DocumentEditForm({ document: documentRecord, onSave, onC
                     </div>
                     <div className="form-grid">
                       <div className="form-group full-width">
-                        <label className="form-label" htmlFor="doc-title">DOCUMENT TITLE / DESIGNATION</label>
-                        <input id="doc-title" className="form-input" value={formData.title} onChange={(e) => handleInputChange('title', e.target.value)} required aria-required="true" />
+                        <label className="form-label" htmlFor="doc-title">
+                          DOCUMENT TITLE / DESIGNATION
+                        </label>
+                        <input
+                          id="doc-title"
+                          className="form-input"
+                          value={formData.title}
+                          onChange={(e) =>
+                            handleInputChange("title", e.target.value)
+                          }
+                          required
+                          aria-required="true"
+                        />
                       </div>
                       <div className="form-group">
-                        <label className="form-label" htmlFor="intel-category">INTEL CATEGORY</label>
-                        <select id="intel-category" className="form-select" value={formData.category} onChange={(e) => handleInputChange('category', e.target.value)} required aria-required="true">
+                        <label className="form-label" htmlFor="intel-category">
+                          INTEL CATEGORY
+                        </label>
+                        <select
+                          id="intel-category"
+                          className="form-select"
+                          value={formData.category}
+                          onChange={(e) =>
+                            handleInputChange("category", e.target.value)
+                          }
+                          required
+                          aria-required="true"
+                        >
                           <option value="">Select category</option>
                           <option value="Insurance">Insurance</option>
                           <option value="License">License</option>
@@ -316,24 +371,37 @@ export default function DocumentEditForm({ document: documentRecord, onSave, onC
                         </select>
                       </div>
                       <div className="form-group">
-                        <label className="form-label" htmlFor="vault-status">VAULT STATUS</label>
-                        <select id="vault-status" className="form-select" value={formData.status} onChange={(e) => handleInputChange('status', e.target.value)}>
+                        <label className="form-label" htmlFor="vault-status">
+                          VAULT STATUS
+                        </label>
+                        <select
+                          id="vault-status"
+                          className="form-select"
+                          value={formData.status}
+                          onChange={(e) =>
+                            handleInputChange("status", e.target.value)
+                          }
+                        >
                           <option value="Active">Active / Verified</option>
-                          <option value="Needs Review">Needs Review / Audit</option>
-                          <option value="Archived">Archived / Historical</option>
+                          <option value="Needs Review">
+                            Needs Review / Audit
+                          </option>
+                          <option value="Archived">
+                            Archived / Historical
+                          </option>
                         </select>
                       </div>
                     </div>
                   </motion.div>
                 )}
 
-                {activeTab === 'logistics' && (
-                  <motion.div 
-                    key="logistics" 
+                {activeTab === "logistics" && (
+                  <motion.div
+                    key="logistics"
                     id="section-logistics"
                     role="tabpanel"
-                    initial={{ opacity: 0, y: 10 }} 
-                    animate={{ opacity: 1, y: 0 }} 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                   >
                     <div className="section-header-wrap">
@@ -341,37 +409,80 @@ export default function DocumentEditForm({ document: documentRecord, onSave, onC
                     </div>
                     <div className="form-grid">
                       <div className="form-group full-width">
-                        <label className="form-label" htmlFor="issuing-entity">ISSUING ENTITY / OWNER</label>
-                        <input id="issuing-entity" className="form-input" value={formData.owner || ''} onChange={(e) => handleInputChange('owner', e.target.value)} placeholder="e.g., Municipal Licensing Bureau" />
+                        <label className="form-label" htmlFor="issuing-entity">
+                          ISSUING ENTITY / OWNER
+                        </label>
+                        <input
+                          id="issuing-entity"
+                          className="form-input"
+                          value={formData.owner || ""}
+                          onChange={(e) =>
+                            handleInputChange("owner", e.target.value)
+                          }
+                          placeholder="e.g., Municipal Licensing Bureau"
+                        />
                       </div>
                       <div className="form-group full-width">
-                        <label className="form-label" htmlFor="asset-url">DIGITAL ASSET COORDINATE (URL)</label>
-                        <input id="asset-url" type="url" className="form-input" value={formData.file_url || ''} onChange={(e) => handleInputChange('file_url', e.target.value)} placeholder="https://..." />
+                        <label className="form-label" htmlFor="asset-url">
+                          DIGITAL ASSET COORDINATE (URL)
+                        </label>
+                        <input
+                          id="asset-url"
+                          type="url"
+                          className="form-input"
+                          value={formData.file_url || ""}
+                          onChange={(e) =>
+                            handleInputChange("file_url", e.target.value)
+                          }
+                          placeholder="https://..."
+                        />
                       </div>
                       <div className="form-group">
-                        <label className="form-label" htmlFor="renewal-date">RENEWAL / EXPIRY COORDINATE</label>
-                        <input id="renewal-date" type="date" className="form-input" value={formData.renewal_date || ''} onChange={(e) => handleInputChange('renewal_date', e.target.value)} />
+                        <label className="form-label" htmlFor="renewal-date">
+                          RENEWAL / EXPIRY COORDINATE
+                        </label>
+                        <input
+                          id="renewal-date"
+                          type="date"
+                          className="form-input"
+                          value={formData.renewal_date || ""}
+                          onChange={(e) =>
+                            handleInputChange("renewal_date", e.target.value)
+                          }
+                        />
                       </div>
                     </div>
                   </motion.div>
                 )}
 
-                {activeTab === 'intelligence' && (
-                  <motion.div 
-                    key="intelligence" 
+                {activeTab === "intelligence" && (
+                  <motion.div
+                    key="intelligence"
                     id="section-intelligence"
                     role="tabpanel"
-                    initial={{ opacity: 0, y: 10 }} 
-                    animate={{ opacity: 1, y: 0 }} 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                   >
                     <div className="section-header-wrap">
-                      <h2 className="section-title-large">Vault Intelligence</h2>
+                      <h2 className="section-title-large">
+                        Vault Intelligence
+                      </h2>
                     </div>
                     <div className="form-grid">
                       <div className="form-group full-width">
-                        <label className="form-label" htmlFor="doc-notes">INTERNAL CONTEXT & NOTES</label>
-                        <textarea id="doc-notes" className="form-textarea textarea-intelligence" value={formData.notes || ''} onChange={(e) => handleInputChange('notes', e.target.value)} placeholder="Audit logs, historical context, or specific compliance notes..." />
+                        <label className="form-label" htmlFor="doc-notes">
+                          INTERNAL CONTEXT & NOTES
+                        </label>
+                        <textarea
+                          id="doc-notes"
+                          className="form-textarea textarea-intelligence"
+                          value={formData.notes || ""}
+                          onChange={(e) =>
+                            handleInputChange("notes", e.target.value)
+                          }
+                          placeholder="Audit logs, historical context, or specific compliance notes..."
+                        />
                       </div>
                     </div>
                   </motion.div>
@@ -382,9 +493,16 @@ export default function DocumentEditForm({ document: documentRecord, onSave, onC
         </div>
 
         <div className="modal-footer-action-bar">
-          <button type="button" onClick={onCancel} className="button-secondary">DISCARD</button>
-          <button type="submit" form="doc-edit-form" disabled={loading} className="button-primary footer-commit-button">
-            {loading ? 'COMMITING...' : 'COMMIT VAULT UPDATE'}
+          <button type="button" onClick={onCancel} className="button-secondary">
+            DISCARD
+          </button>
+          <button
+            type="submit"
+            form="doc-edit-form"
+            disabled={loading}
+            className="button-primary footer-commit-button"
+          >
+            {loading ? "COMMITING..." : "COMMIT VAULT UPDATE"}
           </button>
         </div>
       </motion.div>

@@ -7,7 +7,7 @@ export interface Vendor {
   phone?: string;
   website?: string;
   notes?: string;
-  status: 'Active' | 'Paused';
+  status: "Active" | "Paused";
   created_at?: string;
 }
 
@@ -19,7 +19,7 @@ export interface CreateVendorInput {
   phone?: string;
   website?: string;
   notes?: string;
-  status?: 'Active' | 'Paused';
+  status?: "Active" | "Paused";
 }
 
 export interface UpdateVendorInput {
@@ -30,5 +30,5 @@ export interface UpdateVendorInput {
   phone?: string;
   website?: string;
   notes?: string;
-  status?: 'Active' | 'Paused';
+  status?: "Active" | "Paused";
 }

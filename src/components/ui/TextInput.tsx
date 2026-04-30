@@ -1,4 +1,4 @@
-import { InputHTMLAttributes } from 'react';
+import { InputHTMLAttributes } from "react";
 
 interface TextInputProps extends InputHTMLAttributes<HTMLInputElement> {
   label: string;
@@ -19,7 +19,7 @@ export function TextInput({
     <div className="form-group">
       <label className="form-label">{label}</label>
       <input
-        className={`form-input ${error && touched ? 'form-error-input' : ''} ${className || ''}`}
+        className={`form-input ${error && touched ? "form-error-input" : ""} ${className || ""}`}
         {...props}
       />
       {error && touched && <span className="form-error">{error}</span>}

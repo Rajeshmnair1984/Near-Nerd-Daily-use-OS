@@ -1,4 +1,4 @@
-import { InputHTMLAttributes } from 'react';
+import { InputHTMLAttributes } from "react";
 
 interface DateInputProps extends InputHTMLAttributes<HTMLInputElement> {
   label: string;
@@ -20,7 +20,7 @@ export function DateInput({
       <label className="form-label">{label}</label>
       <input
         type="date"
-        className={`form-input ${error && touched ? 'form-error-input' : ''} ${className || ''}`}
+        className={`form-input ${error && touched ? "form-error-input" : ""} ${className || ""}`}
         {...props}
       />
       {error && touched && <span className="form-error">{error}</span>}

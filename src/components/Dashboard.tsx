@@ -1,5 +1,5 @@
-import { memo, useMemo } from 'react';
-import { motion } from 'framer-motion';
+import { memo, useMemo } from "react";
+import { motion } from "framer-motion";
 import {
   AlertCircle,
   CheckCircle2,
@@ -14,7 +14,7 @@ import {
   Activity,
   ShieldCheck,
   Zap,
-} from 'lucide-react';
+} from "lucide-react";
 import {
   BarChart,
   Bar,
@@ -23,13 +23,12 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Cell,
   AreaChart,
   Area,
-} from 'recharts';
-import { Bill } from '@/types/bill';
-import { DashboardStats } from '@/types/common';
-import { formatCurrency } from '@/utils/currency';
+} from "recharts";
+import { Bill } from "@/types/bill";
+import { DashboardStats } from "@/types/common";
+import { formatCurrency } from "@/utils/currency";
 
 interface StatCardProps {
   title: string;
@@ -40,51 +39,54 @@ interface StatCardProps {
   subtitle?: string;
 }
 
-const StatCard = memo(({ title, value, icon: Icon, color, trend, subtitle }: StatCardProps) => (
-  <motion.div
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    className="glass-card premium-stat-card stat-card-shell"
-    role="listitem"
-  >
-    <div className="stat-card-bg-icon" aria-hidden="true">
-      <Icon size={40} />
-    </div>
-    
-    <div className="stat-card-header">
-      <div
-        className="stat-card-icon-box"
-        style={{ '--stat-color': color } as React.CSSProperties}
-        aria-hidden="true"
-      >
-        <Icon size={24} />
+const StatCard = memo(
+  ({ title, value, icon: Icon, color, trend, subtitle }: StatCardProps) => (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="glass-card premium-stat-card stat-card-shell"
+      role="listitem"
+    >
+      <div className="stat-card-bg-icon" aria-hidden="true">
+        <Icon size={40} />
       </div>
-      {trend !== undefined && (
+
+      <div className="stat-card-header">
         <div
-          className={`stat-trend-badge ${trend > 0 ? 'trend-up' : 'trend-down'}`}
-          aria-label={`${trend > 0 ? 'Upward' : 'Downward'} trend of ${Math.abs(trend)}%`}
+          className="stat-card-icon-box"
+          style={{ "--stat-color": color } as React.CSSProperties}
+          aria-hidden="true"
         >
-          {trend > 0 ? <ArrowUpRight size={14} aria-hidden="true" /> : <ArrowDownRight size={14} aria-hidden="true" />}
-          <span>{Math.abs(trend)}%</span>
+          <Icon size={24} />
         </div>
-      )}
-    </div>
-    
-    <div className="stat-content">
-      <p className="stat-label-text">
-        {title}
-      </p>
-      <h3 className="stat-value-text" aria-label={`${title} value: ${formatCurrency(value)}`}>
-        {formatCurrency(value)}
-      </h3>
-      {subtitle && (
-        <p className="stat-subtitle-text">
-          {subtitle}
-        </p>
-      )}
-    </div>
-  </motion.div>
-));
+        {trend !== undefined && (
+          <div
+            className={`stat-trend-badge ${trend > 0 ? "trend-up" : "trend-down"}`}
+            aria-label={`${trend > 0 ? "Upward" : "Downward"} trend of ${Math.abs(trend)}%`}
+          >
+            {trend > 0 ? (
+              <ArrowUpRight size={14} aria-hidden="true" />
+            ) : (
+              <ArrowDownRight size={14} aria-hidden="true" />
+            )}
+            <span>{Math.abs(trend)}%</span>
+          </div>
+        )}
+      </div>
+
+      <div className="stat-content">
+        <p className="stat-label-text">{title}</p>
+        <h3
+          className="stat-value-text"
+          aria-label={`${title} value: ${formatCurrency(value)}`}
+        >
+          {formatCurrency(value)}
+        </h3>
+        {subtitle && <p className="stat-subtitle-text">{subtitle}</p>}
+      </div>
+    </motion.div>
+  ),
+);
 
 interface DashboardProps {
   stats: DashboardStats;
@@ -96,28 +98,37 @@ function Dashboard({ stats, bills, loading }: DashboardProps) {
   const categoryChartData = useMemo(() => {
     const categoryMap = new Map<string, number>();
     bills.forEach((bill) => {
-      const category = bill.category || 'Uncategorized';
+      const category = bill.category || "Uncategorized";
       categoryMap.set(category, (categoryMap.get(category) || 0) + bill.amount);
     });
-    return Array.from(categoryMap, ([name, value]) => ({ name, value }))
-      .sort((a, b) => b.value - a.value);
+    return Array.from(categoryMap, ([name, value]) => ({ name, value })).sort(
+      (a, b) => b.value - a.value,
+    );
   }, [bills]);
 
   const monthlyTrendData = useMemo(() => {
-    const months: { [key: string]: { paid: number; pending: number; total: number } } = {};
+    const months: {
+      [key: string]: { paid: number; pending: number; total: number };
+    } = {};
     const now = new Date();
     for (let i = 5; i >= 0; i--) {
       const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const monthKey = date.toLocaleString('default', { month: 'short', year: 'numeric' });
+      const monthKey = date.toLocaleString("default", {
+        month: "short",
+        year: "numeric",
+      });
       months[monthKey] = { paid: 0, pending: 0, total: 0 };
     }
 
     bills.forEach((bill) => {
       const billDate = new Date(bill.date);
-      const monthKey = billDate.toLocaleString('default', { month: 'short', year: 'numeric' });
+      const monthKey = billDate.toLocaleString("default", {
+        month: "short",
+        year: "numeric",
+      });
       if (months[monthKey]) {
         months[monthKey].total += bill.amount;
-        if (bill.status === 'Paid') {
+        if (bill.status === "Paid") {
           months[monthKey].paid += bill.amount;
         } else {
           months[monthKey].pending += bill.amount;
@@ -464,11 +475,19 @@ function Dashboard({ stats, bills, loading }: DashboardProps) {
 
       <header className="page-hero">
         <div className="hero-content">
-          <span className="hero-eyebrow" aria-hidden="true">Neural Overview</span>
+          <span className="hero-eyebrow" aria-hidden="true">
+            Neural Overview
+          </span>
           <h1>Operational Intelligence</h1>
-          <p>Orchestrating global infrastructure metrics, upcoming commitments, and real-time status telemetry.</p>
+          <p>
+            Orchestrating global infrastructure metrics, upcoming commitments,
+            and real-time status telemetry.
+          </p>
         </div>
-        <div className="system-health-box" role="status" aria-label="Current system health: optimized">
+        <div
+          className="system-health-box"
+          aria-label="Current system health: optimized"
+        >
           <p className="system-health-label">System Health</p>
           <div className="system-health-status">
             <ShieldCheck size={24} aria-hidden="true" />
@@ -479,12 +498,23 @@ function Dashboard({ stats, bills, loading }: DashboardProps) {
 
       {loading ? (
         <div className="dashboard-loading-shell" aria-busy="true">
-          <Zap size={64} className="animate-pulse" color="var(--primary)" aria-hidden="true" />
-          <h2 className="dashboard-loading-title">SYNCHRONIZING DATA MATRIX...</h2>
+          <Zap
+            size={64}
+            className="animate-pulse"
+            color="var(--primary)"
+            aria-hidden="true"
+          />
+          <h2 className="dashboard-loading-title">
+            SYNCHRONIZING DATA MATRIX...
+          </h2>
         </div>
       ) : (
         <div className="dashboard-grid-layout">
-          <div className="stat-grid-row" role="list" aria-label="Primary business metrics">
+          <div
+            className="stat-grid-row"
+            role="list"
+            aria-label="Primary business metrics"
+          >
             <StatCard
               title="Liquidity Deployment"
               value={stats.totalPaid}
@@ -512,70 +542,199 @@ function Dashboard({ stats, bills, loading }: DashboardProps) {
           </div>
 
           <div className="chart-grid-row">
-            <motion.section 
-              initial={{ opacity: 0, scale: 0.95 }} 
-              animate={{ opacity: 1, scale: 1 }} 
+            <motion.section
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
               className="chart-container-premium"
               aria-labelledby="temporal-analytics-title"
             >
               <header className="chart-header-premium">
                 <div>
-                  <h3 id="temporal-analytics-title"><Activity size={24} className="text-primary" aria-hidden="true" /> Temporal Analytics</h3>
-                  <p className="chart-sub-text">Inter-coordinate financial flow telemetry</p>
+                  <h3 id="temporal-analytics-title">
+                    <Activity
+                      size={24}
+                      className="text-primary"
+                      aria-hidden="true"
+                    />{" "}
+                    Temporal Analytics
+                  </h3>
+                  <p className="chart-sub-text">
+                    Inter-coordinate financial flow telemetry
+                  </p>
                 </div>
-                <PieChart size={24} className="text-secondary" aria-hidden="true" />
+                <PieChart
+                  size={24}
+                  className="text-secondary"
+                  aria-hidden="true"
+                />
               </header>
-              <div className="chart-viewport" role="img" aria-label="Area chart showing comparative paid vs pending volumes over a 6-month temporal coordinate.">
+              <div
+                className="chart-viewport"
+                role="img"
+                aria-label="Area chart showing comparative paid vs pending volumes over a 6-month temporal coordinate."
+              >
                 <ResponsiveContainer>
                   <AreaChart data={monthlyTrendData}>
                     <defs>
-                      <linearGradient id="colorPaid" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                      <linearGradient
+                        id="colorPaid"
+                        x1="0"
+                        y1="0"
+                        x2="0"
+                        y2="1"
+                      >
+                        <stop
+                          offset="5%"
+                          stopColor="#10b981"
+                          stopOpacity={0.3}
+                        />
+                        <stop
+                          offset="95%"
+                          stopColor="#10b981"
+                          stopOpacity={0}
+                        />
                       </linearGradient>
-                      <linearGradient id="colorPending" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor="#f59e0b" stopOpacity={0}/>
+                      <linearGradient
+                        id="colorPending"
+                        x1="0"
+                        y1="0"
+                        x2="0"
+                        y2="1"
+                      >
+                        <stop
+                          offset="5%"
+                          stopColor="#f59e0b"
+                          stopOpacity={0.3}
+                        />
+                        <stop
+                          offset="95%"
+                          stopColor="#f59e0b"
+                          stopOpacity={0}
+                        />
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.05)" />
-                    <XAxis dataKey="month" axisLine={false} tickLine={false} fontSize={12} fontWeight={700} dy={10} />
-                    <YAxis axisLine={false} tickLine={false} fontSize={12} fontWeight={700} dx={-10} tickFormatter={(val) => `$${val/1000}k`} />
-                    <Tooltip 
-                      contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '20px', boxShadow: 'var(--shadow-lg)', padding: '1rem' }}
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      vertical={false}
+                      stroke="rgba(0,0,0,0.05)"
                     />
-                    <Area type="monotone" dataKey="paid" stroke="#10b981" fillOpacity={1} fill="url(#colorPaid)" strokeWidth={4} />
-                    <Area type="monotone" dataKey="pending" stroke="#f59e0b" fillOpacity={1} fill="url(#colorPending)" strokeWidth={4} />
+                    <XAxis
+                      dataKey="month"
+                      axisLine={false}
+                      tickLine={false}
+                      fontSize={12}
+                      fontWeight={700}
+                      dy={10}
+                    />
+                    <YAxis
+                      axisLine={false}
+                      tickLine={false}
+                      fontSize={12}
+                      fontWeight={700}
+                      dx={-10}
+                      tickFormatter={(val) => `$${val / 1000}k`}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        background: "var(--bg-card)",
+                        border: "1px solid var(--border)",
+                        borderRadius: "20px",
+                        boxShadow: "var(--shadow-lg)",
+                        padding: "1rem",
+                      }}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="paid"
+                      stroke="#10b981"
+                      fillOpacity={1}
+                      fill="url(#colorPaid)"
+                      strokeWidth={4}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="pending"
+                      stroke="#f59e0b"
+                      fillOpacity={1}
+                      fill="url(#colorPending)"
+                      strokeWidth={4}
+                    />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
             </motion.section>
 
-            <motion.section 
-              initial={{ opacity: 0, scale: 0.95 }} 
-              animate={{ opacity: 1, scale: 1 }} 
+            <motion.section
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
               className="chart-container-premium"
               aria-labelledby="allocation-intelligence-title"
             >
               <header className="chart-header-premium">
                 <div>
-                  <h3 id="allocation-intelligence-title"><BarChart3 size={24} className="text-primary" aria-hidden="true" /> Allocation Matrix</h3>
-                  <p className="chart-sub-text">Strategic resource distribution telemetry</p>
+                  <h3 id="allocation-intelligence-title">
+                    <BarChart3
+                      size={24}
+                      className="text-primary"
+                      aria-hidden="true"
+                    />{" "}
+                    Allocation Matrix
+                  </h3>
+                  <p className="chart-sub-text">
+                    Strategic resource distribution telemetry
+                  </p>
                 </div>
-                <LayoutDashboard size={24} className="text-secondary" aria-hidden="true" />
+                <LayoutDashboard
+                  size={24}
+                  className="text-secondary"
+                  aria-hidden="true"
+                />
               </header>
-              <div className="chart-viewport" role="img" aria-label="Bar chart illustrating resource allocation across distinct operational categories.">
+              <div
+                className="chart-viewport"
+                role="img"
+                aria-label="Bar chart illustrating resource allocation across distinct operational categories."
+              >
                 <ResponsiveContainer>
                   <BarChart data={categoryChartData}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.05)" />
-                    <XAxis dataKey="name" axisLine={false} tickLine={false} fontSize={12} fontWeight={700} dy={10} />
-                    <YAxis axisLine={false} tickLine={false} fontSize={12} fontWeight={700} dx={-10} tickFormatter={(val) => `$${val/1000}k`} />
-                    <Tooltip 
-                       contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '20px', boxShadow: 'var(--shadow-lg)', padding: '1rem' }}
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      vertical={false}
+                      stroke="rgba(0,0,0,0.05)"
                     />
-                    <Bar dataKey="value" radius={[12, 12, 4, 4]} barSize={50}>
+                    <XAxis
+                      dataKey="name"
+                      axisLine={false}
+                      tickLine={false}
+                      fontSize={12}
+                      fontWeight={700}
+                      dy={10}
+                    />
+                    <YAxis
+                      axisLine={false}
+                      tickLine={false}
+                      fontSize={12}
+                      fontWeight={700}
+                      dx={-10}
+                      tickFormatter={(val) => `$${val / 1000}k`}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        background: "var(--bg-card)",
+                        border: "1px solid var(--border)",
+                        borderRadius: "20px",
+                        boxShadow: "var(--shadow-lg)",
+                        padding: "1rem",
+                      }}
+                    />
+                    <Bar
+                      dataKey="value"
+                      radius={[12, 12, 4, 4]}
+                      barSize={50}
+                      fill="var(--primary)"
+                    >
                       {categoryChartData.map((_entry, index) => (
-                        <Cell key={`cell-${index}`} fill={index === 0 ? 'var(--primary)' : 'rgba(0, 113, 227, 0.45)'} />
+                        <rect key={`cell-${index}`} />
                       ))}
                     </Bar>
                   </BarChart>
@@ -587,74 +746,152 @@ function Dashboard({ stats, bills, loading }: DashboardProps) {
           <div className="activity-grid-row">
             <section aria-labelledby="activity-stream-title">
               <header className="section-header">
-                 <div className="section-icon-box" style={{ background: 'rgba(0, 113, 227, 0.1)', color: 'var(--primary)' }}>
-                   <Activity size={24} aria-hidden="true" />
-                 </div>
-                 <h3 className="section-title" id="activity-stream-title">Activity Telemetry</h3>
+                <div
+                  className="section-icon-box"
+                  style={{
+                    background: "rgba(0, 113, 227, 0.1)",
+                    color: "var(--primary)",
+                  }}
+                >
+                  <Activity size={24} aria-hidden="true" />
+                </div>
+                <h3 className="section-title" id="activity-stream-title">
+                  Activity Telemetry
+                </h3>
               </header>
               <div role="list" aria-label="Recent system events">
                 {bills
-                  .sort((a, b) => new Date(b.created_at || b.date).getTime() - new Date(a.created_at || a.date).getTime())
+                  .sort(
+                    (a, b) =>
+                      new Date(b.created_at || b.date).getTime() -
+                      new Date(a.created_at || a.date).getTime(),
+                  )
                   .slice(0, 5)
                   .map((bill) => (
-                  <article 
-                    key={bill.id} 
-                    className="activity-card-premium" 
-                    role="listitem"
-                    aria-labelledby={`activity-title-${bill.id}`}
-                  >
-                    <div className={`activity-icon-box ${bill.status === 'Paid' ? 'status-paid' : 'status-pending'}`} style={{ background: bill.status === 'Paid' ? 'rgba(16, 185, 129, 0.12)' : 'rgba(0, 113, 227, 0.12)', color: bill.status === 'Paid' ? '#10b981' : 'var(--primary)' }}>
-                      {bill.status === 'Paid' ? <CheckCircle2 size={24} aria-hidden="true" /> : <Receipt size={24} aria-hidden="true" />}
-                    </div>
-                    <div className="activity-info-area">
-                      <p className="activity-primary-text" id={`activity-title-${bill.id}`}>
-                        {bill.status === 'Paid' ? 'Settlement Synchronized' : 'New Commitment Indexed'}
-                      </p>
-                      <p className="activity-secondary-text">
-                        {bill.charge_name} • Coordinate: {bill.date}
-                      </p>
-                    </div>
-                    <div style={{ textAlign: 'right' }}>
-                      <p className="activity-value-text" aria-label={`Impact volume: ${formatCurrency(bill.amount)}`}>{formatCurrency(bill.amount)}</p>
-                    </div>
-                  </article>
-                ))}
+                    <article
+                      key={bill.id}
+                      className="activity-card-premium"
+                      role="listitem"
+                      aria-labelledby={`activity-title-${bill.id}`}
+                    >
+                      <div
+                        className={`activity-icon-box ${bill.status === "Paid" ? "status-paid" : "status-pending"}`}
+                        style={{
+                          background:
+                            bill.status === "Paid"
+                              ? "rgba(16, 185, 129, 0.12)"
+                              : "rgba(0, 113, 227, 0.12)",
+                          color:
+                            bill.status === "Paid"
+                              ? "#10b981"
+                              : "var(--primary)",
+                        }}
+                      >
+                        {bill.status === "Paid" ? (
+                          <CheckCircle2 size={24} aria-hidden="true" />
+                        ) : (
+                          <Receipt size={24} aria-hidden="true" />
+                        )}
+                      </div>
+                      <div className="activity-info-area">
+                        <p
+                          className="activity-primary-text"
+                          id={`activity-title-${bill.id}`}
+                        >
+                          {bill.status === "Paid"
+                            ? "Settlement Synchronized"
+                            : "New Commitment Indexed"}
+                        </p>
+                        <p className="activity-secondary-text">
+                          {bill.charge_name} • Coordinate: {bill.date}
+                        </p>
+                      </div>
+                      <div style={{ textAlign: "right" }}>
+                        <p
+                          className="activity-value-text"
+                          aria-label={`Impact volume: ${formatCurrency(bill.amount)}`}
+                        >
+                          {formatCurrency(bill.amount)}
+                        </p>
+                      </div>
+                    </article>
+                  ))}
               </div>
             </section>
 
             <section aria-labelledby="priority-interventions-title">
               <header className="section-header">
-                 <div className="section-icon-box" style={{ background: 'rgba(239, 68, 68, 0.1)', color: 'var(--error)' }}>
-                   <AlertCircle size={24} aria-hidden="true" />
-                 </div>
-                 <h3 className="section-title" id="priority-interventions-title">Priority Interventions</h3>
+                <div
+                  className="section-icon-box"
+                  style={{
+                    background: "rgba(239, 68, 68, 0.1)",
+                    color: "var(--error)",
+                  }}
+                >
+                  <AlertCircle size={24} aria-hidden="true" />
+                </div>
+                <h3 className="section-title" id="priority-interventions-title">
+                  Priority Interventions
+                </h3>
               </header>
               <div role="list" aria-label="Critical administrative actions">
                 {bills
-                  .filter((b) => b.status !== 'Paid')
+                  .filter((b) => b.status !== "Paid")
                   .slice(0, 5)
                   .map((bill) => (
-                  <article 
-                    key={bill.id} 
-                    className={`activity-card-premium priority-intervention-card ${bill.status === 'Overdue' ? 'priority-intervention-overdue' : 'priority-intervention-pending'}`} 
-                    role="listitem"
-                    aria-labelledby={`priority-title-${bill.id}`}
-                  >
-                    <div className="activity-info-area">
-                      <p className="activity-primary-text" id={`priority-title-${bill.id}`}>{bill.charge_name}</p>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.25rem' }}>
-                        <Calendar size={16} className="text-secondary" aria-hidden="true" />
-                        <span className="activity-secondary-text">TIMELINE: {bill.date}</span>
+                    <article
+                      key={bill.id}
+                      className={`activity-card-premium priority-intervention-card ${bill.status === "Overdue" ? "priority-intervention-overdue" : "priority-intervention-pending"}`}
+                      role="listitem"
+                      aria-labelledby={`priority-title-${bill.id}`}
+                    >
+                      <div className="activity-info-area">
+                        <p
+                          className="activity-primary-text"
+                          id={`priority-title-${bill.id}`}
+                        >
+                          {bill.charge_name}
+                        </p>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "0.5rem",
+                            marginTop: "0.25rem",
+                          }}
+                        >
+                          <Calendar
+                            size={16}
+                            className="text-secondary"
+                            aria-hidden="true"
+                          />
+                          <span className="activity-secondary-text">
+                            TIMELINE: {bill.date}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                    <div style={{ textAlign: 'right' }}>
-                      <p className="activity-value-text" style={{ fontSize: '1.25rem' }} aria-label={`Risk impact: ${formatCurrency(bill.amount)}`}>{formatCurrency(bill.amount)}</p>
-                      <span className={`status-badge status-${bill.status.toLowerCase()}`} style={{ fontSize: '0.7rem', fontWeight: 950, marginTop: '0.4rem', display: 'inline-block' }} role="status">
-                        {bill.status.toUpperCase()}
-                      </span>
-                    </div>
-                  </article>
-                ))}
+                      <div style={{ textAlign: "right" }}>
+                        <p
+                          className="activity-value-text"
+                          style={{ fontSize: "1.25rem" }}
+                          aria-label={`Risk impact: ${formatCurrency(bill.amount)}`}
+                        >
+                          {formatCurrency(bill.amount)}
+                        </p>
+                        <span
+                          className={`status-badge status-${bill.status.toLowerCase()}`}
+                          style={{
+                            fontSize: "0.7rem",
+                            fontWeight: 950,
+                            marginTop: "0.4rem",
+                            display: "inline-block",
+                          }}
+                        >
+                          {bill.status.toUpperCase()}
+                        </span>
+                      </div>
+                    </article>
+                  ))}
               </div>
             </section>
           </div>

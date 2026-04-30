@@ -1,5 +1,5 @@
-import { useState, useCallback } from 'react';
-import * as yup from 'yup';
+import { useState, useCallback } from "react";
+import * as yup from "yup";
 
 interface UseFormValidationState<T> {
   values: T;
@@ -32,39 +32,47 @@ export function useFormValidation<T extends Record<string, unknown>>({
     async (name: keyof T, value: unknown) => {
       try {
         await validationSchema.validateAt(String(name), { [name]: value });
-        return '';
+        return "";
       } catch (error) {
         if (error instanceof yup.ValidationError) {
           return error.message;
         }
-        return 'Validation error';
+        return "Validation error";
       }
     },
-    [validationSchema]
+    [validationSchema],
   );
 
-  const validateForm = useCallback(async (values: T) => {
-    try {
-      await validationSchema.validate(values, { abortEarly: false });
-      return {};
-    } catch (error) {
-      if (error instanceof yup.ValidationError) {
-        const newErrors: Partial<Record<keyof T, string>> = {};
-        error.inner.forEach((err) => {
-          if (err.path) {
-            newErrors[err.path as keyof T] = err.message;
-          }
-        });
-        return newErrors;
+  const validateForm = useCallback(
+    async (values: T) => {
+      try {
+        await validationSchema.validate(values, { abortEarly: false });
+        return {};
+      } catch (error) {
+        if (error instanceof yup.ValidationError) {
+          const newErrors: Partial<Record<keyof T, string>> = {};
+          error.inner.forEach((err) => {
+            if (err.path) {
+              newErrors[err.path as keyof T] = err.message;
+            }
+          });
+          return newErrors;
+        }
+        return {};
       }
-      return {};
-    }
-  }, [validationSchema]);
+    },
+    [validationSchema],
+  );
 
   const handleChange = useCallback(
-    async (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    async (
+      e: React.ChangeEvent<
+        HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+      >,
+    ) => {
       const { name, value, type } = e.target;
-      const fieldValue = type === 'checkbox' ? (e.target as HTMLInputElement).checked : value;
+      const fieldValue =
+        type === "checkbox" ? (e.target as HTMLInputElement).checked : value;
 
       setState((prev) => ({
         ...prev,
@@ -77,16 +85,23 @@ export function useFormValidation<T extends Record<string, unknown>>({
         errors: { ...prev.errors, [name]: error },
       }));
     },
-    [validateField]
+    [validateField],
   );
 
-  const handleBlur = useCallback((e: React.FocusEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name } = e.target;
-    setState((prev) => ({
-      ...prev,
-      touched: { ...prev.touched, [name]: true },
-    }));
-  }, []);
+  const handleBlur = useCallback(
+    (
+      e: React.FocusEvent<
+        HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+      >,
+    ) => {
+      const { name } = e.target;
+      setState((prev) => ({
+        ...prev,
+        touched: { ...prev.touched, [name]: true },
+      }));
+    },
+    [],
+  );
 
   const handleSubmit = useCallback(
     async (e: React.FormEvent<HTMLFormElement>) => {
@@ -97,7 +112,7 @@ export function useFormValidation<T extends Record<string, unknown>>({
       const newErrors = await validateForm(state.values);
       const touchedFields = Object.keys(state.values).reduce(
         (acc, key) => ({ ...acc, [key]: true }),
-        {}
+        {},
       );
 
       setState((prev) => ({
@@ -111,13 +126,13 @@ export function useFormValidation<T extends Record<string, unknown>>({
         try {
           await onSubmit(state.values);
         } catch (error) {
-          console.error('Form submission error:', error);
+          console.error("Form submission error:", error);
         }
       }
 
       setState((prev) => ({ ...prev, isSubmitting: false }));
     },
-    [state.values, validateForm, onSubmit]
+    [state.values, validateForm, onSubmit],
   );
 
   const resetForm = useCallback(() => {

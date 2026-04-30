@@ -1,67 +1,83 @@
-import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Mail, Lock, Building2, User, Eye, EyeOff, ShieldCheck } from 'lucide-react'
-import AuthService from '@services/AuthService'
-import { passwordSchema } from '@/schemas/validation'
-import { useUser } from '@/context/UserContext'
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Mail,
+  Lock,
+  Building2,
+  User,
+  Eye,
+  EyeOff,
+  ShieldCheck,
+} from "lucide-react";
+import AuthService from "@services/AuthService";
+import { passwordSchema } from "@/schemas/validation";
+import { useUser } from "@/context/UserContext";
 
 interface LoginViewProps {
-  onLoginSuccess?: () => void
+  onLoginSuccess?: () => void;
 }
 
-type AuthMode = 'login' | 'signup'
+type AuthMode = "login" | "signup";
 
 export default function LoginView({ onLoginSuccess }: LoginViewProps) {
-  const [mode, setMode] = useState<AuthMode>('login')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [showPassword, setShowPassword] = useState(false)
+  const [mode, setMode] = useState<AuthMode>("login");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
-  const { login } = useUser()
+  const { login } = useUser();
 
   // Login form state
-  const [loginEmail, setLoginEmail] = useState('')
-  const [loginPassword, setLoginPassword] = useState('')
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
 
   // Signup form state
-  const [signupEmail, setSignupEmail] = useState('')
-  const [signupPassword, setSignupPassword] = useState('')
-  const [signupConfirmPassword, setSignupConfirmPassword] = useState('')
-  const [fullName, setFullName] = useState('')
-  const [orgName, setOrgName] = useState('')
+  const [signupEmail, setSignupEmail] = useState("");
+  const [signupPassword, setSignupPassword] = useState("");
+  const [signupConfirmPassword, setSignupConfirmPassword] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [orgName, setOrgName] = useState("");
 
   const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError(null)
-    setLoading(true)
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
 
     try {
-      await login(loginEmail, loginPassword)
-      onLoginSuccess?.()
+      await login(loginEmail, loginPassword);
+      onLoginSuccess?.();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Authentication sequence failed. Verify credentials.')
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Authentication sequence failed. Verify credentials.",
+      );
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleSignup = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError(null)
+    e.preventDefault();
+    setError(null);
 
     if (signupPassword !== signupConfirmPassword) {
-      setError('Neural mismatch: Passwords do not correlate.')
-      return
+      setError("Neural mismatch: Passwords do not correlate.");
+      return;
     }
 
     try {
-      await passwordSchema.validate(signupPassword)
+      await passwordSchema.validate(signupPassword);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Entropy failure: Password requirements not met.')
-      return
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Entropy failure: Password requirements not met.",
+      );
+      return;
     }
 
-    setLoading(true)
+    setLoading(true);
 
     try {
       await AuthService.signUp({
@@ -69,16 +85,20 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
         password: signupPassword,
         fullName,
         organizationName: orgName,
-      })
-      
-      await login(signupEmail, signupPassword)
-      onLoginSuccess?.()
+      });
+
+      await login(signupEmail, signupPassword);
+      onLoginSuccess?.();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Entity initialization failed. Domain conflict detected.')
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Entity initialization failed. Domain conflict detected.",
+      );
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="login-page-premium">
@@ -320,7 +340,7 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
         )}
 
         <AnimatePresence mode="wait">
-          {mode === 'login' ? (
+          {mode === "login" ? (
             <motion.form
               key="login"
               initial={{ opacity: 0, x: -20 }}
@@ -344,18 +364,25 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
                     required
                     autoComplete="username"
                   />
-                  <Mail size={20} className="login-field-icon" aria-hidden="true" />
+                  <Mail
+                    size={20}
+                    className="login-field-icon"
+                    aria-hidden="true"
+                  />
                 </div>
               </div>
 
-              <div className="login-form-group" style={{ marginBottom: '2.5rem' }}>
+              <div
+                className="login-form-group"
+                style={{ marginBottom: "2.5rem" }}
+              >
                 <label className="login-label-premium" htmlFor="login-password">
                   Security Cipher (Password)
                 </label>
                 <div className="login-input-wrapper">
                   <input
                     id="login-password"
-                    type={showPassword ? 'text' : 'password'}
+                    type={showPassword ? "text" : "password"}
                     value={loginPassword}
                     onChange={(e) => setLoginPassword(e.target.value)}
                     placeholder="••••••••••••"
@@ -363,15 +390,26 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
                     required
                     autoComplete="current-password"
                   />
-                  <Lock size={20} className="login-field-icon" aria-hidden="true" />
+                  <Lock
+                    size={20}
+                    className="login-field-icon"
+                    aria-hidden="true"
+                  />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="login-password-toggle"
-                    aria-label={showPassword ? "Obfuscate security cipher" : "Reveal security cipher"}
-                    aria-pressed={showPassword}
+                    aria-label={
+                      showPassword
+                        ? "Obfuscate security cipher"
+                        : "Reveal security cipher"
+                    }
                   >
-                    {showPassword ? <EyeOff size={20} aria-hidden="true" /> : <Eye size={20} aria-hidden="true" />}
+                    {showPassword ? (
+                      <EyeOff size={20} aria-hidden="true" />
+                    ) : (
+                      <Eye size={20} aria-hidden="true" />
+                    )}
                   </button>
                 </div>
               </div>
@@ -381,14 +419,14 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
                 disabled={loading}
                 className="login-submit-btn"
               >
-                {loading ? 'SYNCHRONIZING...' : 'INITIALIZE SESSION'}
+                {loading ? "SYNCHRONIZING..." : "INITIALIZE SESSION"}
               </button>
 
               <p className="login-footer-premium">
                 New entity?
                 <button
                   type="button"
-                  onClick={() => setMode('signup')}
+                  onClick={() => setMode("signup")}
                   className="login-mode-btn"
                 >
                   INITIALIZE ACCOUNT
@@ -405,7 +443,10 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
               aria-label="Entity initialization portal"
             >
               <div className="login-form-group">
-                <label className="login-label-premium" htmlFor="signup-fullname">
+                <label
+                  className="login-label-premium"
+                  htmlFor="signup-fullname"
+                >
                   LEGAL ENTITY NAME
                 </label>
                 <div className="login-input-wrapper">
@@ -418,7 +459,11 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
                     className="login-input-premium"
                     required
                   />
-                  <User size={20} className="login-field-icon" aria-hidden="true" />
+                  <User
+                    size={20}
+                    className="login-field-icon"
+                    aria-hidden="true"
+                  />
                 </div>
               </div>
 
@@ -436,7 +481,11 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
                     className="login-input-premium"
                     required
                   />
-                  <Building2 size={20} className="login-field-icon" aria-hidden="true" />
+                  <Building2
+                    size={20}
+                    className="login-field-icon"
+                    aria-hidden="true"
+                  />
                 </div>
               </div>
 
@@ -455,18 +504,25 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
                     required
                     autoComplete="email"
                   />
-                  <Mail size={20} className="login-field-icon" aria-hidden="true" />
+                  <Mail
+                    size={20}
+                    className="login-field-icon"
+                    aria-hidden="true"
+                  />
                 </div>
               </div>
 
               <div className="login-form-group">
-                <label className="login-label-premium" htmlFor="signup-password">
+                <label
+                  className="login-label-premium"
+                  htmlFor="signup-password"
+                >
                   SECURITY CIPHER
                 </label>
                 <div className="login-input-wrapper">
                   <input
                     id="signup-password"
-                    type={showPassword ? 'text' : 'password'}
+                    type={showPassword ? "text" : "password"}
                     value={signupPassword}
                     onChange={(e) => setSignupPassword(e.target.value)}
                     placeholder="••••••••••••"
@@ -474,27 +530,44 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
                     required
                     autoComplete="new-password"
                   />
-                  <Lock size={20} className="login-field-icon" aria-hidden="true" />
+                  <Lock
+                    size={20}
+                    className="login-field-icon"
+                    aria-hidden="true"
+                  />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="login-password-toggle"
-                    aria-label={showPassword ? "Obfuscate security cipher" : "Reveal security cipher"}
-                    aria-pressed={showPassword}
+                    aria-label={
+                      showPassword
+                        ? "Obfuscate security cipher"
+                        : "Reveal security cipher"
+                    }
                   >
-                    {showPassword ? <EyeOff size={20} aria-hidden="true" /> : <Eye size={20} aria-hidden="true" />}
+                    {showPassword ? (
+                      <EyeOff size={20} aria-hidden="true" />
+                    ) : (
+                      <Eye size={20} aria-hidden="true" />
+                    )}
                   </button>
                 </div>
               </div>
 
-              <div className="login-form-group" style={{ marginBottom: '2.5rem' }}>
-                <label className="login-label-premium" htmlFor="signup-confirm-password">
+              <div
+                className="login-form-group"
+                style={{ marginBottom: "2.5rem" }}
+              >
+                <label
+                  className="login-label-premium"
+                  htmlFor="signup-confirm-password"
+                >
                   CONFIRM CIPHER
                 </label>
                 <div className="login-input-wrapper">
                   <input
                     id="signup-confirm-password"
-                    type={showPassword ? 'text' : 'password'}
+                    type={showPassword ? "text" : "password"}
                     value={signupConfirmPassword}
                     onChange={(e) => setSignupConfirmPassword(e.target.value)}
                     placeholder="••••••••••••"
@@ -502,7 +575,11 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
                     required
                     autoComplete="new-password"
                   />
-                  <Lock size={20} className="login-field-icon" aria-hidden="true" />
+                  <Lock
+                    size={20}
+                    className="login-field-icon"
+                    aria-hidden="true"
+                  />
                 </div>
               </div>
 
@@ -511,14 +588,14 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
                 disabled={loading}
                 className="login-submit-btn"
               >
-                {loading ? 'INITIALIZING ENTITY...' : 'COMMENCE DEPLOYMENT'}
+                {loading ? "INITIALIZING ENTITY..." : "COMMENCE DEPLOYMENT"}
               </button>
 
               <p className="login-footer-premium">
                 Existing session?
                 <button
                   type="button"
-                  onClick={() => setMode('login')}
+                  onClick={() => setMode("login")}
                   className="login-mode-btn"
                 >
                   RESUME ACCESS
@@ -529,5 +606,5 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
         </AnimatePresence>
       </motion.div>
     </div>
-  )
+  );
 }

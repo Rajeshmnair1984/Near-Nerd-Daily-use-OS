@@ -1,70 +1,87 @@
-import { useCallback, useEffect, useState } from 'react'
-import Sidebar from './components/Sidebar'
-import Dashboard from './components/Dashboard'
-import BillManager from './components/BillManager'
-import CalendarView from './components/CalendarView'
-import VendorManager from './components/VendorManager'
-import SettingsView from './components/SettingsView'
-import LocationManager from './components/LocationManager'
-import DocumentManager from './components/DocumentManager'
-import AlertsManager from './components/AlertsManager'
-import SuperAdminDashboard from './components/SuperAdminDashboard'
-import LoginView from './components/LoginView'
-import { dataService } from './services/dataService'
-import { Bell, Menu, LogOut, Sun, Moon, Search, Plus } from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Bill, CreateBillInput, UpdateBillInput } from '@/types/bill'
-import { CreateDocumentInput, DocumentRecord } from '@/types/document'
-import { CreateLocationInput, Location } from '@/types/location'
-import { CreateVendorInput, Vendor } from '@/types/vendor'
-import { DashboardStats } from '@/types/common'
-import { useUser } from '@/context/UserContext'
-import { useToast } from '@/context/ToastContext'
+import { useCallback, useEffect, useState } from "react";
+import Sidebar from "./components/Sidebar";
+import Dashboard from "./components/Dashboard";
+import BillManager from "./components/BillManager";
+import CalendarView from "./components/CalendarView";
+import VendorManager from "./components/VendorManager";
+import SettingsView from "./components/SettingsView";
+import LocationManager from "./components/LocationManager";
+import DocumentManager from "./components/DocumentManager";
+import AlertsManager from "./components/AlertsManager";
+import SuperAdminDashboard from "./components/SuperAdminDashboard";
+import LoginView from "./components/LoginView";
+import { dataService } from "./services/dataService";
+import { Bell, Menu, LogOut, Sun, Moon, Search, Plus } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Bill, CreateBillInput, UpdateBillInput } from "@/types/bill";
+import { CreateDocumentInput, DocumentRecord } from "@/types/document";
+import { CreateLocationInput, Location } from "@/types/location";
+import { CreateVendorInput, Vendor } from "@/types/vendor";
+import { DashboardStats } from "@/types/common";
+import { useUser } from "@/context/UserContext";
+import { useToast } from "@/context/ToastContext";
 
 function AppContent() {
-  const [activeView, setActiveView] = useState<string>('dashboard');
+  const [activeView, setActiveView] = useState<string>("dashboard");
   const [bills, setBills] = useState<Bill[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const [documents, setDocuments] = useState<DocumentRecord[]>([]);
-  const [stats, setStats] = useState<DashboardStats>({ totalPaid: 0, totalPending: 0, totalOverdue: 0, overdueCount: 0 });
+  const [stats, setStats] = useState<DashboardStats>({
+    totalPaid: 0,
+    totalPending: 0,
+    totalOverdue: 0,
+    overdueCount: 0,
+  });
   const [loading, setLoading] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
-    return (localStorage.getItem('theme') as 'light' | 'dark') || 'light';
+  const [theme, setTheme] = useState<"light" | "dark">(() => {
+    return (localStorage.getItem("theme") as "light" | "dark") || "light";
   });
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const { user, updateUser, logout } = useUser()
-  const { addToast } = useToast()
+  const { user, updateUser, logout } = useUser();
+  const { addToast } = useToast();
 
   useEffect(() => {
-    document.body.setAttribute('data-theme', theme);
-    localStorage.setItem('theme', theme);
+    document.body.setAttribute("data-theme", theme);
+    localStorage.setItem("theme", theme);
   }, [theme]);
 
-  const toggleTheme = () => setTheme((t) => (t === 'light' ? 'dark' : 'light'));
+  const toggleTheme = () => setTheme((t) => (t === "light" ? "dark" : "light"));
 
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const [billsResult, locationsResult, vendorsResult, documentsResult] = await Promise.allSettled([
-        dataService.getBills(),
-        dataService.getLocations(),
-        dataService.getVendors(),
-        dataService.getDocuments(),
-      ]);
-      const loadedBills = billsResult.status === 'fulfilled' ? billsResult.value : [];
-      const loadedLocations = locationsResult.status === 'fulfilled' ? locationsResult.value : [];
-      const loadedVendors = vendorsResult.status === 'fulfilled' ? vendorsResult.value : [];
-      const loadedDocuments = documentsResult.status === 'fulfilled' ? documentsResult.value : [];
+      const [billsResult, locationsResult, vendorsResult, documentsResult] =
+        await Promise.allSettled([
+          dataService.getBills(),
+          dataService.getLocations(),
+          dataService.getVendors(),
+          dataService.getDocuments(),
+        ]);
+      const loadedBills =
+        billsResult.status === "fulfilled" ? billsResult.value : [];
+      const loadedLocations =
+        locationsResult.status === "fulfilled" ? locationsResult.value : [];
+      const loadedVendors =
+        vendorsResult.status === "fulfilled" ? vendorsResult.value : [];
+      const loadedDocuments =
+        documentsResult.status === "fulfilled" ? documentsResult.value : [];
 
-      [billsResult, locationsResult, vendorsResult, documentsResult].forEach((result, index) => {
-        if (result.status === 'rejected') {
-          const resource = ['bills', 'locations', 'vendors', 'documents'][index];
-          console.warn(`Could not load ${resource}; starting that section empty.`, result.reason);
-        }
-      });
+      [billsResult, locationsResult, vendorsResult, documentsResult].forEach(
+        (result, index) => {
+          if (result.status === "rejected") {
+            const resource = ["bills", "locations", "vendors", "documents"][
+              index
+            ];
+            console.warn(
+              `Could not load ${resource}; starting that section empty.`,
+              result.reason,
+            );
+          }
+        },
+      );
 
       setBills(loadedBills);
       setLocations(loadedLocations);
@@ -72,7 +89,10 @@ function AppContent() {
       setDocuments(loadedDocuments);
       setStats(dataService.getDashboardStats(loadedBills));
     } catch (err) {
-      console.warn('Starting with an empty workspace because data could not be loaded.', err);
+      console.warn(
+        "Starting with an empty workspace because data could not be loaded.",
+        err,
+      );
       setBills([]);
       setLocations([]);
       setVendors([]);
@@ -95,10 +115,11 @@ function AppContent() {
       const updatedBills = [...bills, added];
       setBills(updatedBills);
       setStats(dataService.getDashboardStats(updatedBills));
-      addToast('Bill added successfully', 'success');
+      addToast("Bill added successfully", "success");
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to add bill';
-      addToast(errorMessage, 'error');
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to add bill";
+      addToast(errorMessage, "error");
     }
   };
 
@@ -108,10 +129,11 @@ function AppContent() {
       const updatedBills = bills.map((b) => (b.id === id ? updated : b));
       setBills(updatedBills);
       setStats(dataService.getDashboardStats(updatedBills));
-      addToast('Bill updated successfully', 'success');
+      addToast("Bill updated successfully", "success");
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to update bill';
-      addToast(errorMessage, 'error');
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to update bill";
+      addToast(errorMessage, "error");
       throw err;
     }
   };
@@ -122,10 +144,11 @@ function AppContent() {
       const updatedBills = bills.map((b) => (b.id === id ? updated : b));
       setBills(updatedBills);
       setStats(dataService.getDashboardStats(updatedBills));
-      addToast('Bill status updated', 'success');
+      addToast("Bill status updated", "success");
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to update bill';
-      addToast(errorMessage, 'error');
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to update bill";
+      addToast(errorMessage, "error");
     }
   };
 
@@ -135,33 +158,45 @@ function AppContent() {
       const updatedBills = bills.filter((b) => b.id !== id);
       setBills(updatedBills);
       setStats(dataService.getDashboardStats(updatedBills));
-      addToast('Bill deleted successfully', 'success');
+      addToast("Bill deleted successfully", "success");
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to delete bill';
-      addToast(errorMessage, 'error');
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to delete bill";
+      addToast(errorMessage, "error");
     }
   };
 
   const handleAddLocation = async (newLocation: CreateLocationInput) => {
     try {
       const added = await dataService.addLocation(newLocation);
-      setLocations((current) => [...current, added].sort((a, b) => a.name.localeCompare(b.name)));
-      addToast('Location added successfully', 'success');
+      setLocations((current) =>
+        [...current, added].sort((a, b) => a.name.localeCompare(b.name)),
+      );
+      addToast("Location added successfully", "success");
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to add location';
-      addToast(errorMessage, 'error');
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to add location";
+      addToast(errorMessage, "error");
       throw err;
     }
   };
 
-  const handleUpdateLocation = async (id: string, locationData: CreateLocationInput) => {
+  const handleUpdateLocation = async (
+    id: string,
+    locationData: CreateLocationInput,
+  ) => {
     try {
       const updated = await dataService.updateLocation(id, locationData);
-      setLocations((current) => current.map((location) => (location.id === id ? updated : location)).sort((a, b) => a.name.localeCompare(b.name)));
-      addToast('Location updated successfully', 'success');
+      setLocations((current) =>
+        current
+          .map((location) => (location.id === id ? updated : location))
+          .sort((a, b) => a.name.localeCompare(b.name)),
+      );
+      addToast("Location updated successfully", "success");
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to update location';
-      addToast(errorMessage, 'error');
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to update location";
+      addToast(errorMessage, "error");
       throw err;
     }
   };
@@ -169,34 +204,48 @@ function AppContent() {
   const handleDeleteLocation = async (id: string) => {
     try {
       await dataService.deleteLocation(id);
-      setLocations((current) => current.filter((location) => location.id !== id));
-      addToast('Location deleted successfully', 'success');
+      setLocations((current) =>
+        current.filter((location) => location.id !== id),
+      );
+      addToast("Location deleted successfully", "success");
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to delete location';
-      addToast(errorMessage, 'error');
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to delete location";
+      addToast(errorMessage, "error");
     }
   };
 
   const handleAddVendor = async (newVendor: CreateVendorInput) => {
     try {
       const added = await dataService.addVendor(newVendor);
-      setVendors((current) => [...current, added].sort((a, b) => a.name.localeCompare(b.name)));
-      addToast('Vendor added successfully', 'success');
+      setVendors((current) =>
+        [...current, added].sort((a, b) => a.name.localeCompare(b.name)),
+      );
+      addToast("Vendor added successfully", "success");
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to add vendor';
-      addToast(errorMessage, 'error');
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to add vendor";
+      addToast(errorMessage, "error");
       throw err;
     }
   };
 
-  const handleUpdateVendor = async (id: string, vendorData: CreateVendorInput) => {
+  const handleUpdateVendor = async (
+    id: string,
+    vendorData: CreateVendorInput,
+  ) => {
     try {
       const updated = await dataService.updateVendor(id, vendorData);
-      setVendors((current) => current.map((vendor) => (vendor.id === id ? updated : vendor)).sort((a, b) => a.name.localeCompare(b.name)));
-      addToast('Vendor updated successfully', 'success');
+      setVendors((current) =>
+        current
+          .map((vendor) => (vendor.id === id ? updated : vendor))
+          .sort((a, b) => a.name.localeCompare(b.name)),
+      );
+      addToast("Vendor updated successfully", "success");
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to update vendor';
-      addToast(errorMessage, 'error');
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to update vendor";
+      addToast(errorMessage, "error");
       throw err;
     }
   };
@@ -205,10 +254,11 @@ function AppContent() {
     try {
       await dataService.deleteVendor(id);
       setVendors((current) => current.filter((vendor) => vendor.id !== id));
-      addToast('Vendor deleted successfully', 'success');
+      addToast("Vendor deleted successfully", "success");
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to delete vendor';
-      addToast(errorMessage, 'error');
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to delete vendor";
+      addToast(errorMessage, "error");
     }
   };
 
@@ -216,22 +266,29 @@ function AppContent() {
     try {
       const added = await dataService.addDocument(newDocument);
       setDocuments((current) => [added, ...current]);
-      addToast('Document added successfully', 'success');
+      addToast("Document added successfully", "success");
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to add document';
-      addToast(errorMessage, 'error');
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to add document";
+      addToast(errorMessage, "error");
       throw err;
     }
   };
 
-  const handleUpdateDocument = async (id: string, documentData: CreateDocumentInput) => {
+  const handleUpdateDocument = async (
+    id: string,
+    documentData: CreateDocumentInput,
+  ) => {
     try {
       const updated = await dataService.updateDocument(id, documentData);
-      setDocuments((current) => current.map((document) => (document.id === id ? updated : document)));
-      addToast('Document updated successfully', 'success');
+      setDocuments((current) =>
+        current.map((document) => (document.id === id ? updated : document)),
+      );
+      addToast("Document updated successfully", "success");
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to update document';
-      addToast(errorMessage, 'error');
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to update document";
+      addToast(errorMessage, "error");
       throw err;
     }
   };
@@ -239,19 +296,22 @@ function AppContent() {
   const handleDeleteDocument = async (id: string) => {
     try {
       await dataService.deleteDocument(id);
-      setDocuments((current) => current.filter((document) => document.id !== id));
-      addToast('Document deleted successfully', 'success');
+      setDocuments((current) =>
+        current.filter((document) => document.id !== id),
+      );
+      addToast("Document deleted successfully", "success");
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to delete document';
-      addToast(errorMessage, 'error');
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to delete document";
+      addToast(errorMessage, "error");
     }
   };
 
   const renderContent = () => {
     switch (activeView) {
-      case 'dashboard':
+      case "dashboard":
         return <Dashboard stats={stats} bills={bills} loading={loading} />;
-      case 'bills':
+      case "bills":
         return (
           <BillManager
             bills={bills}
@@ -263,7 +323,7 @@ function AppContent() {
             loading={loading}
           />
         );
-      case 'locations':
+      case "locations":
         return (
           <LocationManager
             locations={locations}
@@ -273,9 +333,9 @@ function AppContent() {
             loading={loading}
           />
         );
-      case 'calendar':
+      case "calendar":
         return <CalendarView bills={bills} loading={loading} />;
-      case 'vendors':
+      case "vendors":
         return (
           <VendorManager
             vendors={vendors}
@@ -285,7 +345,7 @@ function AppContent() {
             loading={loading}
           />
         );
-      case 'documents':
+      case "documents":
         return (
           <DocumentManager
             documents={documents}
@@ -295,7 +355,7 @@ function AppContent() {
             loading={loading}
           />
         );
-      case 'alerts':
+      case "alerts":
         return (
           <AlertsManager
             bills={bills}
@@ -303,7 +363,7 @@ function AppContent() {
             loading={loading}
           />
         );
-      case 'settings':
+      case "settings":
         return (
           <SettingsView
             user={user}
@@ -313,12 +373,14 @@ function AppContent() {
             vendorsCount={vendors.length}
           />
         );
-      case 'super-admin':
-        if (user?.role !== 'super_admin') {
+      case "super-admin":
+        if (user?.role !== "super_admin") {
           return (
             <div className="unauthorized-view" role="alert">
               <h2 className="unauthorized-title">Unauthorized Access</h2>
-              <p className="unauthorized-sub">System security parameters restrict your access to this console.</p>
+              <p className="unauthorized-sub">
+                System security parameters restrict your access to this console.
+              </p>
             </div>
           );
         }
@@ -552,13 +614,14 @@ function AppContent() {
         setActiveView={setActiveView}
         isOpen={isSidebarOpen}
         onNavigate={() => setIsSidebarOpen(false)}
-        userName={user?.fullName || user?.email || ''}
+        userName={user?.fullName || user?.email || ""}
         userRole={user?.role}
         onLogout={logout}
       />
-      
+
       {isSidebarOpen && (
         <button
+          type="button"
           className="sidebar-backdrop"
           aria-label="Close navigation overlay"
           onClick={() => setIsSidebarOpen(false)}
@@ -569,6 +632,7 @@ function AppContent() {
         <header className="app-topbar" role="banner">
           <div className="topbar-left">
             <button
+              type="button"
               className="mobile-menu-button"
               aria-label="Open navigation menu"
               onClick={() => setIsSidebarOpen(true)}
@@ -577,11 +641,12 @@ function AppContent() {
             </button>
 
             <button
+              type="button"
               aria-label="Initialize new liability entry"
               className="quick-add-btn"
               onClick={() => {
-                setActiveView('bills');
-                addToast('Accessing Financial Matrix...', 'info');
+                setActiveView("bills");
+                addToast("Accessing Financial Matrix...", "info");
               }}
             >
               <Plus size={24} strokeWidth={3} aria-hidden="true" />
@@ -589,13 +654,15 @@ function AppContent() {
           </div>
 
           <div className="topbar-search-container">
-            <div className="search-field" style={{ width: '100%', margin: 0 }}>
+            <div className="search-field" style={{ width: "100%", margin: 0 }}>
               <Search size={20} aria-hidden="true" />
-              <label htmlFor="global-app-search" className="sr-only">Search systems</label>
-              <input 
+              <label htmlFor="global-app-search" className="sr-only">
+                Search systems
+              </label>
+              <input
                 id="global-app-search"
-                type="text" 
-                placeholder="Synchronize search query..." 
+                type="text"
+                placeholder="Synchronize search query..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -604,27 +671,34 @@ function AppContent() {
 
           <div className="topbar-right">
             <button
+              type="button"
               onClick={toggleTheme}
               className="theme-toggle-btn"
-              aria-label={theme === 'light' ? 'Enable dark mode' : 'Enable light mode'}
+              aria-label={
+                theme === "light" ? "Enable dark mode" : "Enable light mode"
+              }
             >
-              {theme === 'light' ? <Moon size={22} aria-hidden="true" /> : <Sun size={22} aria-hidden="true" />}
+              {theme === "light" ? (
+                <Moon size={22} aria-hidden="true" />
+              ) : (
+                <Sun size={22} aria-hidden="true" />
+              )}
             </button>
 
-            <button 
+            <button
+              type="button"
               className="notification-bell-btn"
               aria-label={`${stats.overdueCount} system alerts requiring attention`}
-              onClick={() => setActiveView('alerts')}
+              onClick={() => setActiveView("alerts")}
             >
               <Bell size={22} aria-hidden="true" />
               {stats.overdueCount > 0 && (
-                <span className="notification-badge">
-                  {stats.overdueCount}
-                </span>
+                <span className="notification-badge">{stats.overdueCount}</span>
               )}
             </button>
-            
+
             <button
+              type="button"
               onClick={logout}
               className="logout-btn-premium"
               aria-label="Terminate secure session"
@@ -652,7 +726,7 @@ function AppContent() {
 }
 
 function App() {
-  const { isAuthenticated, isLoading } = useUser()
+  const { isAuthenticated, isLoading } = useUser();
 
   if (isLoading) {
     return (
@@ -662,14 +736,14 @@ function App() {
           <p className="loading-text">Synchronizing Global Systems...</p>
         </div>
       </div>
-    )
+    );
   }
 
   if (!isAuthenticated) {
-    return <LoginView onLoginSuccess={() => {}} />
+    return <LoginView onLoginSuccess={() => {}} />;
   }
 
-  return <AppContent />
+  return <AppContent />;
 }
 
-export default App
+export default App;

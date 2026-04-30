@@ -11,10 +11,10 @@ import {
   LogOut,
   ChevronRight,
   ShieldCheck,
-  Cpu
-} from 'lucide-react';
-import { isSupabaseConfigured } from '@/services/supabaseClient';
-import { motion } from 'framer-motion';
+  Cpu,
+} from "lucide-react";
+import { isSupabaseConfigured } from "@/services/supabaseClient";
+import { motion } from "framer-motion";
 
 interface SidebarProps {
   activeView: string;
@@ -36,22 +36,26 @@ function Sidebar({
   onLogout,
 }: SidebarProps) {
   const menuItems = [
-    { id: 'dashboard', label: 'Command Center', icon: LayoutDashboard },
-    { id: 'locations', label: 'Infrastructure', icon: MapPin },
-    { id: 'bills', label: 'Financial Matrix', icon: Receipt },
-    { id: 'vendors', label: 'Partner Network', icon: Users },
-    { id: 'calendar', label: 'Temporal Grid', icon: Calendar },
-    { id: 'documents', label: 'Intel Vault', icon: FileText },
-    { id: 'alerts', label: 'Threat Intelligence', icon: AlertCircle },
+    { id: "dashboard", label: "Command Center", icon: LayoutDashboard },
+    { id: "locations", label: "Infrastructure", icon: MapPin },
+    { id: "bills", label: "Financial Matrix", icon: Receipt },
+    { id: "vendors", label: "Partner Network", icon: Users },
+    { id: "calendar", label: "Temporal Grid", icon: Calendar },
+    { id: "documents", label: "Intel Vault", icon: FileText },
+    { id: "alerts", label: "Threat Intelligence", icon: AlertCircle },
   ];
 
-  if (userRole === 'SUPER_ADMIN' || userRole === 'super_admin') {
-    menuItems.unshift({ id: 'super-admin', label: 'Global Console', icon: Globe });
+  if (userRole === "SUPER_ADMIN" || userRole === "super_admin") {
+    menuItems.unshift({
+      id: "super-admin",
+      label: "Global Console",
+      icon: Globe,
+    });
   }
 
   return (
     <aside
-      className={`app-sidebar-premium ${isOpen ? 'is-open' : ''}`}
+      className={`app-sidebar-premium ${isOpen ? "is-open" : ""}`}
       aria-label="Main Navigation"
     >
       <style>{`
@@ -330,7 +334,7 @@ function Sidebar({
       {/* Brand Header */}
       <div className="sidebar-brand-header">
         <div className="brand-icon-box" aria-hidden="true">
-           <Cpu size={28} />
+          <Cpu size={28} />
         </div>
         <h1 className="brand-title">
           NearNerd<span className="brand-title-suffix">OS</span>
@@ -338,16 +342,19 @@ function Sidebar({
       </div>
 
       {/* Identity Matrix */}
-      <section className="identity-matrix" aria-label="Authenticated identity session">
+      <section
+        className="identity-matrix"
+        aria-label="Authenticated identity session"
+      >
         <div className="identity-bg-icon" aria-hidden="true">
           <ShieldCheck size={80} />
         </div>
         <div className="avatar-box" aria-hidden="true">
-          {(userName || '?')[0].toUpperCase()}
+          {(userName || "?")[0].toUpperCase()}
         </div>
         <div className="user-info">
           <p className="user-name">{userName}</p>
-          <p className="user-role">{userRole?.replace('_', ' ')}</p>
+          <p className="user-role">{userRole?.replace("_", " ")}</p>
         </div>
       </section>
 
@@ -360,18 +367,26 @@ function Sidebar({
             const isActive = activeView === item.id;
             return (
               <button
+                type="button"
                 key={item.id}
                 role="menuitem"
-                onClick={() => { setActiveView(item.id); onNavigate?.(); }}
-                className={`nav-btn ${isActive ? 'nav-btn-active' : 'nav-btn-inactive'}`}
-                aria-current={isActive ? 'page' : undefined}
+                onClick={() => {
+                  setActiveView(item.id);
+                  onNavigate?.();
+                }}
+                className={`nav-btn ${isActive ? "nav-btn-active" : "nav-btn-inactive"}`}
+                aria-current={isActive ? "page" : undefined}
                 aria-label={`Navigate to ${item.label}`}
               >
-                <Icon size={22} strokeWidth={isActive ? 3 : 2} aria-hidden="true" />
+                <Icon
+                  size={22}
+                  strokeWidth={isActive ? 3 : 2}
+                  aria-hidden="true"
+                />
                 <span style={{ flex: 1 }}>{item.label}</span>
                 {isActive && (
-                  <motion.div 
-                    layoutId="active-indicator" 
+                  <motion.div
+                    layoutId="active-indicator"
                     aria-hidden="true"
                     initial={{ x: -10, opacity: 0 }}
                     animate={{ x: 0, opacity: 1 }}
@@ -388,9 +403,13 @@ function Sidebar({
       {/* Footer / System Control */}
       <div className="sidebar-footer">
         <button
-          onClick={() => { setActiveView('settings'); onNavigate?.(); }}
-          className={`footer-btn settings-btn ${activeView === 'settings' ? 'settings-btn-active' : 'settings-btn-inactive'}`}
-          aria-current={activeView === 'settings' ? 'page' : undefined}
+          type="button"
+          onClick={() => {
+            setActiveView("settings");
+            onNavigate?.();
+          }}
+          className={`footer-btn settings-btn ${activeView === "settings" ? "settings-btn-active" : "settings-btn-inactive"}`}
+          aria-current={activeView === "settings" ? "page" : undefined}
           aria-label="Access global system settings"
         >
           <Settings size={20} aria-hidden="true" />
@@ -398,6 +417,7 @@ function Sidebar({
         </button>
 
         <button
+          type="button"
           onClick={onLogout}
           className="footer-btn logout-btn"
           aria-label="Terminate secure session and logout"
@@ -406,21 +426,30 @@ function Sidebar({
           <span>Terminate Session</span>
         </button>
 
-        <div 
+        <div
           className="status-badge-container"
           role="status"
-          aria-label={isSupabaseConfigured ? "System Status: Cloud Synchronization Active" : "System Status: Local Sandbox Mode"}
+          aria-label={
+            isSupabaseConfigured
+              ? "System Status: Cloud Synchronization Active"
+              : "System Status: Local Sandbox Mode"
+          }
         >
-          <div 
+          <div
             className="status-dot"
-            style={{ 
-              background: isSupabaseConfigured ? '#10b981' : '#f59e0b', 
-              boxShadow: isSupabaseConfigured ? '0 0 12px rgba(16, 185, 129, 0.4)' : '0 0 12px rgba(245, 158, 11, 0.4)' 
-            }} 
+            style={{
+              background: isSupabaseConfigured ? "#10b981" : "#f59e0b",
+              boxShadow: isSupabaseConfigured
+                ? "0 0 12px rgba(16, 185, 129, 0.4)"
+                : "0 0 12px rgba(245, 158, 11, 0.4)",
+            }}
             aria-hidden="true"
           />
-          <span className="status-text" style={{ color: isSupabaseConfigured ? '#10b981' : '#f59e0b' }}>
-            {isSupabaseConfigured ? 'Cloud Sync Online' : 'Local Sandbox'}
+          <span
+            className="status-text"
+            style={{ color: isSupabaseConfigured ? "#10b981" : "#f59e0b" }}
+          >
+            {isSupabaseConfigured ? "Cloud Sync Online" : "Local Sandbox"}
           </span>
         </div>
       </div>

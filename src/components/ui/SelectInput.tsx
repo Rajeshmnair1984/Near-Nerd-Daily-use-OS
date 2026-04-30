@@ -1,4 +1,4 @@
-import { SelectHTMLAttributes } from 'react';
+import { SelectHTMLAttributes } from "react";
 
 interface SelectOption {
   value: string | number;
@@ -26,7 +26,7 @@ export function SelectInput({
     <div className="form-group">
       <label className="form-label">{label}</label>
       <select
-        className={`form-select ${error && touched ? 'form-error-input' : ''} ${className || ''}`}
+        className={`form-select ${error && touched ? "form-error-input" : ""} ${className || ""}`}
         {...props}
       >
         <option value="">Select {label.toLowerCase()}</option>

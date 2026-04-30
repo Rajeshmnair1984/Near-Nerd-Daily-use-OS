@@ -1,29 +1,44 @@
-import { FormEvent, memo, useMemo, useState } from 'react';
-import { ExternalLink, FileText, Plus, Search, Trash2, Edit, Upload, Shield, Clock, HardDrive, FileCheck } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { CreateDocumentInput, DocumentRecord } from '@/types/document';
-import { Modal } from './ui/Modal';
-import { ErrorBanner } from './ui/ErrorBanner';
-import { ConfirmationModal } from './ui/ConfirmationModal';
-import DocumentEditForm from './DocumentEditForm';
-import { dataService } from '@/services/dataService';
+import { memo, useMemo, useState, type FormEvent } from "react";
+import {
+  ExternalLink,
+  FileText,
+  Plus,
+  Search,
+  Trash2,
+  Edit,
+  Upload,
+  Shield,
+  Clock,
+  HardDrive,
+  FileCheck,
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { CreateDocumentInput, DocumentRecord } from "@/types/document";
+import { Modal } from "./ui/Modal";
+import { ErrorBanner } from "./ui/ErrorBanner";
+import { ConfirmationModal } from "./ui/ConfirmationModal";
+import DocumentEditForm from "./DocumentEditForm";
+import { dataService } from "@/services/dataService";
 
 interface DocumentManagerProps {
   documents: DocumentRecord[];
   onAddDocument: (document: CreateDocumentInput) => Promise<void>;
-  onUpdateDocument?: (id: string, updates: CreateDocumentInput) => Promise<void>;
+  onUpdateDocument?: (
+    id: string,
+    updates: CreateDocumentInput,
+  ) => Promise<void>;
   onDeleteDocument: (id: string) => Promise<void>;
   loading?: boolean;
 }
 
 const emptyDocument: CreateDocumentInput = {
-  title: '',
-  category: 'Lease',
-  owner: '',
-  file_url: '',
-  renewal_date: '',
-  status: 'Active',
-  notes: '',
+  title: "",
+  category: "Lease",
+  owner: "",
+  file_url: "",
+  renewal_date: "",
+  status: "Active",
+  notes: "",
 };
 
 function DocumentManager({
@@ -33,11 +48,13 @@ function DocumentManager({
   onDeleteDocument,
   loading,
 }: DocumentManagerProps) {
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [document, setDocument] = useState<CreateDocumentInput>(emptyDocument);
   const [isSaving, setIsSaving] = useState(false);
-  const [editingDocument, setEditingDocument] = useState<DocumentRecord | null>(null);
+  const [editingDocument, setEditingDocument] = useState<DocumentRecord | null>(
+    null,
+  );
   const [editLoading, setEditLoading] = useState(false);
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -52,11 +69,13 @@ function DocumentManager({
     return documents.filter((item) =>
       [item.title, item.category, item.owner, item.status, item.notes]
         .filter(Boolean)
-        .some((value) => String(value).toLowerCase().includes(normalizedQuery))
+        .some((value) => String(value).toLowerCase().includes(normalizedQuery)),
     );
   }, [documents, query]);
 
-  const reviewCount = documents.filter((item) => item.status === 'Needs Review').length;
+  const reviewCount = documents.filter(
+    (item) => item.status === "Needs Review",
+  ).length;
   const categoryCount = new Set(documents.map((item) => item.category)).size;
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -68,7 +87,10 @@ function DocumentManager({
       let fileUrl = document.file_url;
 
       if (uploadFile) {
-        fileUrl = await dataService.uploadDocumentFile(uploadFile, setUploadProgress);
+        fileUrl = await dataService.uploadDocumentFile(
+          uploadFile,
+          setUploadProgress,
+        );
       }
 
       await onAddDocument({
@@ -85,7 +107,8 @@ function DocumentManager({
       setUploadProgress(0);
       setIsModalOpen(false);
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Failed to add document';
+      const errorMsg =
+        err instanceof Error ? err.message : "Failed to add document";
       setError(errorMsg);
     } finally {
       setIsSaving(false);
@@ -100,7 +123,8 @@ function DocumentManager({
       await onUpdateDocument(editingDocument.id, updates);
       setEditingDocument(null);
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Failed to update document';
+      const errorMsg =
+        err instanceof Error ? err.message : "Failed to update document";
       setError(errorMsg);
     } finally {
       setEditLoading(false);
@@ -113,7 +137,8 @@ function DocumentManager({
     try {
       await onDeleteDocument(id);
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Failed to delete document';
+      const errorMsg =
+        err instanceof Error ? err.message : "Failed to delete document";
       setError(errorMsg);
     } finally {
       setDeleteLoading(null);
@@ -514,9 +539,17 @@ function DocumentManager({
         <div className="hero-content">
           <p className="eyebrow">Intellectual Vault</p>
           <h1>Document Matrix</h1>
-          <p>Orchestrate leases, insurance protocols, permits, and critical agreements in a secure digital environment.</p>
+          <p>
+            Orchestrate leases, insurance protocols, permits, and critical
+            agreements in a secure digital environment.
+          </p>
         </div>
-        <button className="premium-button button-primary" onClick={() => setIsModalOpen(true)} title="Initialize new document">
+        <button
+          type="button"
+          className="premium-button button-primary"
+          onClick={() => setIsModalOpen(true)}
+          title="Initialize new document"
+        >
           <Plus size={20} aria-hidden="true" />
           <span>INITIALIZE DOCUMENT</span>
         </button>
@@ -524,21 +557,29 @@ function DocumentManager({
 
       <div className="metric-strip" role="list">
         <div className="metric-card" role="listitem">
-          <div className="metric-icon"><HardDrive size={22} aria-hidden="true" /></div>
+          <div className="metric-icon">
+            <HardDrive size={22} aria-hidden="true" />
+          </div>
           <div>
             <span className="metric-label">Vault Capacity</span>
             <strong className="metric-value">{documents.length} Records</strong>
           </div>
         </div>
         <div className="metric-card" role="listitem">
-          <div className="metric-icon metric-attention"><Clock size={22} aria-hidden="true" /></div>
+          <div className="metric-icon metric-attention">
+            <Clock size={22} aria-hidden="true" />
+          </div>
           <div>
             <span className="metric-label">Attention Required</span>
-            <strong className="metric-value metric-value-attention">{reviewCount} Documents</strong>
+            <strong className="metric-value metric-value-attention">
+              {reviewCount} Documents
+            </strong>
           </div>
         </div>
         <div className="metric-card" role="listitem">
-          <div className="metric-icon metric-matrix"><FileCheck size={22} aria-hidden="true" /></div>
+          <div className="metric-icon metric-matrix">
+            <FileCheck size={22} aria-hidden="true" />
+          </div>
           <div>
             <span className="metric-label">Category Matrix</span>
             <strong className="metric-value">{categoryCount} Types</strong>
@@ -549,10 +590,15 @@ function DocumentManager({
       <ErrorBanner error={error} onDismiss={() => setError(null)} />
 
       <section className="document-panel-container">
-        <div className="toolbar-container" aria-label="Search and filter documents">
+        <div
+          className="toolbar-container"
+          aria-label="Search and filter documents"
+        >
           <div className="search-box-premium">
             <Search size={19} className="text-secondary" aria-hidden="true" />
-            <label htmlFor="document-search" className="sr-only">Search documents</label>
+            <label htmlFor="document-search" className="sr-only">
+              Search documents
+            </label>
             <input
               id="document-search"
               type="text"
@@ -565,21 +611,35 @@ function DocumentManager({
         </div>
 
         {loading ? (
-          <div className="empty-state" aria-busy="true">Synchronizing Document Vault...</div>
+          <div className="empty-state" aria-busy="true">
+            Synchronizing Document Vault...
+          </div>
         ) : filteredDocuments.length === 0 ? (
           <div className="empty-state empty-state-large">
-            <FileText size={64} className="empty-state-icon-large" aria-hidden="true" />
-            <h3 className="empty-state-title-large">No Document Coordinates Identified</h3>
-            <p className="empty-state-sub-large">Adjust your search or initialize a new record.</p>
+            <FileText
+              size={64}
+              className="empty-state-icon-large"
+              aria-hidden="true"
+            />
+            <h3 className="empty-state-title-large">
+              No Document Coordinates Identified
+            </h3>
+            <p className="empty-state-sub-large">
+              Adjust your search or initialize a new record.
+            </p>
           </div>
         ) : (
-          <div className="document-grid-premium" role="list" aria-label="Document records">
+          <div
+            className="document-grid-premium"
+            role="list"
+            aria-label="Document records"
+          >
             {filteredDocuments.map((item) => (
-              <motion.article 
+              <motion.article
                 layout
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="premium-doc-card" 
+                className="premium-doc-card"
                 key={item.id}
                 role="listitem"
                 aria-labelledby={`doc-title-${item.id}`}
@@ -589,7 +649,7 @@ function DocumentManager({
                     <FileText size={22} />
                   </div>
                   <span
-                    className={`status-badge status-${item.status.toLowerCase().replace(' ', '-')} card-status-badge`}
+                    className={`status-badge status-${item.status.toLowerCase().replace(" ", "-")} card-status-badge`}
                     role="status"
                   >
                     {item.status.toUpperCase()}
@@ -597,32 +657,54 @@ function DocumentManager({
                 </div>
 
                 <div>
-                  <h2 className="card-title" id={`doc-title-${item.id}`}>{item.title}</h2>
+                  <h2 className="card-title" id={`doc-title-${item.id}`}>
+                    {item.title}
+                  </h2>
                   <p className="card-category">{item.category}</p>
                 </div>
 
                 <div className="card-logistics">
                   <div className="logistics-item">
-                    <Shield size={14} className="text-secondary" aria-hidden="true" />
-                    <span className="logistics-label">Owner: <span className="logistics-value" aria-label={`Owner: ${item.owner || 'Unassigned'}`}>{item.owner || 'Unassigned'}</span></span>
+                    <Shield
+                      size={14}
+                      className="text-secondary"
+                      aria-hidden="true"
+                    />
+                    <span className="logistics-label">
+                      Owner:{" "}
+                      <span
+                        className="logistics-value"
+                        aria-label={`Owner: ${item.owner || "Unassigned"}`}
+                      >
+                        {item.owner || "Unassigned"}
+                      </span>
+                    </span>
                   </div>
                   <div className="logistics-item">
-                    <Clock size={14} className="text-secondary" aria-hidden="true" />
-                    <span className="logistics-label">Renewal: <span className={`logistics-value ${item.status === 'Needs Review' ? 'renewal-alert' : ''}`} aria-label={`Renewal date: ${item.renewal_date || 'N/A'}`}>{item.renewal_date || 'N/A'}</span></span>
+                    <Clock
+                      size={14}
+                      className="text-secondary"
+                      aria-hidden="true"
+                    />
+                    <span className="logistics-label">
+                      Renewal:{" "}
+                      <span
+                        className={`logistics-value ${item.status === "Needs Review" ? "renewal-alert" : ""}`}
+                        aria-label={`Renewal date: ${item.renewal_date || "N/A"}`}
+                      >
+                        {item.renewal_date || "N/A"}
+                      </span>
+                    </span>
                   </div>
                 </div>
 
-                {item.notes && (
-                  <p className="card-notes">
-                    "{item.notes}"
-                  </p>
-                )}
+                {item.notes && <p className="card-notes">"{item.notes}"</p>}
 
                 <div className="card-actions">
                   {item.file_url && (
-                    <a 
-                      href={item.file_url} 
-                      target="_blank" 
+                    <a
+                      href={item.file_url}
+                      target="_blank"
                       rel="noreferrer"
                       className="button-primary open-vault-link"
                       title="Open file in vault"
@@ -632,6 +714,7 @@ function DocumentManager({
                     </a>
                   )}
                   <button
+                    type="button"
                     className="icon-button edit-icon-button"
                     onClick={() => setEditingDocument(item)}
                     title={`Edit ${item.title}`}
@@ -640,6 +723,7 @@ function DocumentManager({
                     <Edit size={16} aria-hidden="true" />
                   </button>
                   <button
+                    type="button"
                     className="icon-button danger delete-icon-button"
                     disabled={deleteLoading === item.id}
                     onClick={() => setConfirmDelete(item.id)}
@@ -655,7 +739,11 @@ function DocumentManager({
         )}
       </section>
 
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} maxWidth="700px">
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        maxWidth="700px"
+      >
         <div className="init-modal-container">
           <div className="init-header">
             <div className="init-icon-wrapper" aria-hidden="true">
@@ -663,13 +751,17 @@ function DocumentManager({
             </div>
             <div>
               <h2 className="init-title">Initialize Record</h2>
-              <p className="init-sub">Securely add a new document to the organizational vault.</p>
+              <p className="init-sub">
+                Securely add a new document to the organizational vault.
+              </p>
             </div>
           </div>
 
           <form onSubmit={handleSubmit} className="init-form">
             <div className="form-group">
-              <label className="form-label" htmlFor="new-doc-title">DOCUMENT TITLE</label>
+              <label className="form-label" htmlFor="new-doc-title">
+                DOCUMENT TITLE
+              </label>
               <input
                 id="new-doc-title"
                 className="form-input"
@@ -677,13 +769,17 @@ function DocumentManager({
                 aria-required="true"
                 placeholder="e.g., Master Services Agreement 2024"
                 value={document.title}
-                onChange={(event) => setDocument({ ...document, title: event.target.value })}
+                onChange={(event) =>
+                  setDocument({ ...document, title: event.target.value })
+                }
               />
             </div>
 
             <div className="form-row-2">
               <div className="form-group">
-                <label className="form-label" htmlFor="new-doc-category">CATEGORY MATRIX</label>
+                <label className="form-label" htmlFor="new-doc-category">
+                  CATEGORY MATRIX
+                </label>
                 <input
                   id="new-doc-category"
                   className="form-input"
@@ -691,17 +787,24 @@ function DocumentManager({
                   aria-required="true"
                   placeholder="Lease, Insurance, Permit..."
                   value={document.category}
-                  onChange={(event) => setDocument({ ...document, category: event.target.value })}
+                  onChange={(event) =>
+                    setDocument({ ...document, category: event.target.value })
+                  }
                 />
               </div>
               <div className="form-group">
-                <label className="form-label" htmlFor="new-doc-status">SETTLEMENT STATUS</label>
+                <label className="form-label" htmlFor="new-doc-status">
+                  SETTLEMENT STATUS
+                </label>
                 <select
                   id="new-doc-status"
                   className="form-select"
                   value={document.status}
                   onChange={(event) =>
-                    setDocument({ ...document, status: event.target.value as DocumentRecord['status'] })
+                    setDocument({
+                      ...document,
+                      status: event.target.value as DocumentRecord["status"],
+                    })
                   }
                 >
                   <option value="Active">Active / Valid</option>
@@ -713,87 +816,134 @@ function DocumentManager({
 
             <div className="form-row-2">
               <div className="form-group">
-                <label className="form-label" htmlFor="new-doc-owner">PRIMARY OWNER</label>
+                <label className="form-label" htmlFor="new-doc-owner">
+                  PRIMARY OWNER
+                </label>
                 <input
                   id="new-doc-owner"
                   className="form-input"
                   placeholder="Responsible Entity"
                   value={document.owner}
-                  onChange={(event) => setDocument({ ...document, owner: event.target.value })}
+                  onChange={(event) =>
+                    setDocument({ ...document, owner: event.target.value })
+                  }
                 />
               </div>
               <div className="form-group">
-                <label className="form-label" htmlFor="new-doc-renewal">RENEWAL COORDINATE</label>
+                <label className="form-label" htmlFor="new-doc-renewal">
+                  RENEWAL COORDINATE
+                </label>
                 <input
                   id="new-doc-renewal"
                   className="form-input"
                   type="date"
                   value={document.renewal_date}
-                  onChange={(event) => setDocument({ ...document, renewal_date: event.target.value })}
+                  onChange={(event) =>
+                    setDocument({
+                      ...document,
+                      renewal_date: event.target.value,
+                    })
+                  }
                 />
               </div>
             </div>
 
             <div className="form-group">
               <label className="form-label">FILE ORCHESTRATION</label>
-              <label className={`upload-box ${uploadFile ? 'upload-box-active' : 'upload-box-inactive'}`}>
-                <Upload size={32} color={uploadFile ? 'var(--primary)' : 'var(--text-secondary)'} className="upload-icon" aria-hidden="true" />
-                <span className={`upload-text-main ${uploadFile ? 'upload-text-main-active' : 'upload-text-main-inactive'}`}>
-                  {uploadFile ? uploadFile.name : 'CLICK TO UPLOAD DIGITAL ASSET'}
+              <label
+                className={`upload-box ${uploadFile ? "upload-box-active" : "upload-box-inactive"}`}
+              >
+                <Upload
+                  size={32}
+                  color={
+                    uploadFile ? "var(--primary)" : "var(--text-secondary)"
+                  }
+                  className="upload-icon"
+                  aria-hidden="true"
+                />
+                <span
+                  className={`upload-text-main ${uploadFile ? "upload-text-main-active" : "upload-text-main-inactive"}`}
+                >
+                  {uploadFile
+                    ? uploadFile.name
+                    : "CLICK TO UPLOAD DIGITAL ASSET"}
                 </span>
-                <p className="upload-text-sub">PDF, DOCX, XLSX, or High-Res Images</p>
+                <p className="upload-text-sub">
+                  PDF, DOCX, XLSX, or High-Res Images
+                </p>
                 <input
                   type="file"
-                  onChange={(event) => setUploadFile(event.target.files?.[0] || null)}
+                  onChange={(event) =>
+                    setUploadFile(event.target.files?.[0] || null)
+                  }
                   className="hidden-file-input"
                   accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg"
                   aria-label="Upload document file"
                 />
               </label>
               {uploadProgress > 0 && uploadProgress < 100 && (
-                <div 
-                  className="progress-bar-container" 
-                  role="progressbar" 
-                  aria-valuenow={uploadProgress} 
-                  aria-valuemin={0} 
+                <div
+                  className="progress-bar-container"
+                  role="progressbar"
+                  aria-valuenow={uploadProgress}
+                  aria-valuemin={0}
                   aria-valuemax={100}
                   aria-label="File upload progress"
                 >
-                  <div className="progress-bar-fill" style={{ width: `${uploadProgress}%` }} />
+                  <div
+                    className="progress-bar-fill"
+                    style={{ width: `${uploadProgress}%` }}
+                  />
                 </div>
               )}
             </div>
 
             <div className="form-group">
-              <label className="form-label" htmlFor="new-doc-url">EXTERNAL ASSET URL (OPTIONAL)</label>
+              <label className="form-label" htmlFor="new-doc-url">
+                EXTERNAL ASSET URL (OPTIONAL)
+              </label>
               <input
                 id="new-doc-url"
                 className="form-input"
                 type="url"
                 placeholder="https://cloud-storage.com/asset..."
                 value={document.file_url}
-                onChange={(event) => setDocument({ ...document, file_url: event.target.value })}
+                onChange={(event) =>
+                  setDocument({ ...document, file_url: event.target.value })
+                }
               />
             </div>
 
             <div className="form-group">
-              <label className="form-label" htmlFor="new-doc-notes">OPERATIONAL NOTES</label>
+              <label className="form-label" htmlFor="new-doc-notes">
+                OPERATIONAL NOTES
+              </label>
               <textarea
                 id="new-doc-notes"
                 className="form-textarea"
                 rows={3}
                 placeholder="Internal references, terms, or context..."
                 value={document.notes}
-                onChange={(event) => setDocument({ ...document, notes: event.target.value })}
+                onChange={(event) =>
+                  setDocument({ ...document, notes: event.target.value })
+                }
               />
             </div>
 
             <div className="modal-footer-btns">
-              <button type="button" className="button-secondary btn-discard" onClick={() => setIsModalOpen(false)}>
+              <button
+                type="button"
+                className="button-secondary btn-discard"
+                onClick={() => setIsModalOpen(false)}
+              >
                 DISCARD
               </button>
-              <button type="submit" className="button-primary btn-commit" disabled={isSaving}>
-                {isSaving ? 'INITIALIZING...' : 'COMMIT TO VAULT'}
+              <button
+                type="submit"
+                className="button-primary btn-commit"
+                disabled={isSaving}
+              >
+                {isSaving ? "INITIALIZING..." : "COMMIT TO VAULT"}
               </button>
             </div>
           </form>

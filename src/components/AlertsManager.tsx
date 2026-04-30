@@ -1,106 +1,135 @@
-import { memo, useMemo, FC } from 'react'
-import { AlertCircle, Clock, FileText, RefreshCw, Zap, ShieldAlert, ArrowRight, Activity, BellRing } from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Bill } from '@/types/bill'
-import { DocumentRecord } from '@/types/document'
-import { formatCurrency } from '@/utils/currency'
+import { memo, useMemo, FC } from "react";
+import {
+  AlertCircle,
+  Clock,
+  FileText,
+  RefreshCw,
+  Zap,
+  ShieldAlert,
+  ArrowRight,
+  Activity,
+  BellRing,
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Bill } from "@/types/bill";
+import { DocumentRecord } from "@/types/document";
+import { formatCurrency } from "@/utils/currency";
 
 interface AlertsManagerProps {
-  bills: Bill[]
-  documents: DocumentRecord[]
-  loading?: boolean
+  bills: Bill[];
+  documents: DocumentRecord[];
+  loading?: boolean;
 }
 
 interface Alert {
-  id: string
-  type: 'overdue' | 'dueSoon' | 'missingDoc' | 'renewal'
-  title: string
-  description: string
-  icon: React.ComponentType<{ size: number }>
-  color: string
-  actionItem: string
-  severity: 'high' | 'medium' | 'low'
+  id: string;
+  type: "overdue" | "dueSoon" | "missingDoc" | "renewal";
+  title: string;
+  description: string;
+  icon: React.ComponentType<{ size: number }>;
+  color: string;
+  actionItem: string;
+  severity: "high" | "medium" | "low";
 }
 
-const AlertsManager: FC<AlertsManagerProps> = ({ bills, documents, loading }) => {
+const AlertsManager: FC<AlertsManagerProps> = ({
+  bills,
+  documents,
+  loading,
+}) => {
   const alerts = useMemo<Alert[]>(() => {
-    const allAlerts: Alert[] = []
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    const nextWeek = new Date(today)
-    nextWeek.setDate(nextWeek.getDate() + 7)
+    const allAlerts: Alert[] = [];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const nextWeek = new Date(today);
+    nextWeek.setDate(nextWeek.getDate() + 7);
 
     // Overdue bills
-    bills.filter(b => b.status === 'Overdue').forEach(bill => {
-      allAlerts.push({
-        id: `overdue-${bill.id}`,
-        type: 'overdue',
-        title: `Overdue Payment: ${bill.charge_name}`,
-        description: `Settlement coordinate: ${bill.date} • Impact: ${formatCurrency(bill.amount)}`,
-        icon: AlertCircle,
-        color: '#ef4444',
-        actionItem: 'SETTLE IMMEDIATELY',
-        severity: 'high'
-      })
-    })
+    bills
+      .filter((b) => b.status === "Overdue")
+      .forEach((bill) => {
+        allAlerts.push({
+          id: `overdue-${bill.id}`,
+          type: "overdue",
+          title: `Overdue Payment: ${bill.charge_name}`,
+          description: `Settlement coordinate: ${bill.date} • Impact: ${formatCurrency(bill.amount)}`,
+          icon: AlertCircle,
+          color: "#ef4444",
+          actionItem: "SETTLE IMMEDIATELY",
+          severity: "high",
+        });
+      });
 
     // Bills due within next 7 days
-    bills.filter(b => b.status === 'Pending').forEach(bill => {
-      const dueDate = new Date(bill.date)
-      dueDate.setHours(0, 0, 0, 0)
-      if (dueDate > today && dueDate <= nextWeek) {
-        allAlerts.push({
-          id: `dueSoon-${bill.id}`,
-          type: 'dueSoon',
-          title: `Imminent Commitment: ${bill.charge_name}`,
-          description: `Timeline coordinate: ${bill.date} • Volume: ${formatCurrency(bill.amount)}`,
-          icon: Clock,
-          color: '#f59e0b',
-          actionItem: 'ORCHESTRATE PAYMENT',
-          severity: 'medium'
-        })
-      }
-    })
+    bills
+      .filter((b) => b.status === "Pending")
+      .forEach((bill) => {
+        const dueDate = new Date(bill.date);
+        dueDate.setHours(0, 0, 0, 0);
+        if (dueDate > today && dueDate <= nextWeek) {
+          allAlerts.push({
+            id: `dueSoon-${bill.id}`,
+            type: "dueSoon",
+            title: `Imminent Commitment: ${bill.charge_name}`,
+            description: `Timeline coordinate: ${bill.date} • Volume: ${formatCurrency(bill.amount)}`,
+            icon: Clock,
+            color: "#f59e0b",
+            actionItem: "ORCHESTRATE PAYMENT",
+            severity: "medium",
+          });
+        }
+      });
 
     // Missing or needs review documents
-    documents.filter(d => d.status === 'Needs Review').forEach(doc => {
-      allAlerts.push({
-        id: `doc-${doc.id}`,
-        type: 'missingDoc',
-        title: `Vault Review Required: ${doc.title}`,
-        description: `Intel Category: ${doc.category}${doc.owner ? ` • Entity: ${doc.owner}` : ''}`,
-        icon: FileText,
-        color: '#0071e3',
-        actionItem: 'VERIFY INTEL',
-        severity: 'medium'
-      })
-    })
+    documents
+      .filter((d) => d.status === "Needs Review")
+      .forEach((doc) => {
+        allAlerts.push({
+          id: `doc-${doc.id}`,
+          type: "missingDoc",
+          title: `Vault Review Required: ${doc.title}`,
+          description: `Intel Category: ${doc.category}${doc.owner ? ` • Entity: ${doc.owner}` : ""}`,
+          icon: FileText,
+          color: "#0071e3",
+          actionItem: "VERIFY INTEL",
+          severity: "medium",
+        });
+      });
 
     // Document renewals coming up
-    documents.filter(d => d.renewal_date).forEach(doc => {
-      const renewalDate = new Date(doc.renewal_date!)
-      renewalDate.setHours(0, 0, 0, 0)
-      const daysUntilRenewal = Math.ceil((renewalDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
-      
-      if (daysUntilRenewal <= 30 && daysUntilRenewal > 0) {
-        allAlerts.push({
-          id: `renewal-${doc.id}`,
-          type: 'renewal',
-          title: `Vault Renewal Approaching: ${doc.title}`,
-          description: `Renewal coordinate: ${doc.renewal_date} • ${daysUntilRenewal} days remaining`,
-          icon: RefreshCw,
-          color: '#34a853',
-          actionItem: 'EXTEND CLEARANCE',
-          severity: 'low'
-        })
-      }
-    })
+    documents
+      .filter((d) => d.renewal_date)
+      .forEach((doc) => {
+        const renewalDate = new Date(doc.renewal_date!);
+        renewalDate.setHours(0, 0, 0, 0);
+        const daysUntilRenewal = Math.ceil(
+          (renewalDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
+        );
 
-    return allAlerts.sort((a, b) => {
-      const severityOrder = { high: 0, medium: 1, low: 2 }
-      return severityOrder[a.severity as keyof typeof severityOrder] - severityOrder[b.severity as keyof typeof severityOrder]
-    }).slice(0, 15)
-  }, [bills, documents])
+        if (daysUntilRenewal <= 30 && daysUntilRenewal > 0) {
+          allAlerts.push({
+            id: `renewal-${doc.id}`,
+            type: "renewal",
+            title: `Vault Renewal Approaching: ${doc.title}`,
+            description: `Renewal coordinate: ${doc.renewal_date} • ${daysUntilRenewal} days remaining`,
+            icon: RefreshCw,
+            color: "#34a853",
+            actionItem: "EXTEND CLEARANCE",
+            severity: "low",
+          });
+        }
+      });
+
+    return allAlerts
+      .sort((a, b) => {
+        const severityOrder = { high: 0, medium: 1, low: 2 };
+        return (
+          severityOrder[a.severity as keyof typeof severityOrder] -
+          severityOrder[b.severity as keyof typeof severityOrder]
+        );
+      })
+      .slice(0, 15);
+  }, [bills, documents]);
 
   return (
     <div className="page-shell alerts-premium-page">
@@ -340,10 +369,17 @@ const AlertsManager: FC<AlertsManagerProps> = ({ bills, documents, loading }) =>
         <div className="hero-content">
           <p className="eyebrow">Neural Surveillance</p>
           <h1>Critical Matrix</h1>
-          <p>Real-time orchestration of operational interventions, upcoming liabilities, and expiring security clearances.</p>
+          <p>
+            Real-time orchestration of operational interventions, upcoming
+            liabilities, and expiring security clearances.
+          </p>
         </div>
         <div className="header-metric-box">
-          <div className="metric-badge-premium" role="status" aria-label={`${alerts.length} active threats identified`}>
+          <div
+            className="metric-badge-premium"
+            role="status"
+            aria-label={`${alerts.length} active threats identified`}
+          >
             <Activity size={24} className="text-primary" aria-hidden="true" />
             <div>
               <p className="metric-badge-label">Active Threats</p>
@@ -356,46 +392,75 @@ const AlertsManager: FC<AlertsManagerProps> = ({ bills, documents, loading }) =>
       <section aria-label="System Alerts Matrix">
         {loading ? (
           <div className="loading-state-padding" aria-busy="true">
-            <Zap size={64} className="animate-pulse" color="var(--primary)" aria-hidden="true" />
+            <Zap
+              size={64}
+              className="animate-pulse"
+              color="var(--primary)"
+              aria-hidden="true"
+            />
             <h2 className="loading-title">SYNCHRONIZING THREAT VECTORS...</h2>
           </div>
         ) : alerts.length === 0 ? (
           <div className="empty-state-card" role="status">
-            <BellRing size={80} className="empty-state-icon" aria-hidden="true" />
+            <BellRing
+              size={80}
+              className="empty-state-icon"
+              aria-hidden="true"
+            />
             <h2 className="empty-state-title">Operational Clarity</h2>
-            <p className="empty-state-sub">The system matrix is fully optimized. No pending interventions required at this coordinate.</p>
+            <p className="empty-state-sub">
+              The system matrix is fully optimized. No pending interventions
+              required at this coordinate.
+            </p>
           </div>
         ) : (
-          <div className="threat-matrix" role="list" aria-label="Prioritized interventions">
+          <div
+            className="threat-matrix"
+            role="list"
+            aria-label="Prioritized interventions"
+          >
             <AnimatePresence>
               {alerts.map((alert, index) => {
-                const Icon = alert.icon
+                const Icon = alert.icon;
                 return (
                   <motion.article
                     key={alert.id}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.05, ease: [0.16, 1, 0.3, 1] }}
+                    transition={{
+                      delay: index * 0.05,
+                      ease: [0.16, 1, 0.3, 1],
+                    }}
                     className="premium-alert-card"
                     role="listitem"
                     aria-labelledby={`alert-title-${alert.id}`}
-                    style={{ 
-                      '--alert-color': alert.color,
-                      '--alert-color-soft': `${alert.color}10`,
-                      '--alert-color-border': `${alert.color}20`,
-                      '--alert-color-ghost': `${alert.color}15`,
-                      '--alert-color-glow': `${alert.color}30`
-                    } as React.CSSProperties}
+                    style={
+                      {
+                        "--alert-color": alert.color,
+                        "--alert-color-soft": `${alert.color}10`,
+                        "--alert-color-border": `${alert.color}20`,
+                        "--alert-color-ghost": `${alert.color}15`,
+                        "--alert-color-glow": `${alert.color}30`,
+                      } as React.CSSProperties
+                    }
                   >
-                    <div className="alert-severity-indicator" aria-hidden="true" />
-                    
+                    <div
+                      className="alert-severity-indicator"
+                      aria-hidden="true"
+                    />
+
                     <div className="alert-icon-box">
                       <Icon size={28} aria-hidden="true" />
                     </div>
 
                     <div className="alert-content-wrap">
                       <div className="alert-card-title-row">
-                        <h3 className="alert-card-title" id={`alert-title-${alert.id}`}>{alert.title}</h3>
+                        <h3
+                          className="alert-card-title"
+                          id={`alert-title-${alert.id}`}
+                        >
+                          {alert.title}
+                        </h3>
                         <span className="severity-badge">
                           {alert.severity} PRIORITY
                         </span>
@@ -403,15 +468,16 @@ const AlertsManager: FC<AlertsManagerProps> = ({ bills, documents, loading }) =>
                       <p className="alert-card-desc">{alert.description}</p>
                     </div>
 
-                    <button 
-                      className="action-trigger" 
+                    <button
+                      type="button"
+                      className="action-trigger"
                       aria-label={`Execute intervention: ${alert.actionItem} for ${alert.title}`}
                     >
                       <span>{alert.actionItem}</span>
                       <ArrowRight size={18} aria-hidden="true" />
                     </button>
                   </motion.article>
-                )
+                );
               })}
             </AnimatePresence>
           </div>
@@ -421,11 +487,13 @@ const AlertsManager: FC<AlertsManagerProps> = ({ bills, documents, loading }) =>
       <footer className="footer-banner">
         <ShieldAlert size={28} className="text-secondary" aria-hidden="true" />
         <p className="footer-banner-text">
-          System interventions are prioritized by neural risk factors. Automated audits are performed every 12 hours to maintain operational integrity across all data endpoints.
+          System interventions are prioritized by neural risk factors. Automated
+          audits are performed every 12 hours to maintain operational integrity
+          across all data endpoints.
         </p>
       </footer>
     </div>
-  )
-}
+  );
+};
 
-export default memo(AlertsManager)
+export default memo(AlertsManager);

@@ -1,9 +1,19 @@
-import { FormEvent, memo, useEffect, useState } from 'react';
-import { Activity, CheckCircle2, Database, Fingerprint, Link, Send, ShieldAlert, ShieldCheck, Zap } from 'lucide-react';
-import { UserProfile } from '@/services/AuthService';
-import { DEFAULT_CURRENCY } from '@/utils/currency';
-import { motion } from 'framer-motion';
-import { zapierService } from '@/services/zapierService';
+import { FormEvent, memo, useEffect, useState } from "react";
+import {
+  Activity,
+  CheckCircle2,
+  Database,
+  Fingerprint,
+  Link,
+  Send,
+  ShieldAlert,
+  ShieldCheck,
+  Zap,
+} from "lucide-react";
+import { UserProfile } from "@/services/AuthService";
+import { DEFAULT_CURRENCY } from "@/utils/currency";
+import { motion } from "framer-motion";
+import { zapierService } from "@/services/zapierService";
 
 interface SettingsViewProps {
   user: UserProfile | null;
@@ -20,38 +30,43 @@ function SettingsView({
   locationsCount,
   vendorsCount,
 }: SettingsViewProps) {
-  const [name, setName] = useState(user?.fullName || '');
-  const [email, setEmail] = useState(user?.email || '');
-  const [role, setRole] = useState(user?.role || '');
-  const [workspaceName, setWorkspaceName] = useState('NearNerd Operations');
+  const [name, setName] = useState(user?.fullName || "");
+  const [email, setEmail] = useState(user?.email || "");
+  const [role, setRole] = useState(user?.role || "");
+  const [workspaceName, setWorkspaceName] = useState("NearNerd Operations");
   const [currency, setCurrency] = useState(DEFAULT_CURRENCY);
-  const [savedMessage, setSavedMessage] = useState('');
+  const [savedMessage, setSavedMessage] = useState("");
   const [isSaving, setIsSaving] = useState(false);
-  const [zapierWebhookUrl, setZapierWebhookUrl] = useState(() => zapierService.getSettings().webhookUrl);
-  const [isZapierEnabled, setIsZapierEnabled] = useState(() => zapierService.getSettings().enabled);
+  const [zapierWebhookUrl, setZapierWebhookUrl] = useState(
+    () => zapierService.getSettings().webhookUrl,
+  );
+  const [isZapierEnabled, setIsZapierEnabled] = useState(
+    () => zapierService.getSettings().enabled,
+  );
   const [isTestingZapier, setIsTestingZapier] = useState(false);
 
   useEffect(() => {
     queueMicrotask(() => {
-      setName(user?.fullName || '');
-      setEmail(user?.email || '');
-      setRole(user?.role || '');
+      setName(user?.fullName || "");
+      setEmail(user?.email || "");
+      setRole(user?.role || "");
     });
   }, [user]);
 
   const handleProfileSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsSaving(true);
-    setSavedMessage('');
+    setSavedMessage("");
 
     try {
       await onUpdateUser({
         fullName: name.trim() || null,
       });
-      setSavedMessage('Settings saved successfully');
-      window.setTimeout(() => setSavedMessage(''), 2500);
+      setSavedMessage("Settings saved successfully");
+      window.setTimeout(() => setSavedMessage(""), 2500);
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Could not save settings';
+      const message =
+        error instanceof Error ? error.message : "Could not save settings";
       setSavedMessage(message);
     } finally {
       setIsSaving(false);
@@ -64,13 +79,13 @@ function SettingsView({
       enabled: isZapierEnabled,
       webhookUrl: zapierWebhookUrl,
     });
-    setSavedMessage('Zapier connection saved');
-    window.setTimeout(() => setSavedMessage(''), 2500);
+    setSavedMessage("Zapier connection saved");
+    window.setTimeout(() => setSavedMessage(""), 2500);
   };
 
   const handleZapierTest = async () => {
     setIsTestingZapier(true);
-    setSavedMessage('');
+    setSavedMessage("");
 
     try {
       await zapierService.testConnection(zapierWebhookUrl);
@@ -79,10 +94,11 @@ function SettingsView({
         webhookUrl: zapierWebhookUrl,
       });
       setIsZapierEnabled(true);
-      setSavedMessage('Zapier test sent successfully');
-      window.setTimeout(() => setSavedMessage(''), 2500);
+      setSavedMessage("Zapier test sent successfully");
+      window.setTimeout(() => setSavedMessage(""), 2500);
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Could not reach Zapier';
+      const message =
+        error instanceof Error ? error.message : "Could not reach Zapier";
       setSavedMessage(message);
     } finally {
       setIsTestingZapier(false);
@@ -327,10 +343,13 @@ function SettingsView({
         <div className="hero-content">
           <p className="eyebrow">System Configuration</p>
           <h1>Control Center</h1>
-          <p>Orchestrate your identity, workspace parameters, and system-wide operational health.</p>
+          <p>
+            Orchestrate your identity, workspace parameters, and system-wide
+            operational health.
+          </p>
         </div>
         {savedMessage && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             className="saved-status"
@@ -343,10 +362,10 @@ function SettingsView({
       </header>
 
       <div className="settings-grid">
-        <motion.section 
-          initial={{ opacity: 0, y: 20 }} 
-          animate={{ opacity: 1, y: 0 }} 
-          transition={{ delay: 0.1 }} 
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
           className="settings-card"
           aria-labelledby="identity-protocol-title"
         >
@@ -356,10 +375,12 @@ function SettingsView({
             </div>
             <h2 id="identity-protocol-title">Identity Protocol</h2>
           </div>
-          
+
           <form onSubmit={handleProfileSubmit} className="settings-form">
             <div className="form-group">
-              <label className="form-label" htmlFor="settings-full-name">FULL IDENTITY NAME</label>
+              <label className="form-label" htmlFor="settings-full-name">
+                FULL IDENTITY NAME
+              </label>
               <input
                 id="settings-full-name"
                 className="form-input"
@@ -369,7 +390,9 @@ function SettingsView({
               />
             </div>
             <div className="form-group">
-              <label className="form-label" htmlFor="settings-email">COMMUNICATION ENDPOINT (EMAIL)</label>
+              <label className="form-label" htmlFor="settings-email">
+                COMMUNICATION ENDPOINT (EMAIL)
+              </label>
               <input
                 id="settings-email"
                 className="form-input form-input-readonly"
@@ -380,22 +403,36 @@ function SettingsView({
               />
             </div>
             <div className="form-group">
-              <label className="form-label" htmlFor="settings-role-display-box">AUTHORIZATION ROLE</label>
-              <div id="settings-role-display-box" className="role-box" role="status" aria-readonly="true">
-                 <ShieldCheck size={18} className="text-primary" aria-hidden="true" />
-                 <span className="role-text">{role || 'Standard Entity'}</span>
+              <label className="form-label" htmlFor="settings-role-display-box">
+                AUTHORIZATION ROLE
+              </label>
+              <div
+                id="settings-role-display-box"
+                className="role-box"
+                role="status"
+              >
+                <ShieldCheck
+                  size={18}
+                  className="text-primary"
+                  aria-hidden="true"
+                />
+                <span className="role-text">{role || "Standard Entity"}</span>
               </div>
             </div>
-            <button className="button-primary full-width-btn" type="submit" disabled={isSaving}>
-              {isSaving ? 'COMMITING...' : 'COMMIT PROFILE UPDATES'}
+            <button
+              className="button-primary full-width-btn"
+              type="submit"
+              disabled={isSaving}
+            >
+              {isSaving ? "COMMITING..." : "COMMIT PROFILE UPDATES"}
             </button>
           </form>
         </motion.section>
 
-        <motion.section 
-          initial={{ opacity: 0, y: 20 }} 
-          animate={{ opacity: 1, y: 0 }} 
-          transition={{ delay: 0.2 }} 
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
           className="settings-card"
           aria-labelledby="workspace-params-title"
         >
@@ -405,10 +442,12 @@ function SettingsView({
             </div>
             <h2 id="workspace-params-title">Workspace Parameters</h2>
           </div>
-          
+
           <div className="settings-form">
             <div className="form-group">
-              <label className="form-label" htmlFor="settings-workspace-name">WORKSPACE DESIGNATION</label>
+              <label className="form-label" htmlFor="settings-workspace-name">
+                WORKSPACE DESIGNATION
+              </label>
               <input
                 id="settings-workspace-name"
                 className="form-input"
@@ -417,7 +456,9 @@ function SettingsView({
               />
             </div>
             <div className="form-group">
-              <label className="form-label" htmlFor="settings-currency">FINANCIAL CURRENCY MATRIX</label>
+              <label className="form-label" htmlFor="settings-currency">
+                FINANCIAL CURRENCY MATRIX
+              </label>
               <select
                 id="settings-currency"
                 className="form-select"
@@ -432,17 +473,25 @@ function SettingsView({
             </div>
             <div className="info-banner" role="note">
               <div className="info-banner-content">
-                <Activity size={18} className="info-banner-icon" aria-hidden="true" />
-                <p>Workspace synchronization is currently anchored to this session coordinate. Data persistence is optimized for current location parameters.</p>
+                <Activity
+                  size={18}
+                  className="info-banner-icon"
+                  aria-hidden="true"
+                />
+                <p>
+                  Workspace synchronization is currently anchored to this
+                  session coordinate. Data persistence is optimized for current
+                  location parameters.
+                </p>
               </div>
             </div>
           </div>
         </motion.section>
 
-        <motion.section 
-          initial={{ opacity: 0, y: 20 }} 
-          animate={{ opacity: 1, y: 0 }} 
-          transition={{ delay: 0.25 }} 
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25 }}
           className="settings-card"
           aria-labelledby="zapier-connection-title"
         >
@@ -455,7 +504,9 @@ function SettingsView({
 
           <form onSubmit={handleZapierSubmit} className="zapier-form">
             <div className="form-group">
-              <label className="form-label" htmlFor="settings-zapier-webhook">ZAPIER CATCH HOOK URL</label>
+              <label className="form-label" htmlFor="settings-zapier-webhook">
+                ZAPIER CATCH HOOK URL
+              </label>
               <input
                 id="settings-zapier-webhook"
                 className="form-input"
@@ -491,16 +542,16 @@ function SettingsView({
                 aria-label="Test connection to Zapier"
               >
                 <Send size={16} aria-hidden="true" />
-                {isTestingZapier ? 'TESTING...' : 'TEST'}
+                {isTestingZapier ? "TESTING..." : "TEST"}
               </button>
             </div>
           </form>
         </motion.section>
 
-        <motion.section 
-          initial={{ opacity: 0, y: 20 }} 
-          animate={{ opacity: 1, y: 0 }} 
-          transition={{ delay: 0.3 }} 
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
           className="settings-card grid-full"
           aria-labelledby="neural-data-title"
         >
@@ -510,8 +561,12 @@ function SettingsView({
             </div>
             <h2 id="neural-data-title">Neural Data Overview</h2>
           </div>
-          
-          <div className="data-chip-grid" role="list" aria-label="Workspace metrics">
+
+          <div
+            className="data-chip-grid"
+            role="list"
+            aria-label="Workspace metrics"
+          >
             <div className="data-chip" role="listitem">
               <span>Indexed Liabilities</span>
               <strong>{billsCount}</strong>
@@ -531,10 +586,15 @@ function SettingsView({
           </div>
 
           <div className="supabase-banner" role="alert">
-             <ShieldAlert size={24} className="text-primary" aria-hidden="true" />
-             <p className="supabase-banner-text">
-               Synchronized with Supabase Cloud Infrastructure. If orchestration failures occur, verify your neural schema mapping.
-             </p>
+            <ShieldAlert
+              size={24}
+              className="text-primary"
+              aria-hidden="true"
+            />
+            <p className="supabase-banner-text">
+              Synchronized with Supabase Cloud Infrastructure. If orchestration
+              failures occur, verify your neural schema mapping.
+            </p>
           </div>
         </motion.section>
       </div>

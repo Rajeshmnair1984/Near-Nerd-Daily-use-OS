@@ -1,11 +1,22 @@
-import { FormEvent, memo, useMemo, useState } from 'react';
-import { Building2, Mail, Plus, Search, Trash2, Edit, Globe, Users, Star, Phone } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { CreateVendorInput, Vendor } from '@/types/vendor';
-import { Modal } from './ui/Modal';
-import { ErrorBanner } from './ui/ErrorBanner';
-import { ConfirmationModal } from './ui/ConfirmationModal';
-import VendorEditForm from './VendorEditForm';
+import { FormEvent, memo, useMemo, useState } from "react";
+import {
+  Building2,
+  Mail,
+  Plus,
+  Search,
+  Trash2,
+  Edit,
+  Globe,
+  Users,
+  Star,
+  Phone,
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { CreateVendorInput, Vendor } from "@/types/vendor";
+import { Modal } from "./ui/Modal";
+import { ErrorBanner } from "./ui/ErrorBanner";
+import { ConfirmationModal } from "./ui/ConfirmationModal";
+import VendorEditForm from "./VendorEditForm";
 
 interface VendorManagerProps {
   vendors: Vendor[];
@@ -16,18 +27,24 @@ interface VendorManagerProps {
 }
 
 const emptyVendor: CreateVendorInput = {
-  name: '',
-  category: 'Supplier',
-  contact_name: '',
-  email: '',
-  phone: '',
-  website: '',
-  notes: '',
-  status: 'Active',
+  name: "",
+  category: "Supplier",
+  contact_name: "",
+  email: "",
+  phone: "",
+  website: "",
+  notes: "",
+  status: "Active",
 };
 
-function VendorManager({ vendors, onAddVendor, onUpdateVendor, onDeleteVendor, loading }: VendorManagerProps) {
-  const [query, setQuery] = useState('');
+function VendorManager({
+  vendors,
+  onAddVendor,
+  onUpdateVendor,
+  onDeleteVendor,
+  loading,
+}: VendorManagerProps) {
+  const [query, setQuery] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [vendor, setVendor] = useState<CreateVendorInput>(emptyVendor);
   const [isSaving, setIsSaving] = useState(false);
@@ -52,11 +69,11 @@ function VendorManager({ vendors, onAddVendor, onUpdateVendor, onDeleteVendor, l
         item.notes,
       ]
         .filter(Boolean)
-        .some((value) => String(value).toLowerCase().includes(normalizedQuery))
+        .some((value) => String(value).toLowerCase().includes(normalizedQuery)),
     );
   }, [query, vendors]);
 
-  const activeCount = vendors.filter((item) => item.status === 'Active').length;
+  const activeCount = vendors.filter((item) => item.status === "Active").length;
   const categoryCount = new Set(vendors.map((item) => item.category)).size;
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -77,7 +94,8 @@ function VendorManager({ vendors, onAddVendor, onUpdateVendor, onDeleteVendor, l
       setVendor(emptyVendor);
       setIsModalOpen(false);
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Failed to add vendor';
+      const errorMsg =
+        err instanceof Error ? err.message : "Failed to add vendor";
       setError(errorMsg);
     } finally {
       setIsSaving(false);
@@ -92,7 +110,7 @@ function VendorManager({ vendors, onAddVendor, onUpdateVendor, onDeleteVendor, l
       await onUpdateVendor(editingVendor.id, updates);
       setEditingVendor(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update vendor');
+      setError(err instanceof Error ? err.message : "Failed to update vendor");
     } finally {
       setEditLoading(false);
     }
@@ -104,7 +122,7 @@ function VendorManager({ vendors, onAddVendor, onUpdateVendor, onDeleteVendor, l
     try {
       await onDeleteVendor(id);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete vendor');
+      setError(err instanceof Error ? err.message : "Failed to delete vendor");
     } finally {
       setDeleteLoading(null);
     }
@@ -430,9 +448,17 @@ function VendorManager({ vendors, onAddVendor, onUpdateVendor, onDeleteVendor, l
         <div className="hero-content">
           <p className="eyebrow">Supply Chain Intelligence</p>
           <h1>Vendor Matrix</h1>
-          <p>Orchestrate your global network of suppliers, service partners, and operational business contacts.</p>
+          <p>
+            Orchestrate your global network of suppliers, service partners, and
+            operational business contacts.
+          </p>
         </div>
-        <button className="premium-button button-primary" onClick={() => setIsModalOpen(true)} title="Initialize a new vendor partner">
+        <button
+          type="button"
+          className="premium-button button-primary"
+          onClick={() => setIsModalOpen(true)}
+          title="Initialize a new vendor partner"
+        >
           <Plus size={20} aria-hidden="true" />
           <span>INITIALIZE VENDOR</span>
         </button>
@@ -440,21 +466,27 @@ function VendorManager({ vendors, onAddVendor, onUpdateVendor, onDeleteVendor, l
 
       <div className="metric-strip" role="list">
         <div className="metric-card" role="listitem">
-          <div className="metric-icon-wrap metric-icon-blue"><Users size={22} aria-hidden="true" /></div>
+          <div className="metric-icon-wrap metric-icon-blue">
+            <Users size={22} aria-hidden="true" />
+          </div>
           <div>
             <span className="metric-label">Network Scale</span>
             <strong className="metric-value">{vendors.length} Partners</strong>
           </div>
         </div>
         <div className="metric-card" role="listitem">
-          <div className="metric-icon-wrap metric-icon-green"><Star size={22} aria-hidden="true" /></div>
+          <div className="metric-icon-wrap metric-icon-green">
+            <Star size={22} aria-hidden="true" />
+          </div>
           <div>
             <span className="metric-label">Active Orchestration</span>
             <strong className="metric-value">{activeCount} Operational</strong>
           </div>
         </div>
         <div className="metric-card" role="listitem">
-          <div className="metric-icon-wrap metric-icon-orange"><Building2 size={22} aria-hidden="true" /></div>
+          <div className="metric-icon-wrap metric-icon-orange">
+            <Building2 size={22} aria-hidden="true" />
+          </div>
           <div>
             <span className="metric-label">Category Matrix</span>
             <strong className="metric-value">{categoryCount} Types</strong>
@@ -464,10 +496,15 @@ function VendorManager({ vendors, onAddVendor, onUpdateVendor, onDeleteVendor, l
 
       <ErrorBanner error={error} onDismiss={() => setError(null)} />
 
-      <section className="search-section" aria-label="Search and filter vendors">
+      <section
+        className="search-section"
+        aria-label="Search and filter vendors"
+      >
         <div className="search-field-premium">
           <Search size={19} className="text-secondary" aria-hidden="true" />
-          <label htmlFor="vendor-search" className="sr-only">Search vendors</label>
+          <label htmlFor="vendor-search" className="sr-only">
+            Search vendors
+          </label>
           <input
             id="vendor-search"
             type="text"
@@ -480,21 +517,29 @@ function VendorManager({ vendors, onAddVendor, onUpdateVendor, onDeleteVendor, l
       </section>
 
       {loading ? (
-        <div className="empty-state" aria-busy="true">Synchronizing Vendor Network...</div>
+        <div className="empty-state" aria-busy="true">
+          Synchronizing Vendor Network...
+        </div>
       ) : filteredVendors.length === 0 ? (
         <div className="empty-state empty-state-padding">
           <Building2 size={64} className="empty-icon" aria-hidden="true" />
           <h3 className="empty-title">No Vendor Identities Found</h3>
-          <p className="empty-sub">Adjust your search or initialize a new partner record.</p>
+          <p className="empty-sub">
+            Adjust your search or initialize a new partner record.
+          </p>
         </div>
       ) : (
-        <div className="vendor-grid-premium" role="list" aria-label="Vendor partner cards">
+        <div
+          className="vendor-grid-premium"
+          role="list"
+          aria-label="Vendor partner cards"
+        >
           {filteredVendors.map((item) => (
-            <motion.article 
+            <motion.article
               layout
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="premium-vendor-card" 
+              className="premium-vendor-card"
               key={item.id}
               role="listitem"
               aria-labelledby={`vendor-name-${item.id}`}
@@ -505,11 +550,15 @@ function VendorManager({ vendors, onAddVendor, onUpdateVendor, onDeleteVendor, l
                     <Building2 size={28} />
                   </div>
                   <div>
-                    <h2 className="vendor-name" id={`vendor-name-${item.id}`}>{item.name}</h2>
+                    <h2 className="vendor-name" id={`vendor-name-${item.id}`}>
+                      {item.name}
+                    </h2>
                     <p className="vendor-cat">{item.category}</p>
                   </div>
                 </div>
-                <span className={`status-badge status-${item.status.toLowerCase()} vendor-status-badge`} role="status">
+                <span
+                  className={`status-badge status-${item.status.toLowerCase()} vendor-status-badge`}
+                >
                   {item.status.toUpperCase()}
                 </span>
               </div>
@@ -517,38 +566,58 @@ function VendorManager({ vendors, onAddVendor, onUpdateVendor, onDeleteVendor, l
               <div className="vendor-info-strip">
                 {item.contact_name && (
                   <div className="info-row">
-                    <Users size={16} className="text-secondary" aria-hidden="true" />
-                    <span className="info-name" aria-label={`Contact person: ${item.contact_name}`}>{item.contact_name}</span>
+                    <Users
+                      size={16}
+                      className="text-secondary"
+                      aria-hidden="true"
+                    />
+                    <span
+                      className="info-name"
+                      aria-label={`Contact person: ${item.contact_name}`}
+                    >
+                      {item.contact_name}
+                    </span>
                   </div>
                 )}
                 {item.email && (
-                  <a href={`mailto:${item.email}`} className="info-row info-link-primary" aria-label={`Email ${item.name} at ${item.email}`}>
+                  <a
+                    href={`mailto:${item.email}`}
+                    className="info-row info-link-primary"
+                    aria-label={`Email ${item.name} at ${item.email}`}
+                  >
                     <Mail size={16} aria-hidden="true" />
                     {item.email}
                   </a>
                 )}
                 {item.phone && (
-                  <a href={`tel:${item.phone}`} className="info-row info-link-text" aria-label={`Call ${item.name} at ${item.phone}`}>
+                  <a
+                    href={`tel:${item.phone}`}
+                    className="info-row info-link-text"
+                    aria-label={`Call ${item.name} at ${item.phone}`}
+                  >
                     <Phone size={16} aria-hidden="true" />
                     {item.phone}
                   </a>
                 )}
                 {item.website && (
-                  <a href={item.website} target="_blank" rel="noreferrer" className="info-row info-link-secondary" aria-label={`Visit ${item.name} website`}>
+                  <a
+                    href={item.website}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="info-row info-link-secondary"
+                    aria-label={`Visit ${item.name} website`}
+                  >
                     <Globe size={16} aria-hidden="true" />
-                    {item.website.replace(/^https?:\/\//, '')}
+                    {item.website.replace(/^https?:\/\//, "")}
                   </a>
                 )}
               </div>
 
-              {item.notes && (
-                <p className="vendor-notes">
-                  {item.notes}
-                </p>
-              )}
+              {item.notes && <p className="vendor-notes">{item.notes}</p>}
 
               <div className="vendor-actions">
                 <button
+                  type="button"
                   className="button-primary orchestrate-btn"
                   onClick={() => setEditingVendor(item)}
                   title={`Orchestrate matrix for ${item.name}`}
@@ -557,6 +626,7 @@ function VendorManager({ vendors, onAddVendor, onUpdateVendor, onDeleteVendor, l
                   <Edit size={14} aria-hidden="true" /> ORCHESTRATE
                 </button>
                 <button
+                  type="button"
                   className="icon-button danger delete-btn"
                   disabled={deleteLoading === item.id}
                   onClick={() => setConfirmDelete(item.id)}
@@ -571,7 +641,11 @@ function VendorManager({ vendors, onAddVendor, onUpdateVendor, onDeleteVendor, l
         </div>
       )}
 
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} maxWidth="700px">
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        maxWidth="700px"
+      >
         <div className="vendor-modal-padding">
           <div className="vendor-modal-header-wrap">
             <div className="vendor-modal-icon" aria-hidden="true">
@@ -579,13 +653,17 @@ function VendorManager({ vendors, onAddVendor, onUpdateVendor, onDeleteVendor, l
             </div>
             <div>
               <h2 className="vendor-modal-title">Initialize Partner</h2>
-              <p className="vendor-modal-sub">Securely add a new vendor or service partner to the network.</p>
+              <p className="vendor-modal-sub">
+                Securely add a new vendor or service partner to the network.
+              </p>
             </div>
           </div>
 
           <form onSubmit={handleSubmit} className="vendor-form">
             <div className="form-group">
-              <label className="form-label" htmlFor="new-vendor-name">VENDOR IDENTITY / NAME</label>
+              <label className="form-label" htmlFor="new-vendor-name">
+                VENDOR IDENTITY / NAME
+              </label>
               <input
                 id="new-vendor-name"
                 className="form-input"
@@ -593,13 +671,17 @@ function VendorManager({ vendors, onAddVendor, onUpdateVendor, onDeleteVendor, l
                 aria-required="true"
                 placeholder="e.g., Global Logistics Corp"
                 value={vendor.name}
-                onChange={(event) => setVendor({ ...vendor, name: event.target.value })}
+                onChange={(event) =>
+                  setVendor({ ...vendor, name: event.target.value })
+                }
               />
             </div>
-            
+
             <div className="vendor-form-grid">
               <div className="form-group">
-                <label className="form-label" htmlFor="new-vendor-cat">CATEGORY MATRIX</label>
+                <label className="form-label" htmlFor="new-vendor-cat">
+                  CATEGORY MATRIX
+                </label>
                 <input
                   id="new-vendor-cat"
                   className="form-input"
@@ -607,17 +689,24 @@ function VendorManager({ vendors, onAddVendor, onUpdateVendor, onDeleteVendor, l
                   aria-required="true"
                   placeholder="Supplier, Service, Maintenance..."
                   value={vendor.category}
-                  onChange={(event) => setVendor({ ...vendor, category: event.target.value })}
+                  onChange={(event) =>
+                    setVendor({ ...vendor, category: event.target.value })
+                  }
                 />
               </div>
               <div className="form-group">
-                <label className="form-label" htmlFor="new-vendor-status">OPERATIONAL STATUS</label>
+                <label className="form-label" htmlFor="new-vendor-status">
+                  OPERATIONAL STATUS
+                </label>
                 <select
                   id="new-vendor-status"
                   className="form-select"
                   value={vendor.status}
                   onChange={(event) =>
-                    setVendor({ ...vendor, status: event.target.value as Vendor['status'] })
+                    setVendor({
+                      ...vendor,
+                      status: event.target.value as Vendor["status"],
+                    })
                   }
                 >
                   <option value="Active">Active / Verified</option>
@@ -628,69 +717,97 @@ function VendorManager({ vendors, onAddVendor, onUpdateVendor, onDeleteVendor, l
 
             <div className="vendor-form-grid">
               <div className="form-group">
-                <label className="form-label" htmlFor="new-vendor-contact">PRIMARY CONTACT ENTITY</label>
+                <label className="form-label" htmlFor="new-vendor-contact">
+                  PRIMARY CONTACT ENTITY
+                </label>
                 <input
                   id="new-vendor-contact"
                   className="form-input"
                   placeholder="Contact Name"
                   value={vendor.contact_name}
-                  onChange={(event) => setVendor({ ...vendor, contact_name: event.target.value })}
+                  onChange={(event) =>
+                    setVendor({ ...vendor, contact_name: event.target.value })
+                  }
                 />
               </div>
               <div className="form-group">
-                <label className="form-label" htmlFor="new-vendor-email">COMMUNICATION EMAIL</label>
+                <label className="form-label" htmlFor="new-vendor-email">
+                  COMMUNICATION EMAIL
+                </label>
                 <input
                   id="new-vendor-email"
                   className="form-input"
                   type="email"
                   placeholder="contact@vendor.com"
                   value={vendor.email}
-                  onChange={(event) => setVendor({ ...vendor, email: event.target.value })}
+                  onChange={(event) =>
+                    setVendor({ ...vendor, email: event.target.value })
+                  }
                 />
               </div>
             </div>
 
             <div className="vendor-form-grid">
               <div className="form-group">
-                <label className="form-label" htmlFor="new-vendor-phone">TELEPHONIC COORDINATE</label>
+                <label className="form-label" htmlFor="new-vendor-phone">
+                  TELEPHONIC COORDINATE
+                </label>
                 <input
                   id="new-vendor-phone"
                   className="form-input"
                   placeholder="+1 (555) 000-0000"
                   value={vendor.phone}
-                  onChange={(event) => setVendor({ ...vendor, phone: event.target.value })}
+                  onChange={(event) =>
+                    setVendor({ ...vendor, phone: event.target.value })
+                  }
                 />
               </div>
               <div className="form-group">
-                <label className="form-label" htmlFor="new-vendor-web">DIGITAL DOMAIN (WEBSITE)</label>
+                <label className="form-label" htmlFor="new-vendor-web">
+                  DIGITAL DOMAIN (WEBSITE)
+                </label>
                 <input
                   id="new-vendor-web"
                   className="form-input"
                   placeholder="https://vendor.com"
                   value={vendor.website}
-                  onChange={(event) => setVendor({ ...vendor, website: event.target.value })}
+                  onChange={(event) =>
+                    setVendor({ ...vendor, website: event.target.value })
+                  }
                 />
               </div>
             </div>
 
             <div className="form-group">
-              <label className="form-label" htmlFor="new-vendor-notes">ORCHESTRATION NOTES</label>
+              <label className="form-label" htmlFor="new-vendor-notes">
+                ORCHESTRATION NOTES
+              </label>
               <textarea
                 id="new-vendor-notes"
                 className="form-textarea"
                 rows={3}
                 placeholder="Internal references, terms, or historical context..."
                 value={vendor.notes}
-                onChange={(event) => setVendor({ ...vendor, notes: event.target.value })}
+                onChange={(event) =>
+                  setVendor({ ...vendor, notes: event.target.value })
+                }
               />
             </div>
 
             <div className="vendor-form-footer">
-              <button type="button" className="button-secondary vendor-cancel-btn" onClick={() => setIsModalOpen(false)}>
+              <button
+                type="button"
+                className="button-secondary vendor-cancel-btn"
+                onClick={() => setIsModalOpen(false)}
+              >
                 DISCARD
               </button>
-              <button type="submit" className="button-primary vendor-commit-btn" disabled={isSaving}>
-                {isSaving ? 'INITIALIZING...' : 'COMMIT TO NETWORK'}
+              <button
+                type="submit"
+                className="button-primary vendor-commit-btn"
+                disabled={isSaving}
+              >
+                {isSaving ? "INITIALIZING..." : "COMMIT TO NETWORK"}
               </button>
             </div>
           </form>

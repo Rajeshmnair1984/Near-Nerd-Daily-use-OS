@@ -1,13 +1,22 @@
-import React, { useState, useEffect } from 'react';
-import { Plus, Globe, Mail, Shield, Building2, ExternalLink, Check, X } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { dataService, Organization } from '../services/dataService';
-import { useToast } from '@/context/ToastContext';
+import React, { useState, useEffect } from "react";
+import {
+  Plus,
+  Globe,
+  Mail,
+  Shield,
+  Building2,
+  ExternalLink,
+  Check,
+  X,
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { dataService, Organization } from "../services/dataService";
+import { useToast } from "@/context/ToastContext";
 
 const SuperAdminDashboard = () => {
   const [orgs, setOrgs] = useState<Organization[]>([]);
   const [showModal, setShowModal] = useState(false);
-  const [newOrg, setNewOrg] = useState({ name: '', slug: '', adminEmail: '' });
+  const [newOrg, setNewOrg] = useState({ name: "", slug: "", adminEmail: "" });
   const [impersonating, setImpersonating] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { addToast } = useToast();
@@ -29,32 +38,42 @@ const SuperAdminDashboard = () => {
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setShowModal(false);
+      if (e.key === "Escape") setShowModal(false);
     };
     if (showModal) {
-      document.addEventListener('keydown', handleEscape);
+      document.addEventListener("keydown", handleEscape);
     }
-    return () => document.removeEventListener('keydown', handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
   }, [showModal]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!newOrg.name || !newOrg.slug || !newOrg.adminEmail) {
-      addToast('Please fill in all fields', 'error');
+      addToast("Please fill in all fields", "error");
       return;
     }
 
     setIsSubmitting(true);
     try {
-      await dataService.createOrganization(newOrg.name, newOrg.slug, newOrg.adminEmail);
+      await dataService.createOrganization(
+        newOrg.name,
+        newOrg.slug,
+        newOrg.adminEmail,
+      );
       setShowModal(false);
-      setNewOrg({ name: '', slug: '', adminEmail: '' });
-      addToast(`Organization "${newOrg.name}" created successfully! Invitation sent to ${newOrg.adminEmail}.`, 'success');
+      setNewOrg({ name: "", slug: "", adminEmail: "" });
+      addToast(
+        `Organization "${newOrg.name}" created successfully! Invitation sent to ${newOrg.adminEmail}.`,
+        "success",
+      );
       loadOrgs();
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to create organization. An unknown error occurred.';
-      addToast(errorMessage, 'error');
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "Failed to create organization. An unknown error occurred.";
+      addToast(errorMessage, "error");
     } finally {
       setIsSubmitting(false);
     }
@@ -62,14 +81,17 @@ const SuperAdminDashboard = () => {
 
   const handleImpersonate = (org: Organization) => {
     setImpersonating(org.id);
-    addToast(`Now viewing as ${org.name}. Data is filtered to this organization.`, 'success');
-    localStorage.setItem('impersonating_org_id', org.id);
+    addToast(
+      `Now viewing as ${org.name}. Data is filtered to this organization.`,
+      "success",
+    );
+    localStorage.setItem("impersonating_org_id", org.id);
   };
 
   const stopImpersonating = () => {
     setImpersonating(null);
-    addToast('Stopped impersonating. Viewing all organizations.', 'success');
-    localStorage.removeItem('impersonating_org_id');
+    addToast("Stopped impersonating. Viewing all organizations.", "success");
+    localStorage.removeItem("impersonating_org_id");
   };
 
   return (
@@ -369,12 +391,17 @@ const SuperAdminDashboard = () => {
 
       <header className="page-header">
         <div>
-          <h1 className="page-title" id="global-console-title">Global Console</h1>
-          <p className="page-subtitle">Manage your multi-tenant infrastructure and customer domains.</p>
+          <h1 className="page-title" id="global-console-title">
+            Global Console
+          </h1>
+          <p className="page-subtitle">
+            Manage your multi-tenant infrastructure and customer domains.
+          </p>
         </div>
-        <button 
-          className="button-primary provision-btn" 
-          onClick={() => setShowModal(true)} 
+        <button
+          type="button"
+          className="button-primary provision-btn"
+          onClick={() => setShowModal(true)}
           aria-haspopup="dialog"
           aria-label="Provision new tenant organization"
         >
@@ -394,10 +421,12 @@ const SuperAdminDashboard = () => {
           <div className="impersonation-info">
             <Shield size={24} aria-hidden="true" />
             <span className="impersonation-text">
-              ORCHESTRATING TENANT: {orgs.find(o => o.id === impersonating)?.name}
+              ORCHESTRATING TENANT:{" "}
+              {orgs.find((o) => o.id === impersonating)?.name}
             </span>
           </div>
           <button
+            type="button"
             onClick={stopImpersonating}
             className="stop-btn"
             aria-label="Stop impersonating and return to global view"
@@ -407,18 +436,22 @@ const SuperAdminDashboard = () => {
         </motion.div>
       )}
 
-      <div className="org-grid" role="list" aria-labelledby="global-console-title">
+      <div
+        className="org-grid"
+        role="list"
+        aria-labelledby="global-console-title"
+      >
         <AnimatePresence>
           {orgs.map((org) => (
             <motion.div
               key={org.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className={`glass-card org-card ${impersonating === org.id ? 'org-card-impersonating' : ''}`}
+              className={`glass-card org-card ${impersonating === org.id ? "org-card-impersonating" : ""}`}
               role="listitem"
             >
               {impersonating === org.id && (
-                <div className="active-badge" role="status">
+                <div className="active-badge">
                   <Check size={14} aria-hidden="true" />
                   ACTIVE SESSION
                 </div>
@@ -433,7 +466,9 @@ const SuperAdminDashboard = () => {
                 )}
               </div>
 
-              <h3 className="org-name" id={`org-name-${org.id}`}>{org.name}</h3>
+              <h3 className="org-name" id={`org-name-${org.id}`}>
+                {org.name}
+              </h3>
 
               <div className="org-details">
                 <div className="detail-row">
@@ -448,15 +483,25 @@ const SuperAdminDashboard = () => {
 
               <div className="card-actions">
                 <button
-                  onClick={() => impersonating === org.id ? stopImpersonating() : handleImpersonate(org)}
-                  className={`action-btn-main ${impersonating === org.id ? 'action-btn-main-active' : 'action-btn-main-inactive'}`}
+                  type="button"
+                  onClick={() =>
+                    impersonating === org.id
+                      ? stopImpersonating()
+                      : handleImpersonate(org)
+                  }
+                  className={`action-btn-main ${impersonating === org.id ? "action-btn-main-active" : "action-btn-main-inactive"}`}
                   aria-pressed={impersonating === org.id}
-                  aria-label={impersonating === org.id ? `Disconnect from ${org.name}` : `View ${org.name} console`}
+                  aria-label={
+                    impersonating === org.id
+                      ? `Disconnect from ${org.name}`
+                      : `View ${org.name} console`
+                  }
                 >
                   <ExternalLink size={16} aria-hidden="true" />
-                  {impersonating === org.id ? 'ACTIVE SESSION' : 'VIEW CONSOLE'}
+                  {impersonating === org.id ? "ACTIVE SESSION" : "VIEW CONSOLE"}
                 </button>
                 <button
+                  type="button"
                   className="action-btn-icon"
                   aria-label={`Secure email communication with ${org.name} administrator`}
                 >
@@ -471,64 +516,94 @@ const SuperAdminDashboard = () => {
       {/* Provision Modal */}
       <AnimatePresence>
         {showModal && (
-          <div className="modal-overlay" role="presentation" onClick={() => setShowModal(false)}>
-            <motion.div 
-              initial={{ scale: 0.95, opacity: 0, y: 20 }} 
-              animate={{ scale: 1, opacity: 1, y: 0 }} 
+          <div
+            className="modal-overlay"
+            role="presentation"
+            onClick={() => setShowModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 20 }}
               className="glass-card modal-content"
               role="dialog"
               aria-modal="true"
               aria-labelledby="provision-modal-title"
-              onClick={e => e.stopPropagation()}
+              onClick={(e) => e.stopPropagation()}
             >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                <h2 className="modal-title" id="provision-modal-title" style={{ marginBottom: 0 }}>Provision Tenant</h2>
-                <button 
-                  onClick={() => setShowModal(false)} 
-                  className="action-btn-icon" 
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: "1.5rem",
+                }}
+              >
+                <h2
+                  className="modal-title"
+                  id="provision-modal-title"
+                  style={{ marginBottom: 0 }}
+                >
+                  Provision Tenant
+                </h2>
+                <button
+                  type="button"
+                  onClick={() => setShowModal(false)}
+                  className="action-btn-icon"
                   aria-label="Close modal"
-                  style={{ border: 'none', background: 'none' }}
+                  style={{ border: "none", background: "none" }}
                 >
                   <X size={24} aria-hidden="true" />
                 </button>
               </div>
-              
+
               <form onSubmit={handleSubmit} className="provision-form">
                 <div className="form-group">
-                  <label className="form-label" htmlFor="org-name">LEGAL BUSINESS ENTITY</label>
+                  <label className="form-label" htmlFor="org-name">
+                    LEGAL BUSINESS ENTITY
+                  </label>
                   <input
                     id="org-name"
                     placeholder="e.g. Lucky Restaurant"
                     className="modal-input"
                     value={newOrg.name}
                     autoFocus
-                    onChange={e => setNewOrg({...newOrg, name: e.target.value})}
+                    onChange={(e) =>
+                      setNewOrg({ ...newOrg, name: e.target.value })
+                    }
                     aria-required="true"
                     required
                   />
                 </div>
                 <div className="form-group">
-                  <label className="form-label" htmlFor="org-slug">INFRASTRUCTURE SLUG</label>
+                  <label className="form-label" htmlFor="org-slug">
+                    INFRASTRUCTURE SLUG
+                  </label>
                   <input
                     id="org-slug"
                     placeholder="e.g. lucky-rest"
                     className="modal-input"
                     value={newOrg.slug}
-                    onChange={e => setNewOrg({...newOrg, slug: e.target.value})}
+                    onChange={(e) =>
+                      setNewOrg({ ...newOrg, slug: e.target.value })
+                    }
                     aria-required="true"
                     required
                   />
                 </div>
                 <div className="form-group">
-                  <label className="form-label" htmlFor="org-admin-email">PRIMARY ADMIN ENDPOINT</label>
+                  <label className="form-label" htmlFor="org-admin-email">
+                    PRIMARY ADMIN ENDPOINT
+                  </label>
                   <input
                     id="org-admin-email"
                     placeholder="admin@business.com"
                     type="email"
                     className="modal-input"
                     value={newOrg.adminEmail}
-                    onChange={e => setNewOrg({...newOrg, adminEmail: e.target.value})}
+                    onChange={(e) =>
+                      setNewOrg({ ...newOrg, adminEmail: e.target.value })
+                    }
                     aria-required="true"
                     required
                   />
@@ -547,7 +622,7 @@ const SuperAdminDashboard = () => {
                     disabled={isSubmitting}
                     className="submit-btn"
                   >
-                    {isSubmitting ? 'PROVISIONING...' : 'COMMENCE DEPLOYMENT'}
+                    {isSubmitting ? "PROVISIONING..." : "COMMENCE DEPLOYMENT"}
                   </button>
                 </div>
               </form>

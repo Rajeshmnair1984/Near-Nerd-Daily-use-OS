@@ -5,7 +5,7 @@ export interface DocumentRecord {
   owner?: string;
   file_url?: string;
   renewal_date?: string;
-  status: 'Active' | 'Needs Review' | 'Archived';
+  status: "Active" | "Needs Review" | "Archived";
   notes?: string;
   created_at?: string;
 }
@@ -16,6 +16,6 @@ export interface CreateDocumentInput {
   owner?: string;
   file_url?: string;
   renewal_date?: string;
-  status?: 'Active' | 'Needs Review' | 'Archived';
+  status?: "Active" | "Needs Review" | "Archived";
   notes?: string;
 }

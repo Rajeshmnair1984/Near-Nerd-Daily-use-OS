@@ -3,8 +3,12 @@ export interface ZapierSettings {
   webhookUrl: string;
 }
 
-export type ZapierEventAction = 'created' | 'updated' | 'deleted' | 'status_changed';
-export type ZapierEventResource = 'bill' | 'location' | 'vendor' | 'document';
+export type ZapierEventAction =
+  | "created"
+  | "updated"
+  | "deleted"
+  | "status_changed";
+export type ZapierEventResource = "bill" | "location" | "vendor" | "document";
 
 interface ZapierEvent<T> {
   action: ZapierEventAction;
@@ -14,11 +18,11 @@ interface ZapierEvent<T> {
   metadata?: Record<string, unknown>;
 }
 
-const ZAPIER_SETTINGS_KEY = 'zapier_integration_settings';
+const ZAPIER_SETTINGS_KEY = "zapier_integration_settings";
 
 const defaultSettings: ZapierSettings = {
   enabled: false,
-  webhookUrl: '',
+  webhookUrl: "",
 };
 
 class ZapierService {
@@ -30,7 +34,7 @@ class ZapierService {
       const parsed = JSON.parse(stored) as Partial<ZapierSettings>;
       return {
         enabled: Boolean(parsed.enabled),
-        webhookUrl: parsed.webhookUrl || '',
+        webhookUrl: parsed.webhookUrl || "",
       };
     } catch {
       return defaultSettings;
@@ -53,7 +57,7 @@ class ZapierService {
     }
 
     await this.post(settings.webhookUrl, {
-      source: 'Near Nerd Daily OS',
+      source: "Near Nerd Daily OS",
       sent_at: new Date().toISOString(),
       ...event,
     });
@@ -62,23 +66,26 @@ class ZapierService {
   async testConnection(webhookUrl: string): Promise<void> {
     const trimmedUrl = webhookUrl.trim();
     if (!trimmedUrl) {
-      throw new Error('Paste your Zapier webhook URL first');
+      throw new Error("Paste your Zapier webhook URL first");
     }
 
     await this.post(trimmedUrl, {
-      source: 'Near Nerd Daily OS',
-      action: 'test',
-      resource: 'zapier_connection',
+      source: "Near Nerd Daily OS",
+      action: "test",
+      resource: "zapier_connection",
       sent_at: new Date().toISOString(),
-      message: 'Zapier connection test from Near Nerd Daily OS',
+      message: "Zapier connection test from Near Nerd Daily OS",
     });
   }
 
-  private async post(webhookUrl: string, payload: Record<string, unknown>): Promise<void> {
+  private async post(
+    webhookUrl: string,
+    payload: Record<string, unknown>,
+  ): Promise<void> {
     const response = await fetch(webhookUrl, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(payload),
     });

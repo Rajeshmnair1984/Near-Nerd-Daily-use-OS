@@ -1,11 +1,11 @@
-import { useFormValidation } from '@/hooks/useFormValidation';
-import { TextInput } from './ui/TextInput';
-import { DateInput } from './ui/DateInput';
-import { SelectInput } from './ui/SelectInput';
-import { Button } from './ui/Button';
-import { billValidationSchema } from '@/schemas/validation';
-import { Bill, CreateBillInput } from '@/types/bill';
-import { Location } from '@/types/location';
+import { useFormValidation } from "@/hooks/useFormValidation";
+import { TextInput } from "./ui/TextInput";
+import { DateInput } from "./ui/DateInput";
+import { SelectInput } from "./ui/SelectInput";
+import { Button } from "./ui/Button";
+import { billValidationSchema } from "@/schemas/validation";
+import { Bill, CreateBillInput } from "@/types/bill";
+import { Location } from "@/types/location";
 
 interface BillFormProps {
   locations: Location[];
@@ -16,12 +16,12 @@ interface BillFormProps {
 }
 
 const initialBillValues: CreateBillInput = {
-  charge_name: '',
+  charge_name: "",
   amount: 0,
-  date: '',
-  location_id: '',
-  category: 'Rent',
-  status: 'Pending',
+  date: "",
+  location_id: "",
+  category: "Rent",
+  status: "Pending",
   is_recurring: false,
 };
 
@@ -30,7 +30,7 @@ export function BillForm({
   onSubmit,
   onCancel,
   initialValues,
-  submitLabel = 'Save Bill',
+  submitLabel = "Save Bill",
 }: BillFormProps) {
   const {
     values,
@@ -47,14 +47,17 @@ export function BillForm({
   });
 
   const categoryOptions = [
-    { value: 'Rent', label: 'Rent' },
-    { value: 'Utilities', label: 'Utilities' },
-    { value: 'Insurance', label: 'Insurance' },
-    { value: 'Other', label: 'Other' },
+    { value: "Rent", label: "Rent" },
+    { value: "Utilities", label: "Utilities" },
+    { value: "Insurance", label: "Insurance" },
+    { value: "Other", label: "Other" },
   ];
 
   return (
-    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+    <form
+      onSubmit={handleSubmit}
+      style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
+    >
       <TextInput
         label="Bill Name"
         name="charge_name"
@@ -121,9 +124,9 @@ export function BillForm({
         name="status"
         required
         options={[
-          { value: 'Pending', label: 'Pending' },
-          { value: 'Paid', label: 'Paid' },
-          { value: 'Overdue', label: 'Overdue' },
+          { value: "Pending", label: "Pending" },
+          { value: "Paid", label: "Paid" },
+          { value: "Overdue", label: "Overdue" },
         ]}
         value={values.status}
         onChange={handleChange}
@@ -134,20 +137,28 @@ export function BillForm({
 
       <label
         style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: '1rem',
-          padding: '0.95rem 1rem',
-          border: '1px solid var(--border)',
-          borderRadius: 'var(--radius-md)',
-          background: 'var(--surface-soft)',
-          cursor: 'pointer',
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: "1rem",
+          padding: "0.95rem 1rem",
+          border: "1px solid var(--border)",
+          borderRadius: "var(--radius-md)",
+          background: "var(--surface-soft)",
+          cursor: "pointer",
         }}
       >
         <span>
-          <span style={{ display: 'block', fontWeight: 700 }}>Monthly recurring</span>
-          <span style={{ display: 'block', color: 'var(--text-secondary)', fontSize: '0.82rem' }}>
+          <span style={{ display: "block", fontWeight: 700 }}>
+            Monthly recurring
+          </span>
+          <span
+            style={{
+              display: "block",
+              color: "var(--text-secondary)",
+              fontSize: "0.82rem",
+            }}
+          >
             Create the next payment when this one is marked paid.
           </span>
         </span>
@@ -156,7 +167,11 @@ export function BillForm({
           name="is_recurring"
           checked={Boolean(values.is_recurring)}
           onChange={handleChange}
-          style={{ width: '20px', height: '20px', accentColor: 'var(--primary)' }}
+          style={{
+            width: "20px",
+            height: "20px",
+            accentColor: "var(--primary)",
+          }}
         />
       </label>
 

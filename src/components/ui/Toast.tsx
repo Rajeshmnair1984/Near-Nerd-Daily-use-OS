@@ -1,6 +1,12 @@
-import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle2, AlertCircle, Info, AlertTriangle, X } from 'lucide-react';
-import { useToast } from '@/context/ToastContext';
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  CheckCircle2,
+  AlertCircle,
+  Info,
+  AlertTriangle,
+  X,
+} from "lucide-react";
+import { useToast } from "@/context/ToastContext";
 
 const iconMap = {
   success: <CheckCircle2 size={20} aria-hidden="true" />,
@@ -13,7 +19,11 @@ export function Toast() {
   const { toasts, removeToast } = useToast();
 
   return (
-    <div className="toast-container-premium" aria-live="polite" aria-atomic="true">
+    <div
+      className="toast-container-premium"
+      aria-live="polite"
+      aria-atomic="true"
+    >
       <style>{`
         .toast-container-premium {
           position: fixed;
@@ -77,16 +87,15 @@ export function Toast() {
             animate={{ opacity: 1, x: 0, scale: 1 }}
             exit={{ opacity: 0, x: 20, scale: 0.9 }}
             className={`toast-item-premium toast-item-${toast.type}`}
-            role={toast.type === 'error' ? 'alert' : 'status'}
-            aria-live={toast.type === 'error' ? 'assertive' : 'polite'}
+            role={toast.type === "error" ? "alert" : "status"}
+            aria-live={toast.type === "error" ? "assertive" : "polite"}
           >
             <div className="toast-icon-wrap" aria-hidden="true">
               {iconMap[toast.type]}
             </div>
-            <span className="toast-message-text">
-              {toast.message}
-            </span>
+            <span className="toast-message-text">{toast.message}</span>
             <button
+              type="button"
               onClick={() => removeToast(toast.id)}
               className="toast-close-btn"
               aria-label="Dismiss notification"

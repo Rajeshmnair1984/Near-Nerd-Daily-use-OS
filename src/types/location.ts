@@ -1,10 +1,10 @@
 export interface Location {
   id: string;
   name: string; // LOCATION NAME
-  address?: string; 
+  address?: string;
   contact?: string;
   created_at?: string;
-  
+
   // Infrastructure Matrix Fields
   store_code?: string;
   brand_name?: string;
@@ -13,7 +13,7 @@ export interface Location {
   city?: string;
   province?: string;
   postal_code?: string;
-  operational_status?: 'Active' | 'Under Construction' | 'Closed' | 'Planned';
+  operational_status?: "Active" | "Under Construction" | "Closed" | "Planned";
   is_store_master?: boolean;
   notes?: string;
 
@@ -50,7 +50,7 @@ export interface Location {
   policy_number?: string;
   coverage_type?: string;
   premium_amount?: number;
-  premium_frequency?: 'Monthly' | 'Quarterly' | 'Annual';
+  premium_frequency?: "Monthly" | "Quarterly" | "Annual";
   monthly_equivalent?: number;
   insurance_start_date?: string;
   insurance_expiry_date?: string;
@@ -73,6 +73,8 @@ export interface Location {
   ops_intel_sync?: boolean;
 }
 
-export interface CreateLocationInput extends Partial<Omit<Location, 'id' | 'created_at'>> {
+export interface CreateLocationInput extends Partial<
+  Omit<Location, "id" | "created_at">
+> {
   name: string;
 }

@@ -1,7 +1,6 @@
- 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from "react";
 
-import { ApiError } from '@/types/common';
+import { ApiError } from "@/types/common";
 
 interface UseAsyncState<T> {
   data: T | null;
@@ -12,7 +11,7 @@ interface UseAsyncState<T> {
 export function useAsync<T>(
   asyncFunction: () => Promise<T>,
   immediate = true,
-  dependencies: React.DependencyList = []
+  dependencies: React.DependencyList = [],
 ) {
   const [state, setState] = useState<UseAsyncState<T>>({
     data: null,
@@ -27,16 +26,15 @@ export function useAsync<T>(
       setState({ data: response, loading: false, error: null });
       return response;
     } catch (err: unknown) {
-      const error: ApiError = err instanceof Error
-        ? { code: 'ERROR', message: err.message }
-        : { code: 'UNKNOWN_ERROR', message: 'An unknown error occurred' };
+      const error: ApiError =
+        err instanceof Error
+          ? { code: "ERROR", message: err.message }
+          : { code: "UNKNOWN_ERROR", message: "An unknown error occurred" };
       setState({ data: null, loading: false, error });
       throw error;
     }
     // eslint-disable-next-line react-hooks/use-memo
   }, dependencies);
-
-
 
   useEffect(() => {
     if (immediate) {

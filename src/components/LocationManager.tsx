@@ -1,17 +1,32 @@
-import { memo, useMemo, useState } from 'react';
-import { MapPin, Plus, Search, Trash2, Building2, Edit, Calendar, Zap, Globe, Shield, Activity } from 'lucide-react';
-import { AnimatePresence, motion } from 'framer-motion';
-import { CreateLocationInput, Location } from '@/types/location';
-import { Modal } from './ui/Modal';
-import { ErrorBanner } from './ui/ErrorBanner';
-import { ConfirmationModal } from './ui/ConfirmationModal';
-import LocationEditForm from './LocationEditForm';
-import InfrastructureMatrixForm from './InfrastructureMatrixForm';
+import { memo, useMemo, useState } from "react";
+import {
+  MapPin,
+  Plus,
+  Search,
+  Trash2,
+  Building2,
+  Edit,
+  Calendar,
+  Zap,
+  Globe,
+  Shield,
+  Activity,
+} from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { CreateLocationInput, Location } from "@/types/location";
+import { Modal } from "./ui/Modal";
+import { ErrorBanner } from "./ui/ErrorBanner";
+import { ConfirmationModal } from "./ui/ConfirmationModal";
+import LocationEditForm from "./LocationEditForm";
+import InfrastructureMatrixForm from "./InfrastructureMatrixForm";
 
 interface LocationManagerProps {
   locations: Location[];
   onAddLocation: (location: CreateLocationInput) => Promise<void>;
-  onUpdateLocation?: (id: string, updates: CreateLocationInput) => Promise<void>;
+  onUpdateLocation?: (
+    id: string,
+    updates: CreateLocationInput,
+  ) => Promise<void>;
   onDeleteLocation: (id: string) => Promise<void>;
   loading?: boolean;
 }
@@ -23,7 +38,7 @@ function LocationManager({
   onDeleteLocation,
   loading,
 }: LocationManagerProps) {
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [editingLocation, setEditingLocation] = useState<Location | null>(null);
@@ -39,7 +54,7 @@ function LocationManager({
     return locations.filter((item) =>
       [item.name, item.address, item.contact, item.store_code, item.brand_name]
         .filter(Boolean)
-        .some((value) => String(value).toLowerCase().includes(normalizedQuery))
+        .some((value) => String(value).toLowerCase().includes(normalizedQuery)),
     );
   }, [locations, query]);
 
@@ -50,7 +65,8 @@ function LocationManager({
       await onAddLocation(data);
       setIsModalOpen(false);
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Failed to add asset';
+      const errorMsg =
+        err instanceof Error ? err.message : "Failed to add asset";
       setError(errorMsg);
     } finally {
       setIsSaving(false);
@@ -65,7 +81,8 @@ function LocationManager({
       await onUpdateLocation(editingLocation.id, updates);
       setEditingLocation(null);
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Failed to update asset';
+      const errorMsg =
+        err instanceof Error ? err.message : "Failed to update asset";
       setError(errorMsg);
     } finally {
       setEditLoading(false);
@@ -78,7 +95,8 @@ function LocationManager({
     try {
       await onDeleteLocation(id);
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Failed to delete asset';
+      const errorMsg =
+        err instanceof Error ? err.message : "Failed to delete asset";
       setError(errorMsg);
     } finally {
       setDeleteLoading(null);
@@ -395,13 +413,19 @@ function LocationManager({
 
       <header className="page-hero">
         <div className="hero-content">
-          <span className="eyebrow" aria-hidden="true">Strategic Assets</span>
+          <span className="eyebrow" aria-hidden="true">
+            Strategic Assets
+          </span>
           <h1>Infrastructure Matrix</h1>
-          <p>Global orchestration of core infrastructure, lease commitments, and operational telemetry synchronization.</p>
+          <p>
+            Global orchestration of core infrastructure, lease commitments, and
+            operational telemetry synchronization.
+          </p>
         </div>
-        <button 
-          className="init-button" 
-          onClick={() => setIsModalOpen(true)} 
+        <button
+          type="button"
+          className="init-button"
+          onClick={() => setIsModalOpen(true)}
           aria-label="Initialize a new infrastructure asset"
         >
           <Zap size={24} fill="currentColor" aria-hidden="true" />
@@ -411,26 +435,42 @@ function LocationManager({
 
       <ErrorBanner error={error} onDismiss={() => setError(null)} />
 
-      <div className="metric-strip" role="region" aria-label="Infrastructure statistics">
+      <div
+        className="metric-strip"
+        role="region"
+        aria-label="Infrastructure statistics"
+      >
         <div className="metric-card">
-          <div className="metric-icon" aria-hidden="true"><Globe size={32} /></div>
+          <div className="metric-icon" aria-hidden="true">
+            <Globe size={32} />
+          </div>
           <div className="metric-info">
             <span>Global Assets</span>
             <strong>{locations.length}</strong>
           </div>
         </div>
         <div className="metric-card">
-          <div className="metric-icon" aria-hidden="true"><Shield size={32} /></div>
+          <div className="metric-icon" aria-hidden="true">
+            <Shield size={32} />
+          </div>
           <div className="metric-info">
             <span>Critical Masters</span>
-            <strong>{locations.filter(l => l.is_store_master).length}</strong>
+            <strong>{locations.filter((l) => l.is_store_master).length}</strong>
           </div>
         </div>
         <div className="metric-card">
-          <div className="metric-icon" aria-hidden="true"><Activity size={32} /></div>
+          <div className="metric-icon" aria-hidden="true">
+            <Activity size={32} />
+          </div>
           <div className="metric-info">
             <span>Risk Monitoring</span>
-            <strong>{locations.filter(l => l.operational_status === 'Under Construction').length}</strong>
+            <strong>
+              {
+                locations.filter(
+                  (l) => l.operational_status === "Under Construction",
+                ).length
+              }
+            </strong>
           </div>
         </div>
       </div>
@@ -439,7 +479,9 @@ function LocationManager({
         <div className="bill-toolbar">
           <div className="search-field">
             <Search size={22} className="text-secondary" aria-hidden="true" />
-            <label htmlFor="matrix-search" className="sr-only">Filter infrastructure assets</label>
+            <label htmlFor="matrix-search" className="sr-only">
+              Filter infrastructure assets
+            </label>
             <input
               id="matrix-search"
               type="text"
@@ -452,17 +494,21 @@ function LocationManager({
 
         {loading ? (
           <div className="empty-state" aria-busy="true">
-             <div className="loading-ring" aria-hidden="true"></div>
-             <p className="sync-text">SYNCHRONIZING CORE MATRIX...</p>
+            <div className="loading-ring" aria-hidden="true"></div>
+            <p className="sync-text">SYNCHRONIZING CORE MATRIX...</p>
           </div>
         ) : filteredLocations.length === 0 ? (
           <div className="empty-state-wrap" role="status">
             <Building2 size={100} className="empty-icon" aria-hidden="true" />
             <h3 className="empty-title">Zero Assets Identified</h3>
-            <p className="empty-sub">Your infrastructure matrix is currently vacant. Initialize your first strategic asset to begin neural synchronization.</p>
-            <button 
-              className="init-button" 
-              style={{ marginTop: '3rem' }} 
+            <p className="empty-sub">
+              Your infrastructure matrix is currently vacant. Initialize your
+              first strategic asset to begin neural synchronization.
+            </p>
+            <button
+              type="button"
+              className="init-button"
+              style={{ marginTop: "3rem" }}
               onClick={() => setIsModalOpen(true)}
               aria-label="Add your first infrastructure asset"
             >
@@ -470,52 +516,86 @@ function LocationManager({
             </button>
           </div>
         ) : (
-          <div className="asset-grid" role="list" aria-label="Infrastructure Assets List">
+          <div
+            className="asset-grid"
+            role="list"
+            aria-label="Infrastructure Assets List"
+          >
             <AnimatePresence>
               {filteredLocations.map((item) => (
-                <motion.article 
+                <motion.article
                   layout
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
-                  className="asset-card" 
+                  className="asset-card"
                   key={item.id}
                   role="listitem"
                   aria-labelledby={`asset-name-${item.id}`}
                 >
                   <div className="asset-header">
-                    <div className={`asset-icon-box ${item.is_store_master ? 'master' : 'generic'}`} style={{ background: item.is_store_master ? 'rgba(0, 113, 227, 0.12)' : 'var(--surface-soft)', color: item.is_store_master ? 'var(--primary)' : 'var(--text-secondary)' }}>
-                      {item.is_store_master ? <Zap size={28} fill="currentColor" aria-hidden="true" /> : <Building2 size={28} aria-hidden="true" />}
-                    </div>
-                    <span 
-                      className={`asset-badge ${
-                        item.operational_status === 'Active' ? 'badge-active' : 
-                        item.operational_status === 'Under Construction' ? 'badge-construction' : 'badge-closed'
-                      }`}
-                      role="status"
+                    <div
+                      className={`asset-icon-box ${item.is_store_master ? "master" : "generic"}`}
+                      style={{
+                        background: item.is_store_master
+                          ? "rgba(0, 113, 227, 0.12)"
+                          : "var(--surface-soft)",
+                        color: item.is_store_master
+                          ? "var(--primary)"
+                          : "var(--text-secondary)",
+                      }}
                     >
-                      {(item.operational_status || 'Active').toUpperCase()}
+                      {item.is_store_master ? (
+                        <Zap size={28} fill="currentColor" aria-hidden="true" />
+                      ) : (
+                        <Building2 size={28} aria-hidden="true" />
+                      )}
+                    </div>
+                    <span
+                      className={`asset-badge ${
+                        item.operational_status === "Active"
+                          ? "badge-active"
+                          : item.operational_status === "Under Construction"
+                            ? "badge-construction"
+                            : "badge-closed"
+                      }`}
+                    >
+                      {(item.operational_status || "Active").toUpperCase()}
                     </span>
                   </div>
-                  
+
                   <div className="asset-title">
                     <h3 id={`asset-name-${item.id}`}>{item.name}</h3>
-                    <p>{item.brand_name || 'Unbranded Asset'} {item.store_code && `• SC: ${item.store_code}`}</p>
+                    <p>
+                      {item.brand_name || "Unbranded Asset"}{" "}
+                      {item.store_code && `• SC: ${item.store_code}`}
+                    </p>
                   </div>
-                  
+
                   <div className="asset-details">
                     <div className="detail-row">
-                      <MapPin size={18} className="text-primary" aria-hidden="true" />
-                      <span className="detail-text">{item.address || 'GPS COORDINATES NOT INDEXED'}</span>
+                      <MapPin
+                        size={18}
+                        className="text-primary"
+                        aria-hidden="true"
+                      />
+                      <span className="detail-text">
+                        {item.address || "GPS COORDINATES NOT INDEXED"}
+                      </span>
                     </div>
                     <div className="detail-row">
-                      <Calendar size={18} className="text-primary" aria-hidden="true" />
-                      <span>INITIALIZED: {item.opening_date || 'PENDING'}</span>
+                      <Calendar
+                        size={18}
+                        className="text-primary"
+                        aria-hidden="true"
+                      />
+                      <span>INITIALIZED: {item.opening_date || "PENDING"}</span>
                     </div>
                   </div>
-                  
+
                   <div className="asset-actions">
                     <button
+                      type="button"
                       className="button-primary manage-btn"
                       onClick={() => setEditingLocation(item)}
                       aria-label={`Manage infrastructure parameters for ${item.name}`}
@@ -524,13 +604,22 @@ function LocationManager({
                       MANAGE MATRIX
                     </button>
                     <button
+                      type="button"
                       className="delete-btn"
                       aria-label={`Decommission infrastructure asset: ${item.name}`}
                       disabled={deleteLoading === item.id}
                       onClick={() => setConfirmDelete(item.id)}
                     >
                       {deleteLoading === item.id ? (
-                        <div className="loading-ring" style={{ width: '20px', height: '20px', borderWidth: '2px' }} aria-hidden="true" />
+                        <div
+                          className="loading-ring"
+                          style={{
+                            width: "20px",
+                            height: "20px",
+                            borderWidth: "2px",
+                          }}
+                          aria-hidden="true"
+                        />
                       ) : (
                         <Trash2 size={20} aria-hidden="true" />
                       )}
@@ -544,13 +633,13 @@ function LocationManager({
       </section>
 
       {/* MODAL COMPONENTS */}
-      <Modal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
         maxWidth="1100px"
         title="Initialize Infrastructure Matrix"
       >
-        <InfrastructureMatrixForm 
+        <InfrastructureMatrixForm
           onSave={handleAddLocation}
           onCancel={() => setIsModalOpen(false)}
           loading={isSaving}

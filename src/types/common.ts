@@ -17,7 +17,7 @@ export interface DashboardStats {
   overdueCount: number;
 }
 
-export type ToastType = 'success' | 'error' | 'warning' | 'info';
+export type ToastType = "success" | "error" | "warning" | "info";
 
 export interface Toast {
   id: string;

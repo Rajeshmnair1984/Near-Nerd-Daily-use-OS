@@ -1,145 +1,147 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-describe('dataService local workspace fallback', () => {
+describe("dataService local workspace fallback", () => {
   beforeEach(() => {
     vi.resetModules();
-    vi.stubEnv('VITE_SUPABASE_URL', '');
-    vi.stubEnv('VITE_SUPABASE_ANON_KEY', '');
+    vi.stubEnv("VITE_SUPABASE_URL", "");
+    vi.stubEnv("VITE_SUPABASE_ANON_KEY", "");
     localStorage.clear();
   });
 
-  it('creates and reads locations without Supabase credentials', async () => {
-    const { dataService } = await import('./dataService');
+  it("creates and reads locations without Supabase credentials", async () => {
+    const { dataService } = await import("./dataService");
 
     const location = await dataService.addLocation({
-      name: 'Test HQ',
-      address: '123 Local Test',
-      contact: 'Ops',
+      name: "Test HQ",
+      address: "123 Local Test",
+      contact: "Ops",
     });
 
     await expect(dataService.getLocations()).resolves.toEqual([location]);
   });
 
-  it('creates, updates, and deletes bills without Supabase credentials', async () => {
-    const { dataService } = await import('./dataService');
+  it("creates, updates, and deletes bills without Supabase credentials", async () => {
+    const { dataService } = await import("./dataService");
 
     const bill = await dataService.addBill({
-      charge_name: 'Test Rent',
+      charge_name: "Test Rent",
       amount: 1250,
-      date: '2026-05-15',
-      location_id: 'location-1',
-      category: 'Rent',
-      status: 'Pending',
+      date: "2026-05-15",
+      location_id: "location-1",
+      category: "Rent",
+      status: "Pending",
       is_recurring: false,
     });
 
-    const paidBill = await dataService.updateBillStatus(bill.id, 'Paid');
-    expect(paidBill.status).toBe('Paid');
-    expect(await dataService.getBillById(bill.id)).toMatchObject({ status: 'Paid' });
+    const paidBill = await dataService.updateBillStatus(bill.id, "Paid");
+    expect(paidBill.status).toBe("Paid");
+    expect(await dataService.getBillById(bill.id)).toMatchObject({
+      status: "Paid",
+    });
 
     await dataService.deleteBill(bill.id);
     await expect(dataService.getBills()).resolves.toEqual([]);
   });
 
-  it('creates and updates vendors without Supabase credentials', async () => {
-    const { dataService } = await import('./dataService');
+  it("creates and updates vendors without Supabase credentials", async () => {
+    const { dataService } = await import("./dataService");
 
     const vendor = await dataService.addVendor({
-      name: 'Test Vendor',
-      category: 'Utility',
-      contact_name: 'John',
-      email: 'john@vendor.com',
-      phone: '555-0000',
+      name: "Test Vendor",
+      category: "Utility",
+      contact_name: "John",
+      email: "john@vendor.com",
+      phone: "555-0000",
     });
 
     const updated = await dataService.updateVendor(vendor.id, {
-      name: 'Updated Vendor',
-      category: 'Service',
-      contact_name: 'Jane',
-      email: 'jane@vendor.com',
-      phone: '555-1111',
+      name: "Updated Vendor",
+      category: "Service",
+      contact_name: "Jane",
+      email: "jane@vendor.com",
+      phone: "555-1111",
     });
 
-    expect(updated.name).toBe('Updated Vendor');
+    expect(updated.name).toBe("Updated Vendor");
     expect(await dataService.getVendors()).toContainEqual(
-      expect.objectContaining({ name: 'Updated Vendor' })
+      expect.objectContaining({ name: "Updated Vendor" }),
     );
   });
 
-  it('creates and updates documents without Supabase credentials', async () => {
-    const { dataService } = await import('./dataService');
+  it("creates and updates documents without Supabase credentials", async () => {
+    const { dataService } = await import("./dataService");
 
     const doc = await dataService.addDocument({
-      title: 'Test Doc',
-      category: 'Legal',
-      owner: 'Admin',
-      file_url: 'https://example.com/doc.pdf',
-      status: 'Active',
-      renewal_date: '2027-01-01',
+      title: "Test Doc",
+      category: "Legal",
+      owner: "Admin",
+      file_url: "https://example.com/doc.pdf",
+      status: "Active",
+      renewal_date: "2027-01-01",
     });
 
     const updated = await dataService.updateDocument(doc.id, {
-      title: 'Updated Doc',
-      category: 'Insurance',
-      owner: 'Manager',
-      file_url: 'https://example.com/updated.pdf',
-      status: 'Needs Review',
-      renewal_date: '2027-06-01',
+      title: "Updated Doc",
+      category: "Insurance",
+      owner: "Manager",
+      file_url: "https://example.com/updated.pdf",
+      status: "Needs Review",
+      renewal_date: "2027-06-01",
     });
 
-    expect(updated.title).toBe('Updated Doc');
-    expect(updated.status).toBe('Needs Review');
+    expect(updated.title).toBe("Updated Doc");
+    expect(updated.status).toBe("Needs Review");
   });
 
-  it('creates and updates locations without Supabase credentials', async () => {
-    const { dataService } = await import('./dataService');
+  it("creates and updates locations without Supabase credentials", async () => {
+    const { dataService } = await import("./dataService");
 
     const location = await dataService.addLocation({
-      name: 'Test Location',
-      address: '123 Test St',
-      contact: 'Manager',
+      name: "Test Location",
+      address: "123 Test St",
+      contact: "Manager",
     });
 
     const updated = await dataService.updateLocation(location.id, {
-      name: 'Updated Location',
-      address: '456 New St',
-      contact: 'Director',
+      name: "Updated Location",
+      address: "456 New St",
+      contact: "Director",
     });
 
-    expect(updated.name).toBe('Updated Location');
-    expect(updated.address).toBe('456 New St');
+    expect(updated.name).toBe("Updated Location");
+    expect(updated.address).toBe("456 New St");
   });
 
-  it('calculates dashboard stats correctly', async () => {
-    const { dataService } = await import('./dataService');
+  it("calculates dashboard stats correctly", async () => {
+    const { dataService } = await import("./dataService");
 
     await dataService.addBill({
-      charge_name: 'Rent',
+      charge_name: "Rent",
       amount: 5000,
-      date: '2026-05-01',
-      location_id: 'loc-1',
-      category: 'Rent',
-      status: 'Paid',
+      date: "2026-05-01",
+      location_id: "loc-1",
+      category: "Rent",
+      status: "Paid",
       is_recurring: true,
     });
 
     await dataService.addBill({
-      charge_name: 'Utilities',
+      charge_name: "Utilities",
       amount: 500,
-      date: '2026-05-15',
-      location_id: 'loc-1',
-      category: 'Utilities',
-      status: 'Pending',
+      date: "2026-05-15",
+      location_id: "loc-1",
+      category: "Utilities",
+      status: "Pending",
       is_recurring: false,
     });
 
     await dataService.addBill({
-      charge_name: 'Insurance',
+      charge_name: "Insurance",
       amount: 300,
-      date: '2026-04-01',
-      location_id: 'loc-1',
-      category: 'Insurance',
-      status: 'Overdue',
+      date: "2026-04-01",
+      location_id: "loc-1",
+      category: "Insurance",
+      status: "Overdue",
       is_recurring: false,
     });
 
@@ -152,41 +154,41 @@ describe('dataService local workspace fallback', () => {
     expect(stats.overdueCount).toBe(1);
   });
 
-  it('detects overdue bills when loaded from cache', async () => {
-    const { dataService } = await import('./dataService');
+  it("detects overdue bills when loaded from cache", async () => {
+    const { dataService } = await import("./dataService");
 
     await dataService.addBill({
-      charge_name: 'Past Bill',
+      charge_name: "Past Bill",
       amount: 2000,
-      date: '2020-01-01',
-      location_id: 'loc-1',
-      category: 'Rent',
-      status: 'Pending',
+      date: "2020-01-01",
+      location_id: "loc-1",
+      category: "Rent",
+      status: "Pending",
       is_recurring: false,
     });
 
     const bills = await dataService.getBills();
 
     expect(bills.length).toBeGreaterThan(0);
-    expect(bills[0].charge_name).toBe('Past Bill');
+    expect(bills[0].charge_name).toBe("Past Bill");
   });
 
-  it('persists data in localStorage with correct keys', async () => {
-    const { dataService } = await import('./dataService');
+  it("persists data in localStorage with correct keys", async () => {
+    const { dataService } = await import("./dataService");
 
     await dataService.addLocation({
-      name: 'Persistent Location',
-      address: '999 Memory Lane',
-      contact: 'Storage',
+      name: "Persistent Location",
+      address: "999 Memory Lane",
+      contact: "Storage",
     });
 
-    const stored = localStorage.getItem('locations_cache');
+    const stored = localStorage.getItem("locations_cache");
     expect(stored).toBeTruthy();
     if (stored) {
       const parsed = JSON.parse(stored);
       const data = parsed.data || parsed;
       expect(data).toContainEqual(
-        expect.objectContaining({ name: 'Persistent Location' })
+        expect.objectContaining({ name: "Persistent Location" }),
       );
     }
   });

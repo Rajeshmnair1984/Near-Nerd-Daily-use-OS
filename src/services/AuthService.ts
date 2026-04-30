@@ -1,60 +1,64 @@
-import { supabase } from './supabaseClient'
-import type { User } from '@supabase/supabase-js'
+import { supabase } from "./supabaseClient";
+import type { User } from "@supabase/supabase-js";
 
 export interface SignUpData {
-  email: string
-  password: string
-  fullName: string
-  organizationName: string
+  email: string;
+  password: string;
+  fullName: string;
+  organizationName: string;
 }
 
 export interface LoginData {
-  email: string
-  password: string
+  email: string;
+  password: string;
 }
 
 export interface UserProfile {
-  id: string
-  organizationId: string
-  email: string
-  fullName: string | null
-  avatarUrl: string | null
-  role: 'super_admin' | 'admin' | 'manager' | 'staff' | 'viewer'
-  isActive: boolean
+  id: string;
+  organizationId: string;
+  email: string;
+  fullName: string | null;
+  avatarUrl: string | null;
+  role: "super_admin" | "admin" | "manager" | "staff" | "viewer";
+  isActive: boolean;
 }
 
 export interface Organization {
-  id: string
-  name: string
-  slug: string
-  description: string | null
-  isActive: boolean
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  isActive: boolean;
 }
 
 class AuthService {
   // Sign up with email, password, and create organization
-  async signUp(data: SignUpData): Promise<{ user: UserProfile; organization: Organization }> {
+  async signUp(
+    data: SignUpData,
+  ): Promise<{ user: UserProfile; organization: Organization }> {
     try {
       // Create auth user
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: data.email,
         password: data.password,
-      })
+      });
 
-      if (authError) throw authError
-      if (!authData.user) throw new Error('Failed to create user')
+      if (authError) throw authError;
+      if (!authData.user) throw new Error("Failed to create user");
       if (!authData.session) {
-        throw new Error('Please disable "Confirm email" in your Supabase Auth settings to use this signup flow, or check your email to confirm your account first.');
+        throw new Error(
+          'Please disable "Confirm email" in your Supabase Auth settings to use this signup flow, or check your email to confirm your account first.',
+        );
       }
 
       // Create organization
       const slug = data.organizationName
         .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-+|-+$/g, '')
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
 
       const { data: orgData, error: orgError } = await supabase
-        .from('organizations')
+        .from("organizations")
         .insert({
           name: data.organizationName,
           slug,
@@ -62,94 +66,98 @@ class AuthService {
           is_active: true,
         })
         .select()
-        .single()
+        .single();
 
-      if (orgError) throw orgError
+      if (orgError) throw orgError;
 
       // Create user profile with admin role for first user
       const { data: profileData, error: profileError } = await supabase
-        .from('user_profiles')
+        .from("user_profiles")
         .insert({
           id: authData.user.id,
           organization_id: orgData.id,
           email: data.email,
           full_name: data.fullName,
-          role: 'admin',
+          role: "admin",
           is_active: true,
         })
         .select()
-        .single()
+        .single();
 
-      if (profileError) throw profileError
+      if (profileError) throw profileError;
 
       return {
         user: this.mapUserProfile(profileData),
         organization: this.mapOrganization(orgData),
-      }
+      };
     } catch (error) {
-      console.error('Sign up error:', error)
-      throw error
+      console.error("Sign up error:", error);
+      throw error;
     }
   }
 
   // Login with email and password
   async login(data: LoginData): Promise<UserProfile> {
     try {
-      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email: data.email,
-        password: data.password,
-      })
+      const { data: authData, error: authError } =
+        await supabase.auth.signInWithPassword({
+          email: data.email,
+          password: data.password,
+        });
 
-      if (authError) throw authError
-      if (!authData.user) throw new Error('Failed to login')
+      if (authError) throw authError;
+      if (!authData.user) throw new Error("Failed to login");
 
       // Fetch user profile
-      const profile = await this.getCurrentUser()
-      if (!profile) throw new Error('User profile not found')
+      const profile = await this.getCurrentUser();
+      if (!profile) throw new Error("User profile not found");
 
-      return profile
+      return profile;
     } catch (error) {
-      console.error('Login error:', error)
-      throw error
+      console.error("Login error:", error);
+      throw error;
     }
   }
 
   // Get current authenticated user
   async getCurrentUser(): Promise<UserProfile | null> {
-    let authUser: Awaited<ReturnType<typeof supabase.auth.getUser>>['data']['user'] = null
+    let authUser: Awaited<
+      ReturnType<typeof supabase.auth.getUser>
+    >["data"]["user"] = null;
 
     try {
-      const { data: authData, error: authError } = await supabase.auth.getUser()
-      authUser = authData.user
+      const { data: authData, error: authError } =
+        await supabase.auth.getUser();
+      authUser = authData.user;
 
-      if (authError || !authUser) return null
+      if (authError || !authUser) return null;
 
       const { data, error } = await supabase
-        .from('user_profiles')
-        .select('*')
-        .eq('id', authUser.id)
-        .single()
+        .from("user_profiles")
+        .select("*")
+        .eq("id", authUser.id)
+        .single();
 
       if (error || !data) {
-        return this.mapAuthUserFallback(authUser)
+        return this.mapAuthUserFallback(authUser);
       }
 
-      return this.mapUserProfile(data)
+      return this.mapUserProfile(data);
     } catch (error) {
-      console.error('Get current user error:', error)
+      console.error("Get current user error:", error);
     }
 
-    return authUser ? this.mapAuthUserFallback(authUser) : null
+    return authUser ? this.mapAuthUserFallback(authUser) : null;
   }
 
   // Logout
   async logout(): Promise<void> {
     try {
-      const { error } = await supabase.auth.signOut()
-      if (error) throw error
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
     } catch (error) {
-      console.error('Logout error:', error)
-      throw error
+      console.error("Logout error:", error);
+      throw error;
     }
   }
 
@@ -157,17 +165,17 @@ class AuthService {
   async getOrganization(orgId: string): Promise<Organization | null> {
     try {
       const { data, error } = await supabase
-        .from('organizations')
-        .select('*')
-        .eq('id', orgId)
-        .single()
+        .from("organizations")
+        .select("*")
+        .eq("id", orgId)
+        .single();
 
-      if (error || !data) return null
+      if (error || !data) return null;
 
-      return this.mapOrganization(data)
+      return this.mapOrganization(data);
     } catch (error) {
-      console.error('Get organization error:', error)
-      return null
+      console.error("Get organization error:", error);
+      return null;
     }
   }
 
@@ -175,26 +183,31 @@ class AuthService {
   async inviteUserToOrganization(
     organizationId: string,
     email: string,
-    role: 'admin' | 'manager' | 'staff' | 'viewer'
+    role: "admin" | "manager" | "staff" | "viewer",
   ): Promise<UserProfile> {
     try {
       // Create auth user with temporary password (user will reset on first login)
       const array = new Uint8Array(16);
       crypto.getRandomValues(array);
-      const tempPassword = Array.from(array, b => b.toString(16).padStart(2, '0')).join('').slice(0, 12)
+      const tempPassword = Array.from(array, (b) =>
+        b.toString(16).padStart(2, "0"),
+      )
+        .join("")
+        .slice(0, 12);
 
-      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-        email,
-        password: tempPassword,
-        email_confirm: false,
-      })
+      const { data: authData, error: authError } =
+        await supabase.auth.admin.createUser({
+          email,
+          password: tempPassword,
+          email_confirm: false,
+        });
 
-      if (authError) throw authError
-      if (!authData.user) throw new Error('Failed to create user')
+      if (authError) throw authError;
+      if (!authData.user) throw new Error("Failed to create user");
 
       // Create user profile
       const { data, error } = await supabase
-        .from('user_profiles')
+        .from("user_profiles")
         .insert({
           id: authData.user.id,
           organization_id: organizationId,
@@ -203,34 +216,37 @@ class AuthService {
           is_active: true,
         })
         .select()
-        .single()
+        .single();
 
-      if (error) throw error
+      if (error) throw error;
 
-      return this.mapUserProfile(data)
+      return this.mapUserProfile(data);
     } catch (error) {
-      console.error('Invite user error:', error)
-      throw error
+      console.error("Invite user error:", error);
+      throw error;
     }
   }
 
   // Update user profile
-  async updateUserProfile(userId: string, updates: Partial<UserProfile>): Promise<UserProfile> {
+  async updateUserProfile(
+    userId: string,
+    updates: Partial<UserProfile>,
+  ): Promise<UserProfile> {
     try {
       // Update database profile
       const { data, error } = await supabase
-        .from('user_profiles')
+        .from("user_profiles")
         .update({
           full_name: updates.fullName,
           avatar_url: updates.avatarUrl,
           role: updates.role,
           is_active: updates.isActive,
         })
-        .eq('id', userId)
+        .eq("id", userId)
         .select()
-        .single()
+        .single();
 
-      if (error) throw error
+      if (error) throw error;
 
       // Update auth metadata if provided
       if (updates.fullName || updates.avatarUrl) {
@@ -239,53 +255,72 @@ class AuthService {
             full_name: updates.fullName,
             avatar_url: updates.avatarUrl,
           },
-        })
+        });
 
-        if (authError) throw authError
+        if (authError) throw authError;
       }
 
-      return this.mapUserProfile(data)
+      return this.mapUserProfile(data);
     } catch (error) {
-      console.error('Update user profile error:', error)
-      throw error
+      console.error("Update user profile error:", error);
+      throw error;
     }
   }
 
   // Helper: Map database user profile to interface
-  private mapUserProfile(data: { id: string; organization_id: string; email: string; full_name: string | null; avatar_url: string | null; role: string; is_active: boolean }): UserProfile {
+  private mapUserProfile(data: {
+    id: string;
+    organization_id: string;
+    email: string;
+    full_name: string | null;
+    avatar_url: string | null;
+    role: string;
+    is_active: boolean;
+  }): UserProfile {
     return {
       id: data.id,
       organizationId: data.organization_id,
       email: data.email,
       fullName: data.full_name,
       avatarUrl: data.avatar_url,
-      role: data.role as 'super_admin' | 'admin' | 'manager' | 'staff' | 'viewer',
+      role: data.role as
+        | "super_admin"
+        | "admin"
+        | "manager"
+        | "staff"
+        | "viewer",
       isActive: data.is_active,
-    }
+    };
   }
 
   private mapAuthUserFallback(authUser: User): UserProfile {
     return {
       id: authUser.id,
-      organizationId: authUser.user_metadata?.organization_id || '',
-      email: authUser.email || authUser.user_metadata?.email || '',
+      organizationId: authUser.user_metadata?.organization_id || "",
+      email: authUser.email || authUser.user_metadata?.email || "",
       fullName: authUser.user_metadata?.full_name || null,
       avatarUrl: authUser.user_metadata?.avatar_url || null,
-      role: authUser.user_metadata?.role || 'viewer',
+      role: authUser.user_metadata?.role || "viewer",
       isActive: true,
-    }
+    };
   }
 
   // Helper: Map database organization to interface
-  private mapOrganization(data: { id: string; name: string; slug: string; description: string | null; is_active: boolean }): Organization {
+  private mapOrganization(data: {
+    id: string;
+    name: string;
+    slug: string;
+    description: string | null;
+    is_active: boolean;
+  }): Organization {
     return {
       id: data.id,
       name: data.name,
       slug: data.slug,
       description: data.description,
       isActive: data.is_active,
-    }
+    };
   }
 }
 
-export default new AuthService()
+export default new AuthService();
