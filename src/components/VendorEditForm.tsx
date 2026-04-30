@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Building2, Mail, Zap } from 'lucide-react'
 import { Vendor, CreateVendorInput } from '@/types/vendor'
@@ -27,6 +27,14 @@ export default function VendorEditForm({ vendor, onSave, onCancel, loading }: Ve
 
   const [error, setError] = useState<string | null>(null)
 
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onCancel();
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [onCancel]);
+
   const handleInputChange = (field: keyof CreateVendorInput, value: string) => {
     setFormData((prev) => ({
       ...prev,
@@ -52,9 +60,9 @@ export default function VendorEditForm({ vendor, onSave, onCancel, loading }: Ve
   }
 
   const tabs: { id: TabType; label: string; icon: React.ReactNode }[] = [
-    { id: 'identity', label: 'Identity', icon: <Building2 size={18} /> },
-    { id: 'contact', label: 'Contact', icon: <Mail size={18} /> },
-    { id: 'intelligence', label: 'Intelligence', icon: <Zap size={18} /> },
+    { id: 'identity', label: 'Identity', icon: <Building2 size={18} aria-hidden="true" /> },
+    { id: 'contact', label: 'Contact', icon: <Mail size={18} aria-hidden="true" /> },
+    { id: 'intelligence', label: 'Intelligence', icon: <Zap size={18} aria-hidden="true" /> },
   ];
 
   return (
@@ -63,6 +71,7 @@ export default function VendorEditForm({ vendor, onSave, onCancel, loading }: Ve
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       className="vendor-edit-backdrop"
+      role="presentation"
       onClick={onCancel}
     >
       <motion.div
@@ -71,6 +80,9 @@ export default function VendorEditForm({ vendor, onSave, onCancel, loading }: Ve
         exit={{ scale: 0.95, opacity: 0, y: 20 }}
         onClick={(e) => e.stopPropagation()}
         className="vendor-edit-container"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="vendor-edit-title"
       >
         <style>{`
           .vendor-edit-backdrop {
@@ -163,15 +175,20 @@ export default function VendorEditForm({ vendor, onSave, onCancel, loading }: Ve
             transition: var(--transition);
             text-align: left;
             width: 100%;
+            border: none;
+            background: none;
+            cursor: pointer;
           }
 
           .tab-button:hover {
             background: var(--surface-soft);
+            color: var(--text-primary);
           }
 
           .tab-button.active {
             background: var(--primary);
             color: white;
+            box-shadow: 0 4px 12px rgba(0, 113, 227, 0.2);
           }
 
           .vendor-modal-content {
@@ -234,24 +251,26 @@ export default function VendorEditForm({ vendor, onSave, onCancel, loading }: Ve
 
         <div className="vendor-modal-header">
           <div className="vendor-modal-header-left">
-            <div className="vendor-icon-wrap">
+            <div className="vendor-icon-wrap" aria-hidden="true">
               <Building2 size={20} />
             </div>
-            <h1>Partner Orchestration: <span className="vendor-name-accent">{vendor.name}</span></h1>
+            <h1 id="vendor-edit-title">Partner Orchestration: <span className="vendor-name-accent">{vendor.name}</span></h1>
           </div>
-          <button onClick={onCancel} className="icon-button vendor-modal-close" title="Close edit form">
-            <X size={20} />
+          <button onClick={onCancel} className="icon-button vendor-modal-close" aria-label="Close edit form">
+            <X size={20} aria-hidden="true" />
           </button>
         </div>
 
         <div className="vendor-modal-body">
-          <aside className="vendor-modal-sidebar">
+          <aside className="vendor-modal-sidebar" role="tablist" aria-label="Vendor sections">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
+                role="tab"
+                aria-selected={activeTab === tab.id}
+                aria-controls={`section-${tab.id}`}
                 className={`tab-button ${activeTab === tab.id ? 'active' : ''}`}
                 onClick={() => setActiveTab(tab.id)}
-                title={`Switch to ${tab.label} tab`}
               >
                 {tab.icon}
                 {tab.label}
@@ -261,7 +280,7 @@ export default function VendorEditForm({ vendor, onSave, onCancel, loading }: Ve
 
           <main className="vendor-modal-content">
             {error && (
-              <div className="vendor-error-banner">
+              <div className="vendor-error-banner" role="alert">
                 {error}
               </div>
             )}
@@ -269,22 +288,29 @@ export default function VendorEditForm({ vendor, onSave, onCancel, loading }: Ve
             <form id="vendor-edit-form" onSubmit={handleSubmit}>
               <AnimatePresence mode="wait">
                 {activeTab === 'identity' && (
-                  <motion.div key="identity" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+                  <motion.div 
+                    key="identity" 
+                    id="section-identity"
+                    role="tabpanel"
+                    initial={{ opacity: 0, y: 10 }} 
+                    animate={{ opacity: 1, y: 0 }} 
+                    exit={{ opacity: 0, y: -10 }}
+                  >
                     <div className="vendor-section-header">
                       <h2>Primary Identity</h2>
                     </div>
                     <div className="form-grid">
                       <div className="form-group full-width">
                         <label className="form-label" htmlFor="vendor-name-edit">VENDOR IDENTITY / NAME</label>
-                        <input id="vendor-name-edit" className="form-input" value={formData.name} onChange={(e) => handleInputChange('name', e.target.value)} required title="Vendor Name" />
+                        <input id="vendor-name-edit" className="form-input" value={formData.name} onChange={(e) => handleInputChange('name', e.target.value)} required aria-required="true" />
                       </div>
                       <div className="form-group">
                         <label className="form-label" htmlFor="vendor-cat-edit">CATEGORY MATRIX</label>
-                        <input id="vendor-cat-edit" className="form-input" value={formData.category} onChange={(e) => handleInputChange('category', e.target.value)} required title="Category" />
+                        <input id="vendor-cat-edit" className="form-input" value={formData.category} onChange={(e) => handleInputChange('category', e.target.value)} required aria-required="true" />
                       </div>
                       <div className="form-group">
                         <label className="form-label" htmlFor="vendor-status-edit">OPERATIONAL STATUS</label>
-                        <select id="vendor-status-edit" className="form-select" value={formData.status} onChange={(e) => handleInputChange('status', e.target.value)} title="Operational Status">
+                        <select id="vendor-status-edit" className="form-select" value={formData.status} onChange={(e) => handleInputChange('status', e.target.value)}>
                           <option value="Active">Active / Verified</option>
                           <option value="Paused">Paused / Restricted</option>
                         </select>
@@ -294,40 +320,54 @@ export default function VendorEditForm({ vendor, onSave, onCancel, loading }: Ve
                 )}
 
                 {activeTab === 'contact' && (
-                  <motion.div key="contact" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+                  <motion.div 
+                    key="contact" 
+                    id="section-contact"
+                    role="tabpanel"
+                    initial={{ opacity: 0, y: 10 }} 
+                    animate={{ opacity: 1, y: 0 }} 
+                    exit={{ opacity: 0, y: -10 }}
+                  >
                     <div className="vendor-section-header">
                       <h2>Communication Protocol</h2>
                     </div>
                     <div className="form-grid">
                       <div className="form-group full-width">
                         <label className="form-label" htmlFor="vendor-contact-edit">PRIMARY CONTACT ENTITY</label>
-                        <input id="vendor-contact-edit" className="form-input" value={formData.contact_name || ''} onChange={(e) => handleInputChange('contact_name', e.target.value)} title="Contact Name" />
+                        <input id="vendor-contact-edit" className="form-input" value={formData.contact_name || ''} onChange={(e) => handleInputChange('contact_name', e.target.value)} />
                       </div>
                       <div className="form-group">
                         <label className="form-label" htmlFor="vendor-email-edit">COMMUNICATION EMAIL</label>
-                        <input id="vendor-email-edit" type="email" className="form-input" value={formData.email || ''} onChange={(e) => handleInputChange('email', e.target.value)} title="Email Address" />
+                        <input id="vendor-email-edit" type="email" className="form-input" value={formData.email || ''} onChange={(e) => handleInputChange('email', e.target.value)} />
                       </div>
                       <div className="form-group">
                         <label className="form-label" htmlFor="vendor-phone-edit">TELEPHONIC COORDINATE</label>
-                        <input id="vendor-phone-edit" className="form-input" value={formData.phone || ''} onChange={(e) => handleInputChange('phone', e.target.value)} title="Phone Number" />
+                        <input id="vendor-phone-edit" className="form-input" value={formData.phone || ''} onChange={(e) => handleInputChange('phone', e.target.value)} />
                       </div>
                       <div className="form-group full-width">
                         <label className="form-label" htmlFor="vendor-web-edit">DIGITAL DOMAIN (WEBSITE)</label>
-                        <input id="vendor-web-edit" type="url" className="form-input" value={formData.website || ''} onChange={(e) => handleInputChange('website', e.target.value)} title="Website URL" />
+                        <input id="vendor-web-edit" type="url" className="form-input" value={formData.website || ''} onChange={(e) => handleInputChange('website', e.target.value)} />
                       </div>
                     </div>
                   </motion.div>
                 )}
 
                 {activeTab === 'intelligence' && (
-                  <motion.div key="intelligence" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+                  <motion.div 
+                    key="intelligence" 
+                    id="section-intelligence"
+                    role="tabpanel"
+                    initial={{ opacity: 0, y: 10 }} 
+                    animate={{ opacity: 1, y: 0 }} 
+                    exit={{ opacity: 0, y: -10 }}
+                  >
                     <div className="vendor-section-header">
                       <h2>Network Intelligence</h2>
                     </div>
                     <div className="form-grid">
                       <div className="form-group full-width">
                         <label className="form-label" htmlFor="vendor-notes-edit">OPERATIONAL NOTES & CONTEXT</label>
-                        <textarea id="vendor-notes-edit" className="form-textarea vendor-notes-area" value={formData.notes || ''} onChange={(e) => handleInputChange('notes', e.target.value)} placeholder="Terms, performance logs, or relationship history..." title="Operational Notes" />
+                        <textarea id="vendor-notes-edit" className="form-textarea vendor-notes-area" value={formData.notes || ''} onChange={(e) => handleInputChange('notes', e.target.value)} placeholder="Terms, performance logs, or relationship history..." />
                       </div>
                     </div>
                   </motion.div>
@@ -338,8 +378,8 @@ export default function VendorEditForm({ vendor, onSave, onCancel, loading }: Ve
         </div>
 
         <div className="vendor-modal-footer">
-          <button type="button" onClick={onCancel} className="button-secondary" title="Discard changes">DISCARD</button>
-          <button type="submit" form="vendor-edit-form" disabled={loading} className="button-primary vendor-submit-btn" title="Commit changes to system">
+          <button type="button" onClick={onCancel} className="button-secondary">DISCARD</button>
+          <button type="submit" form="vendor-edit-form" disabled={loading} className="button-primary vendor-submit-btn">
             {loading ? 'COMMITING...' : 'COMMIT CHANGES'}
           </button>
         </div>

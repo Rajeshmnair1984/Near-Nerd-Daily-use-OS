@@ -98,7 +98,7 @@ const AlertsManager: FC<AlertsManagerProps> = ({ bills, documents, loading }) =>
 
     return allAlerts.sort((a, b) => {
       const severityOrder = { high: 0, medium: 1, low: 2 }
-      return severityOrder[a.severity] - severityOrder[b.severity]
+      return severityOrder[a.severity as keyof typeof severityOrder] - severityOrder[b.severity as keyof typeof severityOrder]
     }).slice(0, 15)
   }, [bills, documents])
 
@@ -107,49 +107,59 @@ const AlertsManager: FC<AlertsManagerProps> = ({ bills, documents, loading }) =>
       <style>{`
         .alerts-premium-page .page-hero {
           background: linear-gradient(135deg, var(--surface) 0%, var(--surface-soft) 100%);
-          padding: 2.5rem;
-          border-radius: 24px;
+          padding: 3rem;
+          border-radius: 32px;
           border: 1px solid var(--border);
-          margin-bottom: 2.5rem;
-          display: grid;
-          grid-template-columns: 1fr auto;
+          margin-bottom: 3rem;
+          display: flex;
+          justify-content: space-between;
           align-items: center;
           gap: 2rem;
+          box-shadow: var(--shadow-sm);
         }
 
         .alerts-premium-page .hero-content h1 {
-          font-size: 3rem;
+          font-size: 3.5rem;
           font-weight: 900;
-          letter-spacing: -0.04em;
+          letter-spacing: -0.05em;
           background: linear-gradient(to right, var(--text-primary), var(--primary));
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
-          margin-bottom: 0.5rem;
+          margin-bottom: 0.75rem;
+          line-height: 1;
+        }
+
+        .alerts-premium-page .hero-content p {
+          color: var(--text-secondary);
+          font-size: 1.15rem;
+          max-width: 600px;
         }
 
         .alerts-premium-page .threat-matrix {
-          display: grid;
-          grid-template-columns: 1fr;
-          gap: 1rem;
+          display: flex;
+          flex-direction: column;
+          gap: 1.25rem;
         }
 
         .alerts-premium-page .premium-alert-card {
           background: var(--bg-card);
-          border-radius: 20px;
-          padding: 1.5rem;
+          border-radius: 24px;
+          padding: 1.75rem 2rem;
           border: 1px solid var(--border);
           display: grid;
           grid-template-columns: auto 1fr auto;
           align-items: center;
-          gap: 1.5rem;
+          gap: 2rem;
           transition: var(--transition);
           position: relative;
           overflow: hidden;
+          backdrop-filter: blur(12px);
         }
 
         .alerts-premium-page .premium-alert-card:hover {
-          transform: translateX(4px);
-          box-shadow: var(--shadow-sm);
+          transform: translateX(8px);
+          border-color: var(--alert-color-border);
+          box-shadow: 0 10px 30px var(--alert-color-glow);
         }
 
         .alerts-premium-page .alert-severity-indicator {
@@ -157,142 +167,184 @@ const AlertsManager: FC<AlertsManagerProps> = ({ bills, documents, loading }) =>
           left: 0;
           top: 0;
           bottom: 0;
-          width: 4px;
+          width: 6px;
+          background: var(--alert-color);
         }
 
         .alerts-premium-page .alert-icon-box {
-          width: 48px;
-          height: 48px;
-          border-radius: 14px;
+          width: 56px;
+          height: 56px;
+          border-radius: 18px;
           display: flex;
           align-items: center;
           justify-content: center;
+          background: var(--alert-color-soft);
+          color: var(--alert-color);
+          border: 1px solid var(--alert-color-border);
         }
 
         .alerts-premium-page .action-trigger {
-          padding: 0.6rem 1.25rem;
-          border-radius: 10px;
-          font-size: 0.75rem;
+          padding: 0.8rem 1.5rem;
+          border-radius: 14px;
+          font-size: 0.8rem;
           font-weight: 900;
           display: flex;
           align-items: center;
-          gap: 0.5rem;
+          gap: 0.75rem;
           transition: var(--transition);
           cursor: pointer;
           border: none;
+          background: var(--alert-color);
+          color: white;
+          box-shadow: 0 8px 20px var(--alert-color-glow);
+          letter-spacing: 0.05em;
+        }
+
+        .alerts-premium-page .action-trigger:hover {
+          transform: scale(1.05);
+          filter: brightness(1.1);
         }
 
         .alerts-premium-page .header-metric-box {
           display: flex;
-          gap: 1rem;
+          gap: 1.5rem;
         }
 
         .alerts-premium-page .metric-badge-premium {
-          padding: 0.75rem 1.25rem;
-          background: var(--bg-card);
+          padding: 1rem 1.5rem;
+          background: var(--surface);
           border: 1px solid var(--border);
-          border-radius: 16px;
+          border-radius: 20px;
           display: flex;
           align-items: center;
-          gap: 0.75rem;
+          gap: 1rem;
+          box-shadow: var(--shadow-sm);
         }
 
         .alerts-premium-page .metric-badge-label {
-          font-size: 0.6rem;
+          font-size: 0.7rem;
           font-weight: 900;
           color: var(--text-secondary);
           text-transform: uppercase;
+          letter-spacing: 0.1em;
+          margin-bottom: 0.2rem;
         }
 
         .alerts-premium-page .metric-badge-value {
-          font-size: 1.25rem;
-          font-weight: 900;
+          font-size: 1.75rem;
+          font-weight: 950;
+          color: var(--text-primary);
+          line-height: 1;
         }
 
         .alerts-premium-page .loading-state-padding {
-          padding: 8rem;
+          padding: 10rem 0;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 2rem;
         }
 
         .alerts-premium-page .loading-title {
-          margin-top: 1.5rem;
-          font-weight: 900;
+          font-weight: 950;
+          letter-spacing: 0.2em;
+          color: var(--text-secondary);
+          font-size: 0.9rem;
         }
 
         .alerts-premium-page .empty-state-card {
-          padding: 8rem;
+          padding: 10rem 0;
           background: var(--bg-card);
-          border-radius: 32px;
+          border-radius: 40px;
           border: 1px solid var(--border);
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+          gap: 1.5rem;
         }
 
         .alerts-premium-page .empty-state-icon {
-          opacity: 0.1;
-          margin-bottom: 1.5rem;
+          opacity: 0.15;
+          color: var(--success);
+          margin-bottom: 1rem;
         }
 
         .alerts-premium-page .empty-state-title {
+          font-size: 2.5rem;
           font-weight: 950;
+          letter-spacing: -0.04em;
+          color: var(--text-primary);
         }
 
         .alerts-premium-page .empty-state-sub {
           color: var(--text-secondary);
-          font-size: 1.1rem;
+          font-size: 1.25rem;
+          max-width: 500px;
         }
 
         .alerts-premium-page .alert-card-title-row {
           display: flex;
           align-items: center;
-          gap: 0.75rem;
-          margin-bottom: 0.25rem;
+          gap: 1rem;
+          margin-bottom: 0.5rem;
         }
 
         .alerts-premium-page .alert-card-title {
           font-weight: 900;
-          font-size: 1.1rem;
-          letter-spacing: -0.02em;
+          font-size: 1.35rem;
+          letter-spacing: -0.03em;
+          color: var(--text-primary);
+          margin: 0;
         }
 
         .alerts-premium-page .severity-badge {
-          font-size: 0.65rem;
+          font-size: 0.7rem;
           font-weight: 900;
-          padding: 0.25rem 0.6rem;
-          border-radius: 4px;
+          padding: 0.35rem 0.85rem;
+          border-radius: 8px;
           text-transform: uppercase;
+          background: var(--alert-color-ghost);
+          color: var(--alert-color);
+          letter-spacing: 0.05em;
         }
 
         .alerts-premium-page .alert-card-desc {
           color: var(--text-secondary);
-          font-size: 0.85rem;
+          font-size: 1rem;
           font-weight: 600;
+          margin: 0;
         }
 
         .alerts-premium-page .footer-banner {
-          margin-top: 2.5rem;
-          padding: 1.5rem;
+          margin-top: 4rem;
+          padding: 2rem;
           background: var(--surface-soft);
-          border-radius: 20px;
+          border-radius: 24px;
           border: 1px solid var(--border);
           display: flex;
           align-items: center;
-          gap: 1rem;
+          gap: 1.5rem;
         }
 
         .alerts-premium-page .footer-banner-text {
-          font-size: 0.8rem;
+          font-size: 0.9rem;
           color: var(--text-secondary);
           font-weight: 600;
+          margin: 0;
+          line-height: 1.6;
         }
       `}</style>
 
       <header className="page-hero">
         <div className="hero-content">
-          <p className="eyebrow">Neural Monitoring</p>
-          <h1>Threat Intel Matrix</h1>
-          <p>Real-time synchronization of upcoming liabilities, expiring intel, and system interventions.</p>
+          <p className="eyebrow">Neural Surveillance</p>
+          <h1>Critical Matrix</h1>
+          <p>Real-time orchestration of operational interventions, upcoming liabilities, and expiring security clearances.</p>
         </div>
         <div className="header-metric-box">
-          <div className="metric-badge-premium">
-            <Activity size={18} className="text-primary" />
+          <div className="metric-badge-premium" role="status" aria-label={`${alerts.length} active threats identified`}>
+            <Activity size={24} className="text-primary" aria-hidden="true" />
             <div>
               <p className="metric-badge-label">Active Threats</p>
               <p className="metric-badge-value">{alerts.length}</p>
@@ -301,42 +353,50 @@ const AlertsManager: FC<AlertsManagerProps> = ({ bills, documents, loading }) =>
         </div>
       </header>
 
-      <section>
+      <section aria-label="System Alerts Matrix">
         {loading ? (
-          <div className="empty-state loading-state-padding">
-            <Zap size={48} className="animate-pulse" color="var(--primary)" />
-            <h2 className="loading-title">SCANNING THREAT VECTORS...</h2>
+          <div className="loading-state-padding" aria-busy="true">
+            <Zap size={64} className="animate-pulse" color="var(--primary)" aria-hidden="true" />
+            <h2 className="loading-title">SYNCHRONIZING THREAT VECTORS...</h2>
           </div>
         ) : alerts.length === 0 ? (
-          <div className="empty-state empty-state-card">
-            <BellRing size={64} className="empty-state-icon" />
-            <h2 className="empty-state-title">ALL CLEAR</h2>
-            <p className="empty-state-sub">The operational matrix is fully optimized. No pending threats detected.</p>
+          <div className="empty-state-card" role="status">
+            <BellRing size={80} className="empty-state-icon" aria-hidden="true" />
+            <h2 className="empty-state-title">Operational Clarity</h2>
+            <p className="empty-state-sub">The system matrix is fully optimized. No pending interventions required at this coordinate.</p>
           </div>
         ) : (
-          <div className="threat-matrix" role="list">
+          <div className="threat-matrix" role="list" aria-label="Prioritized interventions">
             <AnimatePresence>
               {alerts.map((alert, index) => {
                 const Icon = alert.icon
                 return (
                   <motion.article
                     key={alert.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.05 }}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.05, ease: [0.16, 1, 0.3, 1] }}
                     className="premium-alert-card"
                     role="listitem"
+                    aria-labelledby={`alert-title-${alert.id}`}
+                    style={{ 
+                      '--alert-color': alert.color,
+                      '--alert-color-soft': `${alert.color}10`,
+                      '--alert-color-border': `${alert.color}20`,
+                      '--alert-color-ghost': `${alert.color}15`,
+                      '--alert-color-glow': `${alert.color}30`
+                    } as React.CSSProperties}
                   >
-                    <div className="alert-severity-indicator" style={{ background: alert.color }} />
+                    <div className="alert-severity-indicator" aria-hidden="true" />
                     
-                    <div className="alert-icon-box" style={{ background: `${alert.color}10`, color: alert.color, border: `1px solid ${alert.color}20` }}>
-                      <Icon size={24} aria-hidden="true" />
+                    <div className="alert-icon-box">
+                      <Icon size={28} aria-hidden="true" />
                     </div>
 
-                    <div>
+                    <div className="alert-content-wrap">
                       <div className="alert-card-title-row">
-                        <h3 className="alert-card-title">{alert.title}</h3>
-                        <span className="severity-badge" style={{ background: `${alert.color}15`, color: alert.color }}>
+                        <h3 className="alert-card-title" id={`alert-title-${alert.id}`}>{alert.title}</h3>
+                        <span className="severity-badge">
                           {alert.severity} PRIORITY
                         </span>
                       </div>
@@ -345,10 +405,10 @@ const AlertsManager: FC<AlertsManagerProps> = ({ bills, documents, loading }) =>
 
                     <button 
                       className="action-trigger" 
-                      style={{ background: alert.color, color: 'white', boxShadow: `0 8px 16px ${alert.color}30` }}
-                      title={`Execute action: ${alert.actionItem} for ${alert.title}`}
+                      aria-label={`Execute intervention: ${alert.actionItem} for ${alert.title}`}
                     >
-                      {alert.actionItem} <ArrowRight size={14} aria-hidden="true" />
+                      <span>{alert.actionItem}</span>
+                      <ArrowRight size={18} aria-hidden="true" />
                     </button>
                   </motion.article>
                 )
@@ -358,12 +418,12 @@ const AlertsManager: FC<AlertsManagerProps> = ({ bills, documents, loading }) =>
         )}
       </section>
 
-      <div className="footer-banner">
-        <ShieldAlert size={20} className="text-secondary" />
+      <footer className="footer-banner">
+        <ShieldAlert size={28} className="text-secondary" aria-hidden="true" />
         <p className="footer-banner-text">
-          This matrix represents prioritized operational interventions. System audits are performed every 24 hours to identify new threat vectors.
+          System interventions are prioritized by neural risk factors. Automated audits are performed every 12 hours to maintain operational integrity across all data endpoints.
         </p>
-      </div>
+      </footer>
     </div>
   )
 }

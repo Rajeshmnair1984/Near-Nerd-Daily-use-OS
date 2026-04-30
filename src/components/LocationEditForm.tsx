@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Building2, 
   ShieldCheck, 
@@ -22,15 +22,17 @@ interface LocationEditFormProps {
 type TabType = 'identity' | 'location' | 'lease' | 'insurance' | 'ops';
 
 const IntelSyncBadge = ({ active, onClick, section }: { active: boolean, onClick: () => void, section: string }) => (
-  <div 
+  <button 
+    type="button"
     className={`intel-sync-toggle ${active ? 'active' : ''}`}
     onClick={onClick}
-    title={`Toggle AI Intelligence Sync for ${section}`}
+    aria-pressed={active}
+    aria-label={`Toggle AI Intelligence Sync for ${section}`}
   >
-    <div className="pulse-ring"></div>
-    <Wifi size={14} />
+    <div className="pulse-ring" aria-hidden="true"></div>
+    <Wifi size={14} aria-hidden="true" />
     <span>{active ? 'AI SYNC ACTIVE' : 'AI SYNC DISABLED'}</span>
-  </div>
+  </button>
 );
 
 export default function LocationEditForm({ location, onSave, onCancel, loading }: LocationEditFormProps) {
@@ -103,6 +105,14 @@ export default function LocationEditForm({ location, onSave, onCancel, loading }
 
   const [error, setError] = useState<string | null>(null);
 
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onCancel();
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [onCancel]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     setFormData(prev => ({
@@ -123,14 +133,12 @@ export default function LocationEditForm({ location, onSave, onCancel, loading }
   };
 
   const tabs: { id: TabType; label: string; icon: React.ReactNode }[] = [
-    { id: 'identity', label: 'Identity', icon: <Building2 size={18} /> },
-    { id: 'location', label: 'Landlord', icon: <User size={18} /> },
-    { id: 'lease', label: 'Lease & Legal', icon: <Scale size={18} /> },
-    { id: 'insurance', label: 'Compliance', icon: <ShieldCheck size={18} /> },
-    { id: 'ops', label: 'Operations', icon: <Activity size={18} /> },
+    { id: 'identity', label: 'Identity', icon: <Building2 size={18} aria-hidden="true" /> },
+    { id: 'location', label: 'Landlord', icon: <User size={18} aria-hidden="true" /> },
+    { id: 'lease', label: 'Lease & Legal', icon: <Scale size={18} aria-hidden="true" /> },
+    { id: 'insurance', label: 'Compliance', icon: <ShieldCheck size={18} aria-hidden="true" /> },
+    { id: 'ops', label: 'Operations', icon: <Activity size={18} aria-hidden="true" /> },
   ];
-
-
 
   return (
     <motion.div
@@ -138,6 +146,7 @@ export default function LocationEditForm({ location, onSave, onCancel, loading }
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       className="matrix-edit-backdrop"
+      role="presentation"
       onClick={onCancel}
     >
       <motion.div
@@ -146,6 +155,9 @@ export default function LocationEditForm({ location, onSave, onCancel, loading }
         exit={{ scale: 0.95, opacity: 0, y: 20 }}
         onClick={(e) => e.stopPropagation()}
         className="matrix-edit-container"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="matrix-edit-title"
       >
         <style>{`
           .matrix-edit-backdrop {
@@ -232,6 +244,9 @@ export default function LocationEditForm({ location, onSave, onCancel, loading }
             transition: var(--transition);
             text-align: left;
             width: 100%;
+            border: none;
+            background: none;
+            cursor: pointer;
           }
 
           .tab-button:hover {
@@ -369,6 +384,7 @@ export default function LocationEditForm({ location, onSave, onCancel, loading }
           .master-toggle-checkbox {
             width: 20px;
             height: 20px;
+            accent-color: var(--primary);
           }
 
           .master-toggle-label {
@@ -393,37 +409,39 @@ export default function LocationEditForm({ location, onSave, onCancel, loading }
 
         <div className="matrix-header">
           <div className="matrix-header-title">
-            <Building2 size={20} color="var(--primary)" />
-            <h1>Manage Asset Matrix: <span className="matrix-header-accent">{location.name}</span></h1>
+            <Building2 size={20} color="var(--primary)" aria-hidden="true" />
+            <h1 id="matrix-edit-title">Manage Asset Matrix: <span className="matrix-header-accent">{location.name}</span></h1>
           </div>
-          <button onClick={onCancel} className="icon-button matrix-header-close" title="Close edit form">
-            <X size={20} />
+          <button onClick={onCancel} className="icon-button matrix-header-close" aria-label="Close edit form">
+            <X size={20} aria-hidden="true" />
           </button>
         </div>
 
         <div className="matrix-body">
-          <aside className="matrix-sidebar">
+          <aside className="matrix-sidebar" role="tablist" aria-label="Location sections">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
+                role="tab"
+                aria-selected={activeTab === tab.id}
+                aria-controls={`section-${tab.id}`}
                 className={`tab-button ${activeTab === tab.id ? 'active' : ''}`}
                 onClick={() => setActiveTab(tab.id)}
-                title={`Switch to ${tab.label} tab`}
               >
                 {tab.icon}
                 {tab.label}
               </button>
             ))}
             
-            <div className="matrix-sidebar-status">
-               <Zap size={24} color="var(--primary)" />
+            <div className="matrix-sidebar-status" role="status">
+               <Zap size={24} color="var(--primary)" aria-hidden="true" />
                <p>Sync Status: Online</p>
             </div>
           </aside>
 
           <main className="matrix-content">
             {error && (
-              <div className="matrix-error-banner">
+              <div className="matrix-error-banner" role="alert">
                 {error}
               </div>
             )}
@@ -433,30 +451,32 @@ export default function LocationEditForm({ location, onSave, onCancel, loading }
                 {activeTab === 'identity' && (
                   <motion.div
                     key="identity"
+                    id="section-identity"
+                    role="tabpanel"
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                   >
                     <div className="matrix-section-title">
-                      <h2><Building2 size={22} className="text-primary" /> Identity Coordinates</h2>
+                      <h2><Building2 size={22} className="text-primary" aria-hidden="true" /> Identity Coordinates</h2>
                     </div>
                     
                     <div className="form-grid">
                       <div className="form-group full-width">
                         <label className="form-label" htmlFor="edit-loc-name">LOCATION NAME</label>
-                        <input id="edit-loc-name" name="name" required className="form-input" value={formData.name} onChange={handleChange} title="Location Name" />
+                        <input id="edit-loc-name" name="name" required aria-required="true" className="form-input" value={formData.name} onChange={handleChange} />
                       </div>
                       <div className="form-group">
                         <label className="form-label" htmlFor="edit-store-code">STORE CODE</label>
-                        <input id="edit-store-code" name="store_code" className="form-input" value={formData.store_code} onChange={handleChange} title="Store Code" />
+                        <input id="edit-store-code" name="store_code" className="form-input" value={formData.store_code} onChange={handleChange} />
                       </div>
                       <div className="form-group">
                         <label className="form-label" htmlFor="edit-brand-name">BRAND NAME</label>
-                        <input id="edit-brand-name" name="brand_name" className="form-input" value={formData.brand_name} onChange={handleChange} title="Brand Name" />
+                        <input id="edit-brand-name" name="brand_name" className="form-input" value={formData.brand_name} onChange={handleChange} />
                       </div>
                       <div className="form-group">
                         <label className="form-label" htmlFor="edit-ops-status">OPERATIONAL STATUS</label>
-                        <select id="edit-ops-status" name="operational_status" className="form-select" value={formData.operational_status} onChange={handleChange} title="Operational Status">
+                        <select id="edit-ops-status" name="operational_status" className="form-select" value={formData.operational_status} onChange={handleChange}>
                           <option value="Active">Active</option>
                           <option value="Under Construction">Under Construction</option>
                           <option value="Closed">Closed</option>
@@ -464,7 +484,7 @@ export default function LocationEditForm({ location, onSave, onCancel, loading }
                         </select>
                       </div>
                       <div className="master-toggle-wrap">
-                         <input type="checkbox" id="edit_is_store_master" name="is_store_master" checked={formData.is_store_master} onChange={handleChange} className="master-toggle-checkbox" title="Mark as store master" />
+                         <input type="checkbox" id="edit_is_store_master" name="is_store_master" checked={formData.is_store_master} onChange={handleChange} className="master-toggle-checkbox" />
                          <label htmlFor="edit_is_store_master" className="master-toggle-label">MARK AS STORE MASTER</label>
                       </div>
                     </div>
@@ -474,12 +494,14 @@ export default function LocationEditForm({ location, onSave, onCancel, loading }
                 {activeTab === 'location' && (
                   <motion.div
                     key="location"
+                    id="section-location"
+                    role="tabpanel"
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                   >
                     <div className="matrix-section-title">
-                      <h2><User size={22} /> Landlord Information</h2>
+                      <h2><User size={22} aria-hidden="true" /> Landlord Information</h2>
                       <IntelSyncBadge 
                         active={!!formData.landlord_intel_sync} 
                         onClick={() => setFormData(p => ({ ...p, landlord_intel_sync: !p.landlord_intel_sync }))}
@@ -490,19 +512,19 @@ export default function LocationEditForm({ location, onSave, onCancel, loading }
                     <div className="form-grid">
                       <div className="form-group">
                         <label className="form-label" htmlFor="edit-landlord-co">LANDLORD COMPANY</label>
-                        <input id="edit-landlord-co" name="landlord_company" className="form-input" value={formData.landlord_company} onChange={handleChange} title="Landlord Company" />
+                        <input id="edit-landlord-co" name="landlord_company" className="form-input" value={formData.landlord_company} onChange={handleChange} />
                       </div>
                       <div className="form-group">
                         <label className="form-label" htmlFor="edit-landlord-name">PRIMARY CONTACT NAME</label>
-                        <input id="edit-landlord-name" name="landlord_name" className="form-input" value={formData.landlord_name} onChange={handleChange} title="Landlord Name" />
+                        <input id="edit-landlord-name" name="landlord_name" className="form-input" value={formData.landlord_name} onChange={handleChange} />
                       </div>
                       <div className="form-group">
                         <label className="form-label" htmlFor="edit-landlord-email">EMAIL ADDRESS</label>
-                        <input id="edit-landlord-email" name="landlord_email" className="form-input" value={formData.landlord_email} onChange={handleChange} title="Landlord Email" />
+                        <input id="edit-landlord-email" name="landlord_email" type="email" className="form-input" value={formData.landlord_email} onChange={handleChange} />
                       </div>
                       <div className="form-group">
                         <label className="form-label" htmlFor="edit-landlord-phone">PHONE NUMBER</label>
-                        <input id="edit-landlord-phone" name="landlord_phone" className="form-input" value={formData.landlord_phone} onChange={handleChange} title="Landlord Phone" />
+                        <input id="edit-landlord-phone" name="landlord_phone" className="form-input" value={formData.landlord_phone} onChange={handleChange} />
                       </div>
                     </div>
                   </motion.div>
@@ -511,12 +533,14 @@ export default function LocationEditForm({ location, onSave, onCancel, loading }
                 {activeTab === 'lease' && (
                   <motion.div
                     key="lease"
+                    id="section-lease"
+                    role="tabpanel"
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                   >
                     <div className="matrix-section-title">
-                      <h2><Scale size={22} /> Lease Infrastructure</h2>
+                      <h2><Scale size={22} aria-hidden="true" /> Lease Infrastructure</h2>
                       <IntelSyncBadge 
                         active={!!formData.lease_intel_sync} 
                         onClick={() => setFormData(p => ({ ...p, lease_intel_sync: !p.lease_intel_sync }))}
@@ -527,15 +551,15 @@ export default function LocationEditForm({ location, onSave, onCancel, loading }
                     <div className="form-grid-3">
                       <div className="form-group">
                         <label className="form-label" htmlFor="edit-lease-start">LEASE START</label>
-                        <input id="edit-lease-start" name="lease_start" type="date" className="form-input" value={formData.lease_start} onChange={handleChange} title="Lease Start" />
+                        <input id="edit-lease-start" name="lease_start" type="date" className="form-input" value={formData.lease_start} onChange={handleChange} />
                       </div>
                       <div className="form-group">
                         <label className="form-label" htmlFor="edit-lease-expiry">LEASE EXPIRY</label>
-                        <input id="edit-lease-expiry" name="lease_expiry" type="date" className="form-input" value={formData.lease_expiry} onChange={handleChange} title="Lease Expiry" />
+                        <input id="edit-lease-expiry" name="lease_expiry" type="date" className="form-input" value={formData.lease_expiry} onChange={handleChange} />
                       </div>
                       <div className="form-group">
                         <label className="form-label" htmlFor="edit-lease-notice">NOTICE (MOS)</label>
-                        <input id="edit-lease-notice" name="lease_notice_months" type="number" className="form-input" value={formData.lease_notice_months} onChange={handleChange} title="Notice Months" />
+                        <input id="edit-lease-notice" name="lease_notice_months" type="number" className="form-input" value={formData.lease_notice_months} onChange={handleChange} />
                       </div>
                     </div>
 
@@ -543,15 +567,15 @@ export default function LocationEditForm({ location, onSave, onCancel, loading }
                     <div className="form-grid-3">
                       <div className="form-group">
                         <label className="form-label" htmlFor="edit-base-rent">BASE RENT ($)</label>
-                        <input id="edit-base-rent" name="base_rent" type="number" className="form-input" value={formData.base_rent} onChange={handleChange} title="Base Rent" />
+                        <input id="edit-base-rent" name="base_rent" type="number" className="form-input" value={formData.base_rent} onChange={handleChange} />
                       </div>
                       <div className="form-group">
                         <label className="form-label" htmlFor="edit-cam-rent">CAM / TAX ($)</label>
-                        <input id="edit-cam-rent" name="additional_rent_cam" type="number" className="form-input" value={formData.additional_rent_cam} onChange={handleChange} title="Additional Rent" />
+                        <input id="edit-cam-rent" name="additional_rent_cam" type="number" className="form-input" value={formData.additional_rent_cam} onChange={handleChange} />
                       </div>
                       <div className="form-group">
                         <label className="form-label" htmlFor="edit-deposit">DEPOSIT ($)</label>
-                        <input id="edit-deposit" name="deposit_amount" type="number" className="form-input" value={formData.deposit_amount} onChange={handleChange} title="Deposit Amount" />
+                        <input id="edit-deposit" name="deposit_amount" type="number" className="form-input" value={formData.deposit_amount} onChange={handleChange} />
                       </div>
                     </div>
                   </motion.div>
@@ -560,26 +584,28 @@ export default function LocationEditForm({ location, onSave, onCancel, loading }
                 {activeTab === 'insurance' && (
                   <motion.div
                     key="insurance"
+                    id="section-insurance"
+                    role="tabpanel"
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                   >
                     <div className="matrix-section-title">
-                      <h2><ShieldCheck size={22} /> Compliance Coordinates</h2>
+                      <h2><ShieldCheck size={22} aria-hidden="true" /> Compliance Coordinates</h2>
                     </div>
 
                     <div className="form-grid-3">
                       <div className="form-group">
                         <label className="form-label" htmlFor="edit-license-expiry">BIZ LICENSE EXPIRY</label>
-                        <input id="edit-license-expiry" name="biz_license_expiry" type="date" className="form-input" value={formData.biz_license_expiry} onChange={handleChange} title="License Expiry" />
+                        <input id="edit-license-expiry" name="biz_license_expiry" type="date" className="form-input" value={formData.biz_license_expiry} onChange={handleChange} />
                       </div>
                       <div className="form-group">
                         <label className="form-label" htmlFor="edit-fire-inspect">FIRE INSPECTION DUE</label>
-                        <input id="edit-fire-inspect" name="fire_inspection_due" type="date" className="form-input" value={formData.fire_inspection_due} onChange={handleChange} title="Fire Inspection Due" />
+                        <input id="edit-fire-inspect" name="fire_inspection_due" type="date" className="form-input" value={formData.fire_inspection_due} onChange={handleChange} />
                       </div>
                       <div className="form-group">
                         <label className="form-label" htmlFor="edit-fire-ext">FIRE EXTINGUISHER</label>
-                        <input id="edit-fire-ext" name="fire_extinguisher_expiry" type="date" className="form-input" value={formData.fire_extinguisher_expiry} onChange={handleChange} title="Fire Extinguisher Expiry" />
+                        <input id="edit-fire-ext" name="fire_extinguisher_expiry" type="date" className="form-input" value={formData.fire_extinguisher_expiry} onChange={handleChange} />
                       </div>
                     </div>
                   </motion.div>
@@ -588,30 +614,32 @@ export default function LocationEditForm({ location, onSave, onCancel, loading }
                 {activeTab === 'ops' && (
                   <motion.div
                     key="ops"
+                    id="section-ops"
+                    role="tabpanel"
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                   >
                     <div className="matrix-section-title">
-                      <h2><Activity size={22} /> Internal Operations</h2>
+                      <h2><Activity size={22} aria-hidden="true" /> Internal Operations</h2>
                     </div>
 
                     <div className="form-grid">
                       <div className="form-group full-width">
                         <label className="form-label" htmlFor="edit-mgr-name">STORE MANAGER NAME</label>
-                        <input id="edit-mgr-name" name="store_manager_name" className="form-input" value={formData.store_manager_name} onChange={handleChange} title="Manager Name" />
+                        <input id="edit-mgr-name" name="store_manager_name" className="form-input" value={formData.store_manager_name} onChange={handleChange} />
                       </div>
                       <div className="form-group">
                         <label className="form-label" htmlFor="edit-mgr-email">MANAGER EMAIL</label>
-                        <input id="edit-mgr-email" name="manager_email" type="email" className="form-input" value={formData.manager_email} onChange={handleChange} title="Manager Email" />
+                        <input id="edit-mgr-email" name="manager_email" type="email" className="form-input" value={formData.manager_email} onChange={handleChange} />
                       </div>
                       <div className="form-group">
                         <label className="form-label" htmlFor="edit-mgr-phone">MANAGER PHONE</label>
-                        <input id="edit-mgr-phone" name="manager_phone" className="form-input" value={formData.manager_phone} onChange={handleChange} title="Manager Phone" />
+                        <input id="edit-mgr-phone" name="manager_phone" className="form-input" value={formData.manager_phone} onChange={handleChange} />
                       </div>
                       <div className="form-group">
                         <label className="form-label" htmlFor="edit-staff-count">STAFF COUNT</label>
-                        <input id="edit-staff-count" name="staff_count" type="number" className="form-input" value={formData.staff_count} onChange={handleChange} title="Staff Count" />
+                        <input id="edit-staff-count" name="staff_count" type="number" className="form-input" value={formData.staff_count} onChange={handleChange} />
                       </div>
                     </div>
                   </motion.div>
@@ -622,14 +650,13 @@ export default function LocationEditForm({ location, onSave, onCancel, loading }
         </div>
 
         <div className="matrix-footer">
-          <button type="button" onClick={onCancel} className="button-secondary" title="Discard all changes">DISCARD CHANGES</button>
+          <button type="button" onClick={onCancel} className="button-secondary">DISCARD CHANGES</button>
           <div className="footer-btn-group">
              <button 
                type="submit" 
                form="matrix-edit-form" 
                disabled={loading} 
                className="button-primary footer-submit-btn" 
-               title="Update location asset matrix"
              >
                {loading ? 'COMMITING...' : 'UPDATE ASSET MATRIX'}
              </button>

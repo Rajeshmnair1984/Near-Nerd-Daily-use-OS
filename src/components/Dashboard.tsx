@@ -45,29 +45,27 @@ const StatCard = memo(({ title, value, icon: Icon, color, trend, subtitle }: Sta
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
     className="glass-card premium-stat-card stat-card-shell"
+    role="listitem"
   >
-    <div className="stat-card-bg-icon">
-      <Icon size={40} aria-hidden="true" />
+    <div className="stat-card-bg-icon" aria-hidden="true">
+      <Icon size={40} />
     </div>
     
     <div className="stat-card-header">
       <div
         className="stat-card-icon-box"
-        style={{
-          background: `linear-gradient(135deg, ${color}20, ${color}05)`,
-          color: color,
-          border: `1px solid ${color}30`,
-        }}
+        style={{ '--stat-color': color } as React.CSSProperties}
+        aria-hidden="true"
       >
-        <Icon size={24} aria-hidden="true" />
+        <Icon size={24} />
       </div>
       {trend !== undefined && (
         <div
           className={`stat-trend-badge ${trend > 0 ? 'trend-up' : 'trend-down'}`}
-          title={`${trend > 0 ? 'Increase' : 'Decrease'} of ${Math.abs(trend)}%`}
+          aria-label={`${trend > 0 ? 'Upward' : 'Downward'} trend of ${Math.abs(trend)}%`}
         >
           {trend > 0 ? <ArrowUpRight size={14} aria-hidden="true" /> : <ArrowDownRight size={14} aria-hidden="true" />}
-          <span aria-label={`${Math.abs(trend)} percent`}>{Math.abs(trend)}%</span>
+          <span>{Math.abs(trend)}%</span>
         </div>
       )}
     </div>
@@ -76,7 +74,7 @@ const StatCard = memo(({ title, value, icon: Icon, color, trend, subtitle }: Sta
       <p className="stat-label-text">
         {title}
       </p>
-      <h3 className="stat-value-text">
+      <h3 className="stat-value-text" aria-label={`${title} value: ${formatCurrency(value)}`}>
         {formatCurrency(value)}
       </h3>
       {subtitle && (
@@ -138,15 +136,16 @@ function Dashboard({ stats, bills, loading }: DashboardProps) {
       <style>{`
         .dashboard-premium-page .page-hero {
           background: linear-gradient(135deg, var(--surface) 0%, var(--surface-soft) 100%);
-          padding: 3rem;
-          border-radius: 32px;
+          padding: 3.5rem;
+          border-radius: 40px;
           border: 1px solid var(--border);
-          margin-bottom: 2.5rem;
+          margin-bottom: 3.5rem;
           display: flex;
           justify-content: space-between;
           align-items: center;
           position: relative;
           overflow: hidden;
+          box-shadow: var(--shadow-sm);
         }
 
         .dashboard-premium-page .page-hero::after {
@@ -154,20 +153,20 @@ function Dashboard({ stats, bills, loading }: DashboardProps) {
           position: absolute;
           top: -50%;
           right: -10%;
-          width: 500px;
-          height: 500px;
+          width: 600px;
+          height: 600px;
           background: radial-gradient(circle, var(--primary-glow) 0%, transparent 70%);
-          opacity: 0.15;
+          opacity: 0.2;
           z-index: 0;
         }
 
         .dashboard-premium-page .hero-content h1 {
-          font-size: 3.5rem;
+          font-size: 4rem;
           font-weight: 950;
-          letter-spacing: -0.05em;
-          line-height: 0.95;
-          margin-bottom: 1rem;
-          background: linear-gradient(to right, var(--text-primary) 30%, var(--primary) 100%);
+          letter-spacing: -0.06em;
+          line-height: 0.9;
+          margin-bottom: 1.25rem;
+          background: linear-gradient(to right, var(--text-primary) 20%, var(--primary) 100%);
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
           z-index: 1;
@@ -175,113 +174,136 @@ function Dashboard({ stats, bills, loading }: DashboardProps) {
         }
 
         .dashboard-premium-page .hero-content p {
-          font-size: 1.25rem;
+          font-size: 1.35rem;
           color: var(--text-secondary);
-          max-width: 500px;
-          font-weight: 500;
+          max-width: 550px;
+          font-weight: 600;
           z-index: 1;
           position: relative;
+          line-height: 1.4;
         }
 
         .dashboard-premium-page .hero-eyebrow {
           color: var(--primary);
-          font-weight: 900;
-        }
-
-        .dashboard-premium-page .hero-meta {
-          display: flex;
-          gap: 1rem;
-          z-index: 1;
+          font-weight: 950;
+          letter-spacing: 0.2em;
+          text-transform: uppercase;
+          font-size: 0.85rem;
+          margin-bottom: 0.5rem;
+          display: block;
         }
 
         .dashboard-premium-page .system-health-box {
           text-align: right;
+          z-index: 1;
+          position: relative;
         }
 
         .dashboard-premium-page .system-health-label {
-          font-size: 0.75rem;
-          font-weight: 800;
+          font-size: 0.8rem;
+          font-weight: 900;
           color: var(--text-secondary);
           text-transform: uppercase;
+          letter-spacing: 0.1em;
+          margin-bottom: 0.4rem;
         }
 
         .dashboard-premium-page .system-health-status {
           display: flex;
           align-items: center;
-          gap: 0.5rem;
+          gap: 0.6rem;
           color: #10b981;
-          font-weight: 900;
+          font-weight: 950;
+          font-size: 1.15rem;
         }
 
         .stat-card-shell {
-          padding: 1.75rem;
+          padding: 2.25rem;
           flex: 1;
-          min-width: 280px;
+          min-width: 320px;
           position: relative;
           overflow: hidden;
+          background: var(--bg-card);
+          border-radius: 32px;
+          border: 1px solid var(--border);
+          transition: var(--transition);
+        }
+
+        .stat-card-shell:hover {
+          transform: translateY(-8px);
+          box-shadow: var(--shadow-md);
+          border-color: var(--primary);
         }
 
         .stat-card-bg-icon {
           position: absolute;
-          top: -10px;
-          right: -10px;
-          opacity: 0.03;
-          transform: scale(4);
+          top: -20px;
+          right: -20px;
+          opacity: 0.02;
+          transform: scale(5);
         }
 
         .stat-card-header {
           display: flex;
           justify-content: space-between;
-          margin-bottom: 1.25rem;
+          margin-bottom: 1.75rem;
         }
 
         .stat-card-icon-box {
-          padding: 0.85rem;
-          border-radius: 16px;
+          width: 56px;
+          height: 56px;
+          border-radius: 18px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: linear-gradient(135deg, var(--stat-color, var(--primary))25, var(--stat-color, var(--primary))05);
+          color: var(--stat-color, var(--primary));
+          border: 1px solid var(--stat-color, var(--primary))30;
         }
 
         .stat-trend-badge {
           display: flex;
           align-items: center;
-          gap: 0.25rem;
-          font-size: 0.8rem;
-          font-weight: 800;
-          padding: 0.35rem 0.75rem;
+          gap: 0.35rem;
+          font-size: 0.85rem;
+          font-weight: 900;
+          padding: 0.45rem 1rem;
           border-radius: 100px;
           height: fit-content;
         }
 
-        .trend-up { color: #10b981; background: rgba(16, 185, 129, 0.1); }
-        .trend-down { color: #ef4444; background: rgba(239, 68, 68, 0.1); }
+        .trend-up { color: #10b981; background: rgba(16, 185, 129, 0.12); }
+        .trend-down { color: #ef4444; background: rgba(239, 68, 68, 0.12); }
 
         .stat-label-text {
           color: var(--text-secondary);
-          font-size: 0.8rem;
-          font-weight: 800;
+          font-size: 0.85rem;
+          font-weight: 900;
           text-transform: uppercase;
-          letter-spacing: 0.05em;
-          margin-bottom: 0.5rem;
+          letter-spacing: 0.1em;
+          margin-bottom: 0.75rem;
         }
 
         .stat-value-text {
-          font-size: 2.25rem;
-          font-weight: 900;
-          letter-spacing: -0.02em;
+          font-size: 2.75rem;
+          font-weight: 950;
+          letter-spacing: -0.04em;
           color: var(--text-primary);
+          line-height: 1;
         }
 
         .stat-subtitle-text {
           color: var(--text-secondary);
-          font-size: 0.75rem;
-          margin-top: 0.5rem;
-          font-weight: 500;
+          font-size: 0.9rem;
+          margin-top: 0.75rem;
+          font-weight: 600;
         }
 
         .chart-container-premium {
           background: var(--bg-card);
-          border-radius: 28px;
+          border-radius: 36px;
           border: 1px solid var(--border);
-          padding: 2rem;
+          padding: 2.5rem;
           box-shadow: var(--shadow-sm);
         }
 
@@ -289,172 +311,187 @@ function Dashboard({ stats, bills, loading }: DashboardProps) {
           display: flex;
           justify-content: space-between;
           align-items: flex-start;
-          margin-bottom: 2.5rem;
+          margin-bottom: 3rem;
         }
 
         .chart-header-premium h3 {
-          font-size: 1.15rem;
-          font-weight: 800;
+          font-size: 1.5rem;
+          font-weight: 900;
           display: flex;
           align-items: center;
-          gap: 0.75rem;
+          gap: 1rem;
+          letter-spacing: -0.02em;
+          color: var(--text-primary);
+          margin: 0;
         }
 
         .chart-sub-text {
           color: var(--text-secondary);
-          font-size: 0.85rem;
+          font-size: 1rem;
+          font-weight: 500;
+          margin-top: 0.25rem;
         }
 
         .chart-viewport {
           width: 100%;
-          height: 350px;
+          height: 380px;
         }
 
         .activity-card-premium {
           background: var(--surface-soft);
-          border-radius: 20px;
-          padding: 1.25rem;
+          border-radius: 24px;
+          padding: 1.5rem;
           border: 1px solid var(--border);
-          display: flex;
+          display: grid;
+          grid-template-columns: auto 1fr auto;
           align-items: center;
-          gap: 1.25rem;
+          gap: 1.5rem;
           transition: var(--transition);
-          margin-bottom: 0.75rem;
+          margin-bottom: 1rem;
         }
 
         .activity-card-premium:hover {
           background: var(--surface);
           border-color: var(--primary);
-          transform: translateX(4px);
+          transform: translateX(8px);
+          box-shadow: var(--shadow-sm);
         }
 
         .activity-icon-box {
-          width: 44px;
-          height: 44px;
-          border-radius: 12px;
+          width: 52px;
+          height: 52px;
+          border-radius: 16px;
           display: flex;
           align-items: center;
           justify-content: center;
         }
 
-        .activity-info-area {
-          flex: 1;
-        }
-
         .activity-primary-text {
-          font-weight: 800;
-          font-size: 0.9rem;
+          font-weight: 900;
+          font-size: 1.05rem;
+          color: var(--text-primary);
+          margin-bottom: 0.25rem;
         }
 
         .activity-secondary-text {
           color: var(--text-secondary);
-          font-size: 0.75rem;
-          font-weight: 600;
+          font-size: 0.85rem;
+          font-weight: 700;
         }
 
         .activity-value-text {
-          font-weight: 900;
+          font-weight: 950;
           color: var(--text-primary);
+          font-size: 1.15rem;
         }
 
         .dashboard-grid-layout {
           display: flex;
           flex-direction: column;
-          gap: 2.5rem;
+          gap: 3.5rem;
         }
 
         .stat-grid-row {
-          display: flex;
-          gap: 1.5rem;
-          flex-wrap: wrap;
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+          gap: 2rem;
         }
 
         .chart-grid-row {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
-          gap: 1.5rem;
+          grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+          gap: 2rem;
         }
 
         .activity-grid-row {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-          gap: 2.5rem;
+          grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+          gap: 3.5rem;
         }
 
         .section-header {
           display: flex;
           align-items: center;
-          gap: 0.75rem;
-          margin-bottom: 1.5rem;
+          gap: 1rem;
+          margin-bottom: 2rem;
         }
 
         .section-icon-box {
-          padding: 0.5rem;
-          border-radius: 10px;
+          width: 48px;
+          height: 48px;
+          border-radius: 14px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
 
         .section-title {
-          font-size: 1.25rem;
-          font-weight: 900;
+          font-size: 1.75rem;
+          font-weight: 950;
+          letter-spacing: -0.03em;
+          color: var(--text-primary);
+          margin: 0;
         }
 
-        .intervention-card {
-          padding: 0;
+        .priority-intervention-card {
+           border-left-width: 8px;
+           border-left-style: solid;
         }
 
-        .intervention-item {
+        .priority-intervention-overdue {
+          border-left-color: var(--error);
+        }
+
+        .priority-intervention-pending {
+          border-left-color: var(--primary);
+        }
+
+        .dashboard-loading-shell {
+          padding: 12rem 0;
           display: flex;
           flex-direction: column;
-          gap: 0.75rem;
+          align-items: center;
+          gap: 2.5rem;
         }
 
-        .priority-value-area {
-          text-align: right;
-        }
-
-        .priority-amount {
-          font-weight: 900;
-          font-size: 1.15rem;
-        }
-
-        .priority-status-badge {
-          font-size: 0.6rem;
-          font-weight: 900;
+        .dashboard-loading-title {
+          font-weight: 950;
+          letter-spacing: 0.2em;
+          color: var(--text-secondary);
+          font-size: 1rem;
         }
       `}</style>
 
       <header className="page-hero">
         <div className="hero-content">
-          <p className="eyebrow hero-eyebrow">COMMAND CENTER</p>
+          <span className="hero-eyebrow" aria-hidden="true">Neural Overview</span>
           <h1>Operational Intelligence</h1>
-          <p>Global oversight of locations, commitments, and critical infrastructure metrics.</p>
+          <p>Orchestrating global infrastructure metrics, upcoming commitments, and real-time status telemetry.</p>
         </div>
-        <div className="hero-meta">
-          <div className="system-health-box">
-            <p className="system-health-label">System Health</p>
-            <div className="system-health-status">
-              <ShieldCheck size={18} aria-hidden="true" />
-              OPTIMIZED
-            </div>
+        <div className="system-health-box" role="status" aria-label="Current system health: optimized">
+          <p className="system-health-label">System Health</p>
+          <div className="system-health-status">
+            <ShieldCheck size={24} aria-hidden="true" />
+            OPTIMIZED
           </div>
         </div>
       </header>
 
       {loading ? (
-        <div className="empty-state" style={{ padding: '8rem' }}>
-          <Zap size={48} className="animate-pulse" color="var(--primary)" aria-hidden="true" />
-          <h2 style={{ marginTop: '1.5rem', fontWeight: 900 }}>ORCHESTRATING DATA MATRIX...</h2>
+        <div className="dashboard-loading-shell" aria-busy="true">
+          <Zap size={64} className="animate-pulse" color="var(--primary)" aria-hidden="true" />
+          <h2 className="dashboard-loading-title">SYNCHRONIZING DATA MATRIX...</h2>
         </div>
       ) : (
         <div className="dashboard-grid-layout">
-          <div className="stat-grid-row">
+          <div className="stat-grid-row" role="list" aria-label="Primary business metrics">
             <StatCard
               title="Liquidity Deployment"
               value={stats.totalPaid}
               icon={CheckCircle2}
               color="#10b981"
               trend={12}
-              subtitle="Monthly settlement volume"
+              subtitle="Volume of successfully settled commitments"
             />
             <StatCard
               title="Active Commitments"
@@ -462,28 +499,33 @@ function Dashboard({ stats, bills, loading }: DashboardProps) {
               icon={Clock}
               color="#f59e0b"
               trend={-5}
-              subtitle="Awaiting orchestration"
+              subtitle="Pending infrastructure settlements"
             />
             <StatCard
-              title="High Risk Matrix"
+              title="Risk Matrix Value"
               value={stats.totalOverdue}
               icon={AlertCircle}
               color="#ef4444"
               trend={8}
-              subtitle="Critical attention required"
+              subtitle="Intervention required immediately"
             />
           </div>
 
           <div className="chart-grid-row">
-            <motion.section initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="chart-container-premium">
+            <motion.section 
+              initial={{ opacity: 0, scale: 0.95 }} 
+              animate={{ opacity: 1, scale: 1 }} 
+              className="chart-container-premium"
+              aria-labelledby="temporal-analytics-title"
+            >
               <header className="chart-header-premium">
                 <div>
-                  <h3><Activity size={20} className="text-primary" aria-hidden="true" /> Temporal Analytics</h3>
-                  <p className="chart-sub-text">Financial flow across temporal coordinates</p>
+                  <h3 id="temporal-analytics-title"><Activity size={24} className="text-primary" aria-hidden="true" /> Temporal Analytics</h3>
+                  <p className="chart-sub-text">Inter-coordinate financial flow telemetry</p>
                 </div>
-                <PieChart size={20} className="text-secondary" aria-hidden="true" />
+                <PieChart size={24} className="text-secondary" aria-hidden="true" />
               </header>
-              <div className="chart-viewport">
+              <div className="chart-viewport" role="img" aria-label="Area chart showing comparative paid vs pending volumes over a 6-month temporal coordinate.">
                 <ResponsiveContainer>
                   <AreaChart data={monthlyTrendData}>
                     <defs>
@@ -497,38 +539,43 @@ function Dashboard({ stats, bills, loading }: DashboardProps) {
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.05)" />
-                    <XAxis dataKey="month" axisLine={false} tickLine={false} fontSize={11} fontWeight={600} />
-                    <YAxis axisLine={false} tickLine={false} fontSize={11} fontWeight={600} />
+                    <XAxis dataKey="month" axisLine={false} tickLine={false} fontSize={12} fontWeight={700} dy={10} />
+                    <YAxis axisLine={false} tickLine={false} fontSize={12} fontWeight={700} dx={-10} tickFormatter={(val) => `$${val/1000}k`} />
                     <Tooltip 
-                      contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '16px', boxShadow: 'var(--shadow-md)' }}
+                      contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '20px', boxShadow: 'var(--shadow-lg)', padding: '1rem' }}
                     />
-                    <Area type="monotone" dataKey="paid" stroke="#10b981" fillOpacity={1} fill="url(#colorPaid)" strokeWidth={3} />
-                    <Area type="monotone" dataKey="pending" stroke="#f59e0b" fillOpacity={1} fill="url(#colorPending)" strokeWidth={3} />
+                    <Area type="monotone" dataKey="paid" stroke="#10b981" fillOpacity={1} fill="url(#colorPaid)" strokeWidth={4} />
+                    <Area type="monotone" dataKey="pending" stroke="#f59e0b" fillOpacity={1} fill="url(#colorPending)" strokeWidth={4} />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
             </motion.section>
 
-            <motion.section initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="chart-container-premium">
+            <motion.section 
+              initial={{ opacity: 0, scale: 0.95 }} 
+              animate={{ opacity: 1, scale: 1 }} 
+              className="chart-container-premium"
+              aria-labelledby="allocation-intelligence-title"
+            >
               <header className="chart-header-premium">
                 <div>
-                  <h3><BarChart3 size={20} className="text-primary" aria-hidden="true" /> Allocation Intelligence</h3>
-                  <p className="chart-sub-text">Resource distribution by category matrix</p>
+                  <h3 id="allocation-intelligence-title"><BarChart3 size={24} className="text-primary" aria-hidden="true" /> Allocation Matrix</h3>
+                  <p className="chart-sub-text">Strategic resource distribution telemetry</p>
                 </div>
-                <LayoutDashboard size={20} className="text-secondary" aria-hidden="true" />
+                <LayoutDashboard size={24} className="text-secondary" aria-hidden="true" />
               </header>
-              <div className="chart-viewport">
+              <div className="chart-viewport" role="img" aria-label="Bar chart illustrating resource allocation across distinct operational categories.">
                 <ResponsiveContainer>
                   <BarChart data={categoryChartData}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.05)" />
-                    <XAxis dataKey="name" axisLine={false} tickLine={false} fontSize={11} fontWeight={600} />
-                    <YAxis axisLine={false} tickLine={false} fontSize={11} fontWeight={600} />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} fontSize={12} fontWeight={700} dy={10} />
+                    <YAxis axisLine={false} tickLine={false} fontSize={12} fontWeight={700} dx={-10} tickFormatter={(val) => `$${val/1000}k`} />
                     <Tooltip 
-                       contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '16px' }}
+                       contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '20px', boxShadow: 'var(--shadow-lg)', padding: '1rem' }}
                     />
-                    <Bar dataKey="value" radius={[12, 12, 0, 0]} barSize={40}>
+                    <Bar dataKey="value" radius={[12, 12, 4, 4]} barSize={50}>
                       {categoryChartData.map((_entry, index) => (
-                        <Cell key={`cell-${index}`} fill={index === 0 ? 'var(--primary)' : 'rgba(0, 113, 227, 0.4)'} />
+                        <Cell key={`cell-${index}`} fill={index === 0 ? 'var(--primary)' : 'rgba(0, 113, 227, 0.45)'} />
                       ))}
                     </Bar>
                   </BarChart>
@@ -538,65 +585,71 @@ function Dashboard({ stats, bills, loading }: DashboardProps) {
           </div>
 
           <div className="activity-grid-row">
-            <section>
+            <section aria-labelledby="activity-stream-title">
               <header className="section-header">
                  <div className="section-icon-box" style={{ background: 'rgba(0, 113, 227, 0.1)', color: 'var(--primary)' }}>
-                   <Activity size={20} aria-hidden="true" />
+                   <Activity size={24} aria-hidden="true" />
                  </div>
-                 <h3 className="section-title">Neural Activity Stream</h3>
+                 <h3 className="section-title" id="activity-stream-title">Activity Telemetry</h3>
               </header>
-              <div role="list">
+              <div role="list" aria-label="Recent system events">
                 {bills
                   .sort((a, b) => new Date(b.created_at || b.date).getTime() - new Date(a.created_at || a.date).getTime())
                   .slice(0, 5)
                   .map((bill) => (
-                  <article key={bill.id} className="activity-card-premium" role="listitem">
-                    <div className="activity-icon-box" style={{ 
-                      background: bill.status === 'Paid' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(0, 113, 227, 0.1)',
-                      color: bill.status === 'Paid' ? '#10b981' : 'var(--primary)',
-                      border: bill.status === 'Paid' ? '1px solid rgba(16, 185, 129, 0.2)' : '1px solid rgba(0, 113, 227, 0.2)'
-                    }}>
-                      {bill.status === 'Paid' ? <CheckCircle2 size={20} aria-hidden="true" /> : <Receipt size={20} aria-hidden="true" />}
+                  <article 
+                    key={bill.id} 
+                    className="activity-card-premium" 
+                    role="listitem"
+                    aria-labelledby={`activity-title-${bill.id}`}
+                  >
+                    <div className={`activity-icon-box ${bill.status === 'Paid' ? 'status-paid' : 'status-pending'}`} style={{ background: bill.status === 'Paid' ? 'rgba(16, 185, 129, 0.12)' : 'rgba(0, 113, 227, 0.12)', color: bill.status === 'Paid' ? '#10b981' : 'var(--primary)' }}>
+                      {bill.status === 'Paid' ? <CheckCircle2 size={24} aria-hidden="true" /> : <Receipt size={24} aria-hidden="true" />}
                     </div>
                     <div className="activity-info-area">
-                      <p className="activity-primary-text">
-                        {bill.status === 'Paid' ? 'Settle Orchestration' : 'New Commitment Indexed'}
+                      <p className="activity-primary-text" id={`activity-title-${bill.id}`}>
+                        {bill.status === 'Paid' ? 'Settlement Synchronized' : 'New Commitment Indexed'}
                       </p>
                       <p className="activity-secondary-text">
-                        {bill.charge_name} • {bill.date}
+                        {bill.charge_name} • Coordinate: {bill.date}
                       </p>
                     </div>
                     <div style={{ textAlign: 'right' }}>
-                      <p className="activity-value-text">{formatCurrency(bill.amount)}</p>
+                      <p className="activity-value-text" aria-label={`Impact volume: ${formatCurrency(bill.amount)}`}>{formatCurrency(bill.amount)}</p>
                     </div>
                   </article>
                 ))}
               </div>
             </section>
 
-            <section>
+            <section aria-labelledby="priority-interventions-title">
               <header className="section-header">
                  <div className="section-icon-box" style={{ background: 'rgba(239, 68, 68, 0.1)', color: 'var(--error)' }}>
-                   <AlertCircle size={20} aria-hidden="true" />
+                   <AlertCircle size={24} aria-hidden="true" />
                  </div>
-                 <h3 className="section-title">Priority Interventions</h3>
+                 <h3 className="section-title" id="priority-interventions-title">Priority Interventions</h3>
               </header>
-              <div className="intervention-item" role="list">
+              <div role="list" aria-label="Critical administrative actions">
                 {bills
                   .filter((b) => b.status !== 'Paid')
                   .slice(0, 5)
                   .map((bill) => (
-                  <article key={bill.id} className="activity-card-premium" role="listitem" style={{ borderLeft: `6px solid ${bill.status === 'Overdue' ? 'var(--error)' : 'var(--primary)'}` }}>
+                  <article 
+                    key={bill.id} 
+                    className={`activity-card-premium priority-intervention-card ${bill.status === 'Overdue' ? 'priority-intervention-overdue' : 'priority-intervention-pending'}`} 
+                    role="listitem"
+                    aria-labelledby={`priority-title-${bill.id}`}
+                  >
                     <div className="activity-info-area">
-                      <p className="activity-value-text" style={{ fontSize: '1rem' }}>{bill.charge_name}</p>
+                      <p className="activity-primary-text" id={`priority-title-${bill.id}`}>{bill.charge_name}</p>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.25rem' }}>
-                        <Calendar size={14} className="text-secondary" aria-hidden="true" />
-                        <span className="activity-secondary-text" style={{ fontWeight: 700 }}>DUE: {bill.date}</span>
+                        <Calendar size={16} className="text-secondary" aria-hidden="true" />
+                        <span className="activity-secondary-text">TIMELINE: {bill.date}</span>
                       </div>
                     </div>
-                    <div className="priority-value-area">
-                      <p className="priority-amount">{formatCurrency(bill.amount)}</p>
-                      <span className={`status-badge status-${bill.status.toLowerCase()} priority-status-badge`}>
+                    <div style={{ textAlign: 'right' }}>
+                      <p className="activity-value-text" style={{ fontSize: '1.25rem' }} aria-label={`Risk impact: ${formatCurrency(bill.amount)}`}>{formatCurrency(bill.amount)}</p>
+                      <span className={`status-badge status-${bill.status.toLowerCase()}`} style={{ fontSize: '0.7rem', fontWeight: 950, marginTop: '0.4rem', display: 'inline-block' }} role="status">
                         {bill.status.toUpperCase()}
                       </span>
                     </div>

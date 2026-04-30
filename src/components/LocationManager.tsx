@@ -90,318 +90,344 @@ function LocationManager({
       <style>{`
         .matrix-page .page-hero {
           background: linear-gradient(135deg, var(--surface) 0%, var(--surface-soft) 100%);
-          padding: 2.5rem;
-          border-radius: 24px;
+          padding: 3.5rem;
+          border-radius: 40px;
           border: 1px solid var(--border);
-          margin-bottom: 2.5rem;
-          display: grid;
-          grid-template-columns: 1fr auto;
+          margin-bottom: 3.5rem;
+          display: flex;
+          justify-content: space-between;
           align-items: center;
           gap: 2rem;
+          box-shadow: var(--shadow-sm);
         }
 
         .matrix-page .hero-content h1 {
-          font-size: 3rem;
-          font-weight: 900;
-          letter-spacing: -0.04em;
-          line-height: 1;
-          margin-bottom: 0.75rem;
-          background: linear-gradient(to right, var(--text-primary), var(--primary));
+          font-size: 4rem;
+          font-weight: 950;
+          letter-spacing: -0.06em;
+          line-height: 0.9;
+          margin-bottom: 1.25rem;
+          background: linear-gradient(to right, var(--text-primary) 20%, var(--primary) 100%);
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
         }
 
         .matrix-page .hero-content p {
-          font-size: 1.15rem;
+          font-size: 1.35rem;
           color: var(--text-secondary);
           max-width: 600px;
+          font-weight: 600;
+          line-height: 1.4;
         }
 
         .matrix-page .metric-strip {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-          gap: 1.5rem;
-          margin-bottom: 2.5rem;
+          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+          gap: 2rem;
+          margin-bottom: 3.5rem;
         }
 
         .matrix-page .metric-card {
           background: var(--bg-card);
-          padding: 1.5rem;
-          border-radius: 20px;
+          padding: 2rem;
+          border-radius: 32px;
           border: 1px solid var(--border);
           display: flex;
           align-items: center;
-          gap: 1.25rem;
+          gap: 1.5rem;
           box-shadow: var(--shadow-sm);
           transition: var(--transition);
         }
 
         .matrix-page .metric-card:hover {
-          transform: translateY(-4px);
+          transform: translateY(-8px);
           box-shadow: var(--shadow-md);
           border-color: var(--primary);
         }
 
         .matrix-page .metric-icon {
-          width: 54px;
-          height: 54px;
-          border-radius: 16px;
-          background: rgba(0, 113, 227, 0.08);
+          width: 64px;
+          height: 64px;
+          border-radius: 20px;
+          background: linear-gradient(135deg, rgba(0, 113, 227, 0.15), rgba(0, 113, 227, 0.05));
           color: var(--primary);
           display: flex;
           align-items: center;
           justify-content: center;
+          border: 1px solid rgba(0, 113, 227, 0.2);
         }
 
         .matrix-page .metric-info span {
           display: block;
-          font-size: 0.75rem;
-          font-weight: 800;
+          font-size: 0.85rem;
+          font-weight: 900;
           color: var(--text-secondary);
           text-transform: uppercase;
-          letter-spacing: 0.05em;
-          margin-bottom: 0.25rem;
+          letter-spacing: 0.1em;
+          margin-bottom: 0.5rem;
         }
 
         .matrix-page .metric-info strong {
           display: block;
-          font-size: 1.75rem;
-          font-weight: 900;
+          font-size: 2.5rem;
+          font-weight: 950;
           color: var(--text-primary);
           line-height: 1;
+          letter-spacing: -0.04em;
         }
 
         .matrix-page .asset-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-          gap: 1.5rem;
+          grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+          gap: 2rem;
         }
 
         .matrix-page .asset-card {
-          background: var(--surface);
-          border-radius: 24px;
+          background: var(--bg-card);
+          border-radius: 32px;
           border: 1px solid var(--border);
-          padding: 1.5rem;
+          padding: 2.25rem;
           display: flex;
           flex-direction: column;
-          gap: 1.25rem;
+          gap: 1.75rem;
           position: relative;
           transition: var(--transition);
           overflow: hidden;
+          backdrop-filter: blur(12px);
         }
 
         .matrix-page .asset-card:hover {
           border-color: var(--primary);
           box-shadow: var(--shadow-lg);
-        }
-
-        .matrix-page .asset-card::before {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 4px;
-          background: var(--border);
-          transition: var(--transition);
-        }
-
-        .matrix-page .asset-card:hover::before {
-          background: var(--primary);
+          transform: translateY(-4px);
         }
 
         .matrix-page .asset-badge {
-          padding: 0.35rem 0.75rem;
+          padding: 0.5rem 1.25rem;
           border-radius: 100px;
-          font-size: 0.7rem;
-          font-weight: 800;
-          letter-spacing: 0.05em;
+          font-size: 0.75rem;
+          font-weight: 900;
+          letter-spacing: 0.1em;
+          box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
         }
 
-        .matrix-page .badge-active { background: rgba(47, 179, 68, 0.1); color: var(--success); }
-        .matrix-page .badge-construction { background: rgba(183, 121, 31, 0.1); color: var(--warning); }
-        .matrix-page .badge-closed { background: rgba(217, 45, 32, 0.1); color: var(--error); }
+        .matrix-page .badge-active { background: rgba(47, 179, 68, 0.12); color: var(--success); border: 1px solid rgba(47, 179, 68, 0.2); }
+        .matrix-page .badge-construction { background: rgba(183, 121, 31, 0.12); color: var(--warning); border: 1px solid rgba(183, 121, 31, 0.2); }
+        .matrix-page .badge-closed { background: rgba(217, 45, 32, 0.12); color: var(--error); border: 1px solid rgba(217, 45, 32, 0.2); }
 
         .matrix-page .asset-header {
           display: flex;
           justify-content: space-between;
-          align-items: flex-start;
+          align-items: center;
         }
 
         .matrix-page .asset-icon-box {
-          width: 48px;
-          height: 48px;
-          border-radius: 14px;
+          width: 56px;
+          height: 56px;
+          border-radius: 18px;
           display: flex;
           align-items: center;
           justify-content: center;
+          transition: var(--transition);
         }
 
         .matrix-page .asset-title h3 {
-          font-size: 1.25rem;
-          font-weight: 800;
+          font-size: 1.5rem;
+          font-weight: 900;
           color: var(--text-primary);
-          margin-bottom: 0.25rem;
+          margin-bottom: 0.4rem;
+          letter-spacing: -0.02em;
         }
 
         .matrix-page .asset-title p {
-          font-size: 0.85rem;
-          font-weight: 600;
+          font-size: 0.95rem;
+          font-weight: 700;
           color: var(--primary);
+          opacity: 0.8;
         }
 
         .matrix-page .asset-details {
           display: flex;
           flex-direction: column;
-          gap: 0.75rem;
-          padding: 1rem;
+          gap: 1rem;
+          padding: 1.5rem;
           background: var(--surface-soft);
-          border-radius: 16px;
+          border-radius: 20px;
+          border: 1px solid var(--border);
         }
 
         .matrix-page .detail-row {
           display: flex;
           align-items: center;
-          gap: 0.75rem;
-          font-size: 0.85rem;
+          gap: 1rem;
+          font-size: 0.95rem;
           color: var(--text-secondary);
-          font-weight: 500;
+          font-weight: 600;
         }
 
         .matrix-page .asset-actions {
           display: flex;
-          gap: 0.75rem;
-          margin-top: auto;
+          gap: 1rem;
+          margin-top: 0.5rem;
         }
 
         .matrix-page .bill-toolbar {
-          margin-bottom: 2rem;
+          margin-bottom: 3rem;
         }
 
         .matrix-page .search-field {
+          padding: 1.25rem 2rem;
           border-radius: 100px;
-          background: var(--bg-main);
+          background: var(--surface);
+          border: 1px solid var(--border);
+          box-shadow: var(--shadow-sm);
+        }
+
+        .matrix-page .search-field:focus-within {
+          border-color: var(--primary);
+          box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.1);
         }
 
         .matrix-page .loading-ring {
-          width: 40px;
-          height: 40px;
-          border: 3px solid var(--primary);
+          width: 64px;
+          height: 64px;
+          border: 4px solid var(--border);
+          border-top-color: var(--primary);
           border-radius: 50%;
-          animation: pulse 2s infinite;
+          animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+          to { transform: rotate(360deg); }
         }
 
         .matrix-page .sync-text {
-          font-weight: 700;
-          margin-top: 1rem;
+          font-weight: 900;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          color: var(--text-secondary);
+          margin-top: 2rem;
+          font-size: 0.85rem;
         }
 
         .matrix-page .empty-state-wrap {
-          padding: 4rem 0;
+          padding: 10rem 0;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
         }
 
         .matrix-page .empty-icon {
-          opacity: 0.1;
-          margin-bottom: 1.5rem;
+          opacity: 0.15;
+          margin-bottom: 2rem;
+          color: var(--primary);
         }
 
         .matrix-page .empty-title {
-          font-size: 1.5rem;
-          font-weight: 800;
-          margin-bottom: 0.5rem;
+          font-size: 2.5rem;
+          font-weight: 950;
+          letter-spacing: -0.04em;
+          margin-bottom: 1rem;
         }
 
         .matrix-page .empty-sub {
           color: var(--text-secondary);
-          max-width: 400px;
+          font-size: 1.25rem;
+          max-width: 500px;
+          line-height: 1.6;
         }
 
-        .matrix-page .empty-btn {
-          margin-top: 2rem;
+        .matrix-page .init-button {
+          padding: 1rem 2.5rem;
+          background: var(--primary);
+          color: white;
+          border-radius: 100px;
+          font-weight: 950;
+          font-size: 1.05rem;
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+          transition: var(--transition);
+          box-shadow: 0 12px 24px rgba(0, 113, 227, 0.3);
+          border: none;
+          cursor: pointer;
         }
 
-        .matrix-page .asset-icon-box.master {
-          background: rgba(0, 113, 227, 0.1);
-          color: var(--primary);
-        }
-
-        .matrix-page .asset-icon-box.generic {
-          background: var(--surface-soft);
-          color: var(--text-secondary);
-        }
-
-        .matrix-page .detail-text {
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
+        .matrix-page .init-button:hover {
+          transform: translateY(-4px) scale(1.02);
+          box-shadow: 0 20px 40px rgba(0, 113, 227, 0.4);
+          background: var(--primary-hover);
         }
 
         .matrix-page .manage-btn {
           flex: 1;
-          height: 3rem;
-          border-radius: 14px;
-          font-size: 0.85rem;
+          height: 3.5rem;
+          border-radius: 18px;
+          font-size: 0.95rem;
+          font-weight: 900;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.75rem;
+          transition: var(--transition);
         }
 
         .matrix-page .delete-btn {
-          width: 3rem;
-          height: 3rem;
-          border-radius: 14px;
-          background: var(--surface-soft);
-        }
-
-        .matrix-page .init-button {
-          padding: 1rem 2rem;
-          background: var(--primary);
-          color: white;
-          border-radius: 100px;
-          font-weight: 900;
-          font-size: 1rem;
+          width: 3.5rem;
+          height: 3.5rem;
+          border-radius: 18px;
+          background: rgba(217, 45, 32, 0.05);
+          color: var(--error);
           display: flex;
           align-items: center;
-          gap: 0.75rem;
+          justify-content: center;
           transition: var(--transition);
-          box-shadow: 0 10px 20px rgba(0, 113, 227, 0.2);
+          border: 1px solid rgba(217, 45, 32, 0.1);
         }
 
-        .matrix-page .init-button:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 15px 30px rgba(0, 113, 227, 0.3);
-          background: var(--primary-hover);
+        .matrix-page .delete-btn:hover:not(:disabled) {
+          background: var(--error);
+          color: white;
+          box-shadow: 0 8px 16px rgba(217, 45, 32, 0.2);
         }
       `}</style>
 
       <header className="page-hero">
         <div className="hero-content">
-          <p className="eyebrow">Enterprise Infrastructure</p>
+          <span className="eyebrow" aria-hidden="true">Strategic Assets</span>
           <h1>Infrastructure Matrix</h1>
-          <p>Real-time orchestration of core assets, lease terms, and operational synchronization across the global network.</p>
+          <p>Global orchestration of core infrastructure, lease commitments, and operational telemetry synchronization.</p>
         </div>
-        <button className="init-button" onClick={() => setIsModalOpen(true)} title="Initialize a new infrastructure asset">
-          <Zap size={20} fill="currentColor" aria-hidden="true" />
+        <button 
+          className="init-button" 
+          onClick={() => setIsModalOpen(true)} 
+          aria-label="Initialize a new infrastructure asset"
+        >
+          <Zap size={24} fill="currentColor" aria-hidden="true" />
           <span>INITIALIZE NEW ASSET</span>
         </button>
       </header>
 
       <ErrorBanner error={error} onDismiss={() => setError(null)} />
 
-      <div className="metric-strip">
+      <div className="metric-strip" role="region" aria-label="Infrastructure statistics">
         <div className="metric-card">
-          <div className="metric-icon"><Globe size={24} aria-hidden="true" /></div>
+          <div className="metric-icon" aria-hidden="true"><Globe size={32} /></div>
           <div className="metric-info">
-            <span>Operational Assets</span>
+            <span>Global Assets</span>
             <strong>{locations.length}</strong>
           </div>
         </div>
         <div className="metric-card">
-          <div className="metric-icon"><Shield size={24} aria-hidden="true" /></div>
+          <div className="metric-icon" aria-hidden="true"><Shield size={32} /></div>
           <div className="metric-info">
-            <span>Store Masters</span>
+            <span>Critical Masters</span>
             <strong>{locations.filter(l => l.is_store_master).length}</strong>
           </div>
         </div>
         <div className="metric-card">
-          <div className="metric-icon"><Activity size={24} aria-hidden="true" /></div>
+          <div className="metric-icon" aria-hidden="true"><Activity size={32} /></div>
           <div className="metric-info">
             <span>Risk Monitoring</span>
             <strong>{locations.filter(l => l.operational_status === 'Under Construction').length}</strong>
@@ -409,107 +435,120 @@ function LocationManager({
         </div>
       </div>
 
-      <section className="panel bill-panel">
+      <section className="panel bill-panel" aria-labelledby="matrix-title">
         <div className="bill-toolbar">
-          <label className="search-field" htmlFor="matrix-search">
-            <Search size={19} aria-hidden="true" />
+          <div className="search-field">
+            <Search size={22} className="text-secondary" aria-hidden="true" />
+            <label htmlFor="matrix-search" className="sr-only">Filter infrastructure assets</label>
             <input
               id="matrix-search"
               type="text"
-              placeholder="Filter assets by name, code, brand, or geographic coordinates..."
+              placeholder="Search by entity name, store code, brand identifier, or geographic coordinates..."
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              title="Filter assets"
             />
-          </label>
+          </div>
         </div>
 
         {loading ? (
           <div className="empty-state" aria-busy="true">
-             <div className="loading-ring"></div>
-             <p className="sync-text">Synchronizing Core Matrix...</p>
+             <div className="loading-ring" aria-hidden="true"></div>
+             <p className="sync-text">SYNCHRONIZING CORE MATRIX...</p>
           </div>
         ) : filteredLocations.length === 0 ? (
-          <div className="empty-state empty-state-wrap">
-            <Building2 size={64} className="empty-icon" aria-hidden="true" />
-            <h3 className="empty-title">No Assets Identified</h3>
-            <p className="empty-sub">Your infrastructure matrix is currently empty. Initialize your first asset to begin orchestration.</p>
-            <button className="init-button empty-btn" onClick={() => setIsModalOpen(true)} title="Add your first infrastructure asset">
-              <Plus size={20} aria-hidden="true" /> INITIALIZE FIRST ASSET
+          <div className="empty-state-wrap" role="status">
+            <Building2 size={100} className="empty-icon" aria-hidden="true" />
+            <h3 className="empty-title">Zero Assets Identified</h3>
+            <p className="empty-sub">Your infrastructure matrix is currently vacant. Initialize your first strategic asset to begin neural synchronization.</p>
+            <button 
+              className="init-button" 
+              style={{ marginTop: '3rem' }} 
+              onClick={() => setIsModalOpen(true)}
+              aria-label="Add your first infrastructure asset"
+            >
+              <Plus size={24} aria-hidden="true" /> INITIALIZE FIRST ASSET
             </button>
           </div>
         ) : (
-          <div className="asset-grid" role="list">
-            {filteredLocations.map((item) => (
-              <motion.article 
-                layout
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="asset-card" 
-                key={item.id}
-                role="listitem"
-              >
-                <div className="asset-header">
-                  <div className={`asset-icon-box ${item.is_store_master ? 'master' : 'generic'}`}>
-                    {item.is_store_master ? <Zap size={22} fill="currentColor" aria-hidden="true" /> : <Building2 size={22} aria-hidden="true" />}
+          <div className="asset-grid" role="list" aria-label="Infrastructure Assets List">
+            <AnimatePresence>
+              {filteredLocations.map((item) => (
+                <motion.article 
+                  layout
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  className="asset-card" 
+                  key={item.id}
+                  role="listitem"
+                  aria-labelledby={`asset-name-${item.id}`}
+                >
+                  <div className="asset-header">
+                    <div className={`asset-icon-box ${item.is_store_master ? 'master' : 'generic'}`} style={{ background: item.is_store_master ? 'rgba(0, 113, 227, 0.12)' : 'var(--surface-soft)', color: item.is_store_master ? 'var(--primary)' : 'var(--text-secondary)' }}>
+                      {item.is_store_master ? <Zap size={28} fill="currentColor" aria-hidden="true" /> : <Building2 size={28} aria-hidden="true" />}
+                    </div>
+                    <span 
+                      className={`asset-badge ${
+                        item.operational_status === 'Active' ? 'badge-active' : 
+                        item.operational_status === 'Under Construction' ? 'badge-construction' : 'badge-closed'
+                      }`}
+                      role="status"
+                    >
+                      {(item.operational_status || 'Active').toUpperCase()}
+                    </span>
                   </div>
-                  <span 
-                    className={`asset-badge ${
-                      item.operational_status === 'Active' ? 'badge-active' : 
-                      item.operational_status === 'Under Construction' ? 'badge-construction' : 'badge-closed'
-                    }`}
-                    aria-label={`Status: ${item.operational_status || 'Active'}`}
-                  >
-                    {(item.operational_status || 'Active').toUpperCase()}
-                  </span>
-                </div>
-                
-                <div className="asset-title">
-                  <h3>{item.name}</h3>
-                  <p>{item.brand_name || 'Generic Asset'} {item.store_code && `• ${item.store_code}`}</p>
-                </div>
-                
-                <div className="asset-details">
-                  <div className="detail-row">
-                    <MapPin size={14} color="var(--primary)" aria-hidden="true" />
-                    <span className="detail-text">{item.address || 'Coordinates Not Set'}</span>
+                  
+                  <div className="asset-title">
+                    <h3 id={`asset-name-${item.id}`}>{item.name}</h3>
+                    <p>{item.brand_name || 'Unbranded Asset'} {item.store_code && `• SC: ${item.store_code}`}</p>
                   </div>
-                  <div className="detail-row">
-                    <Calendar size={14} color="var(--primary)" aria-hidden="true" />
-                    <span>Opened: {item.opening_date || 'TBD'}</span>
+                  
+                  <div className="asset-details">
+                    <div className="detail-row">
+                      <MapPin size={18} className="text-primary" aria-hidden="true" />
+                      <span className="detail-text">{item.address || 'GPS COORDINATES NOT INDEXED'}</span>
+                    </div>
+                    <div className="detail-row">
+                      <Calendar size={18} className="text-primary" aria-hidden="true" />
+                      <span>INITIALIZED: {item.opening_date || 'PENDING'}</span>
+                    </div>
                   </div>
-                </div>
-                
-                <div className="asset-actions">
-                  <button
-                    className="button-primary manage-btn"
-                    onClick={() => setEditingLocation(item)}
-                    title={`Manage infrastructure matrix for ${item.name}`}
-                  >
-                    <Edit size={16} aria-hidden="true" />
-                    MANAGE MATRIX
-                  </button>
-                  <button
-                    className="icon-button danger delete-btn"
-                    aria-label={`Decommission ${item.name}`}
-                    title={`Decommission ${item.name}`}
-                    disabled={deleteLoading === item.id}
-                    onClick={() => setConfirmDelete(item.id)}
-                  >
-                    {deleteLoading === item.id ? '...' : <Trash2 size={18} aria-hidden="true" />}
-                  </button>
-                </div>
-              </motion.article>
-            ))}
+                  
+                  <div className="asset-actions">
+                    <button
+                      className="button-primary manage-btn"
+                      onClick={() => setEditingLocation(item)}
+                      aria-label={`Manage infrastructure parameters for ${item.name}`}
+                    >
+                      <Edit size={18} aria-hidden="true" />
+                      MANAGE MATRIX
+                    </button>
+                    <button
+                      className="delete-btn"
+                      aria-label={`Decommission infrastructure asset: ${item.name}`}
+                      disabled={deleteLoading === item.id}
+                      onClick={() => setConfirmDelete(item.id)}
+                    >
+                      {deleteLoading === item.id ? (
+                        <div className="loading-ring" style={{ width: '20px', height: '20px', borderWidth: '2px' }} aria-hidden="true" />
+                      ) : (
+                        <Trash2 size={20} aria-hidden="true" />
+                      )}
+                    </button>
+                  </div>
+                </motion.article>
+              ))}
+            </AnimatePresence>
           </div>
         )}
       </section>
 
-      {/* NEW ASSET INITIALIZATION MODAL */}
+      {/* MODAL COMPONENTS */}
       <Modal 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
-        maxWidth="1000px"
+        maxWidth="1100px"
+        title="Initialize Infrastructure Matrix"
       >
         <InfrastructureMatrixForm 
           onSave={handleAddLocation}
@@ -532,9 +571,9 @@ function LocationManager({
       <ConfirmationModal
         isOpen={confirmDelete !== null}
         title="Decommission Asset"
-        message="Are you sure you want to decommission this asset? This will archive all infrastructure matrix data associated with this location."
-        confirmLabel="Decommission"
-        cancelLabel="Keep Active"
+        message="Initiating decommissioning sequence. This will permanently archive all infrastructure telemetry and historical data for this asset. This action is irreversible."
+        confirmLabel="DECOMMISSION"
+        cancelLabel="MAINTAIN ACTIVE"
         isDangerous
         isLoading={deleteLoading !== null}
         onConfirm={() => {

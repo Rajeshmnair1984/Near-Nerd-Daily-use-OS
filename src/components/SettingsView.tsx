@@ -27,23 +27,17 @@ function SettingsView({
   const [currency, setCurrency] = useState(DEFAULT_CURRENCY);
   const [savedMessage, setSavedMessage] = useState('');
   const [isSaving, setIsSaving] = useState(false);
-  const [zapierWebhookUrl, setZapierWebhookUrl] = useState('');
-  const [isZapierEnabled, setIsZapierEnabled] = useState(false);
+  const [zapierWebhookUrl, setZapierWebhookUrl] = useState(() => zapierService.getSettings().webhookUrl);
+  const [isZapierEnabled, setIsZapierEnabled] = useState(() => zapierService.getSettings().enabled);
   const [isTestingZapier, setIsTestingZapier] = useState(false);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setName(user?.fullName || '');
-    setEmail(user?.email || '');
-    setRole(user?.role || '');
+    queueMicrotask(() => {
+      setName(user?.fullName || '');
+      setEmail(user?.email || '');
+      setRole(user?.role || '');
+    });
   }, [user]);
-
-  useEffect(() => {
-    const settings = zapierService.getSettings();
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setZapierWebhookUrl(settings.webhookUrl);
-    setIsZapierEnabled(settings.enabled);
-  }, []);
 
   const handleProfileSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -189,6 +183,9 @@ function SettingsView({
         .settings-premium-page .icon-box {
           padding: 0.5rem;
           border-radius: 10px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
 
         .settings-premium-page .icon-blue { background: rgba(0, 113, 227, 0.1); color: var(--primary); }
@@ -236,7 +233,7 @@ function SettingsView({
           border: 1px solid rgba(255, 149, 0, 0.1);
           font-size: 0.85rem;
           color: #856404;
-          fontWeight: 600;
+          font-weight: 600;
         }
 
         .settings-premium-page .info-banner-content {
@@ -268,6 +265,7 @@ function SettingsView({
         .settings-premium-page .checkbox-input {
           width: 18px;
           height: 18px;
+          accent-color: var(--primary);
         }
 
         .settings-premium-page .checkbox-text {
@@ -339,18 +337,24 @@ function SettingsView({
             role="status"
             aria-live="polite"
           >
-            <CheckCircle2 size={16} /> {savedMessage}
+            <CheckCircle2 size={16} aria-hidden="true" /> {savedMessage}
           </motion.div>
         )}
       </header>
 
       <div className="settings-grid">
-        <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="settings-card">
+        <motion.section 
+          initial={{ opacity: 0, y: 20 }} 
+          animate={{ opacity: 1, y: 0 }} 
+          transition={{ delay: 0.1 }} 
+          className="settings-card"
+          aria-labelledby="identity-protocol-title"
+        >
           <div className="card-header">
-            <div className="icon-box icon-blue">
+            <div className="icon-box icon-blue" aria-hidden="true">
               <Fingerprint size={20} />
             </div>
-            <h2>Identity Protocol</h2>
+            <h2 id="identity-protocol-title">Identity Protocol</h2>
           </div>
           
           <form onSubmit={handleProfileSubmit} className="settings-form">
@@ -362,7 +366,6 @@ function SettingsView({
                 value={name}
                 onChange={(event) => setName(event.target.value)}
                 placeholder="e.g., Alex Rivers"
-                title="Full Name"
               />
             </div>
             <div className="form-group">
@@ -373,28 +376,34 @@ function SettingsView({
                 type="email"
                 value={email}
                 readOnly
-                title="Email Address (read-only)"
+                aria-readonly="true"
               />
             </div>
             <div className="form-group">
-              <label className="form-label" htmlFor="settings-role-display">AUTHORIZATION ROLE</label>
-              <div id="settings-role-display" className="role-box">
-                 <ShieldCheck size={18} className="text-primary" />
+              <label className="form-label" htmlFor="settings-role-display-box">AUTHORIZATION ROLE</label>
+              <div id="settings-role-display-box" className="role-box" role="status" aria-readonly="true">
+                 <ShieldCheck size={18} className="text-primary" aria-hidden="true" />
                  <span className="role-text">{role || 'Standard Entity'}</span>
               </div>
             </div>
-            <button className="button-primary full-width-btn" type="submit" disabled={isSaving} title="Commit changes to profile">
+            <button className="button-primary full-width-btn" type="submit" disabled={isSaving}>
               {isSaving ? 'COMMITING...' : 'COMMIT PROFILE UPDATES'}
             </button>
           </form>
         </motion.section>
 
-        <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="settings-card">
+        <motion.section 
+          initial={{ opacity: 0, y: 20 }} 
+          animate={{ opacity: 1, y: 0 }} 
+          transition={{ delay: 0.2 }} 
+          className="settings-card"
+          aria-labelledby="workspace-params-title"
+        >
           <div className="card-header">
-            <div className="icon-box icon-orange">
+            <div className="icon-box icon-orange" aria-hidden="true">
               <Zap size={20} />
             </div>
-            <h2>Workspace Parameters</h2>
+            <h2 id="workspace-params-title">Workspace Parameters</h2>
           </div>
           
           <div className="settings-form">
@@ -405,7 +414,6 @@ function SettingsView({
                 className="form-input"
                 value={workspaceName}
                 onChange={(event) => setWorkspaceName(event.target.value)}
-                title="Workspace Name"
               />
             </div>
             <div className="form-group">
@@ -415,7 +423,6 @@ function SettingsView({
                 className="form-select"
                 value={currency}
                 onChange={(event) => setCurrency(event.target.value)}
-                title="System Currency"
               >
                 <option value="USD">USD - US Dollar</option>
                 <option value="CAD">CAD - Canadian Dollar</option>
@@ -423,21 +430,27 @@ function SettingsView({
                 <option value="GBP">GBP - British Pound</option>
               </select>
             </div>
-            <div className="info-banner">
+            <div className="info-banner" role="note">
               <div className="info-banner-content">
-                <Activity size={18} className="info-banner-icon" />
+                <Activity size={18} className="info-banner-icon" aria-hidden="true" />
                 <p>Workspace synchronization is currently anchored to this session coordinate. Data persistence is optimized for current location parameters.</p>
               </div>
             </div>
           </div>
         </motion.section>
 
-        <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="settings-card">
+        <motion.section 
+          initial={{ opacity: 0, y: 20 }} 
+          animate={{ opacity: 1, y: 0 }} 
+          transition={{ delay: 0.25 }} 
+          className="settings-card"
+          aria-labelledby="zapier-connection-title"
+        >
           <div className="card-header">
-            <div className="icon-box icon-red">
+            <div className="icon-box icon-red" aria-hidden="true">
               <Link size={20} />
             </div>
-            <h2>Zapier Connection</h2>
+            <h2 id="zapier-connection-title">Zapier Connection</h2>
           </div>
 
           <form onSubmit={handleZapierSubmit} className="zapier-form">
@@ -450,7 +463,6 @@ function SettingsView({
                 value={zapierWebhookUrl}
                 onChange={(event) => setZapierWebhookUrl(event.target.value)}
                 placeholder="https://hooks.zapier.com/hooks/catch/..."
-                title="Zapier Webhook URL"
               />
             </div>
 
@@ -468,7 +480,7 @@ function SettingsView({
             </label>
 
             <div className="btn-grid">
-              <button className="button-primary btn-bold" type="submit" title="Save Zapier configuration">
+              <button className="button-primary btn-bold" type="submit">
                 SAVE ZAPIER
               </button>
               <button
@@ -476,44 +488,50 @@ function SettingsView({
                 type="button"
                 onClick={handleZapierTest}
                 disabled={isTestingZapier}
-                title="Test Zapier connection"
+                aria-label="Test connection to Zapier"
               >
-                <Send size={16} />
+                <Send size={16} aria-hidden="true" />
                 {isTestingZapier ? 'TESTING...' : 'TEST'}
               </button>
             </div>
           </form>
         </motion.section>
 
-        <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="settings-card grid-full">
+        <motion.section 
+          initial={{ opacity: 0, y: 20 }} 
+          animate={{ opacity: 1, y: 0 }} 
+          transition={{ delay: 0.3 }} 
+          className="settings-card grid-full"
+          aria-labelledby="neural-data-title"
+        >
           <div className="card-header">
-            <div className="icon-box icon-green">
+            <div className="icon-box icon-green" aria-hidden="true">
               <Database size={20} />
             </div>
-            <h2>Neural Data Overview</h2>
+            <h2 id="neural-data-title">Neural Data Overview</h2>
           </div>
           
-          <div className="data-chip-grid">
-            <div className="data-chip">
+          <div className="data-chip-grid" role="list" aria-label="Workspace metrics">
+            <div className="data-chip" role="listitem">
               <span>Indexed Liabilities</span>
               <strong>{billsCount}</strong>
             </div>
-            <div className="data-chip">
+            <div className="data-chip" role="listitem">
               <span>Infrastructure Nodes</span>
               <strong>{locationsCount}</strong>
             </div>
-            <div className="data-chip">
+            <div className="data-chip" role="listitem">
               <span>Vendor Identities</span>
               <strong>{vendorsCount}</strong>
             </div>
-            <div className="data-chip">
+            <div className="data-chip" role="listitem">
               <span>System Health</span>
               <strong className="health-optimized">OPTIMIZED</strong>
             </div>
           </div>
 
-          <div className="supabase-banner">
-             <ShieldAlert size={24} className="text-primary" />
+          <div className="supabase-banner" role="alert">
+             <ShieldAlert size={24} className="text-primary" aria-hidden="true" />
              <p className="supabase-banner-text">
                Synchronized with Supabase Cloud Infrastructure. If orchestration failures occur, verify your neural schema mapping.
              </p>

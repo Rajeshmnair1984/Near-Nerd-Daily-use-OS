@@ -84,8 +84,9 @@ function AppContent() {
   }, []);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    loadData();
+    queueMicrotask(() => {
+      void loadData();
+    });
   }, [loadData]);
 
   const handleAddBill = async (newBill: CreateBillInput) => {
@@ -315,24 +316,237 @@ function AppContent() {
       case 'super-admin':
         if (user?.role !== 'super_admin') {
           return (
-            <div style={{ padding: '4rem', textAlign: 'center' }}>
-              <h2 style={{ opacity: 0.5 }}>Unauthorized</h2>
-              <p style={{ opacity: 0.4 }}>You do not have permission to access this view.</p>
+            <div className="unauthorized-view" role="alert">
+              <h2 className="unauthorized-title">Unauthorized Access</h2>
+              <p className="unauthorized-sub">System security parameters restrict your access to this console.</p>
             </div>
           );
         }
         return <SuperAdminDashboard />;
       default:
         return (
-          <div style={{ padding: '4rem', textAlign: 'center' }}>
-            <h2 style={{ opacity: 0.5 }}>View Coming Soon</h2>
+          <div className="coming-soon-view">
+            <h2 className="coming-soon-title">Module Under Construction</h2>
           </div>
         );
     }
   };
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh' }}>
+    <div className="app-container-premium">
+      <style>{`
+        .app-container-premium {
+          display: flex;
+          min-height: 100vh;
+          background: var(--bg-main);
+        }
+
+        .unauthorized-view, .coming-soon-view {
+          padding: 8rem 4rem;
+          text-align: center;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 1.5rem;
+        }
+
+        .unauthorized-title, .coming-soon-title {
+          font-size: 2.5rem;
+          font-weight: 900;
+          letter-spacing: -0.04em;
+          background: linear-gradient(to right, var(--error), var(--text-primary));
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+        }
+
+        .unauthorized-sub {
+          color: var(--text-secondary);
+          font-size: 1.1rem;
+          max-width: 400px;
+        }
+
+        .app-main-content {
+          flex: 1;
+          min-height: 100vh;
+          position: relative;
+          overflow-x: hidden;
+        }
+
+        .app-topbar {
+          height: 80px;
+          border-bottom: 1px solid var(--border);
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 0 2.5rem;
+          position: sticky;
+          top: 0;
+          backdrop-filter: blur(22px);
+          -webkit-backdrop-filter: blur(22px);
+          z-index: 100;
+          background: var(--bg-sidebar);
+        }
+
+        .topbar-left {
+          display: flex;
+          align-items: center;
+          gap: 1.5rem;
+        }
+
+        .quick-add-btn {
+          width: 44px;
+          height: 44px;
+          border-radius: 14px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: var(--primary);
+          color: white;
+          box-shadow: 0 8px 20px rgba(0, 113, 227, 0.25);
+          transition: var(--transition);
+          border: none;
+          cursor: pointer;
+        }
+
+        .quick-add-btn:hover {
+          transform: translateY(-2px) scale(1.05);
+          box-shadow: 0 12px 24px rgba(0, 113, 227, 0.35);
+        }
+
+        .topbar-search-container {
+          width: 100%;
+          max-width: 450px;
+          display: flex;
+          align-items: center;
+          position: relative;
+        }
+
+        .topbar-right {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+        }
+
+        .theme-toggle-btn {
+          width: 44px;
+          height: 44px;
+          border-radius: 14px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: var(--text-secondary);
+          border: 1px solid var(--border);
+          background: var(--surface);
+          transition: var(--transition);
+          cursor: pointer;
+        }
+
+        .theme-toggle-btn:hover {
+          background: var(--surface-soft);
+          color: var(--primary);
+          border-color: var(--primary);
+        }
+
+        .notification-bell-btn {
+          width: 44px;
+          height: 44px;
+          border-radius: 14px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: var(--text-secondary);
+          border: 1px solid var(--border);
+          background: var(--surface);
+          position: relative;
+          transition: var(--transition);
+          cursor: pointer;
+        }
+
+        .notification-bell-btn:hover {
+          background: var(--surface-soft);
+          color: var(--primary);
+          border-color: var(--primary);
+        }
+
+        .notification-badge {
+          position: absolute;
+          top: -6px;
+          right: -6px;
+          background: var(--error);
+          color: white;
+          font-size: 11px;
+          font-weight: 900;
+          min-width: 22px;
+          height: 22px;
+          padding: 0 6px;
+          border-radius: 11px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border: 3px solid var(--surface);
+          box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .logout-btn-premium {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          padding: 0.7rem 1.25rem;
+          border-radius: 14px;
+          border: 1px solid rgba(217, 45, 32, 0.1);
+          background: rgba(217, 45, 32, 0.05);
+          color: var(--error);
+          cursor: pointer;
+          font-size: 0.9rem;
+          font-weight: 800;
+          transition: var(--transition);
+        }
+
+        .logout-btn-premium:hover {
+          background: var(--error);
+          color: white;
+          box-shadow: 0 8px 20px rgba(217, 45, 32, 0.2);
+        }
+
+        .app-loading-screen {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 100vh;
+          background: var(--bg-main);
+        }
+
+        .app-loading-content {
+          text-align: center;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 2rem;
+        }
+
+        .loading-pulse {
+          width: 64px;
+          height: 64px;
+          background: var(--primary);
+          border-radius: 20px;
+          animation: pulse 2s infinite ease-in-out;
+        }
+
+        @keyframes pulse {
+          0% { transform: scale(0.9); opacity: 0.5; box-shadow: 0 0 0 0 rgba(0, 113, 227, 0.4); }
+          50% { transform: scale(1.1); opacity: 1; box-shadow: 0 0 40px 20px rgba(0, 113, 227, 0); }
+          100% { transform: scale(0.9); opacity: 0.5; box-shadow: 0 0 0 0 rgba(0, 113, 227, 0); }
+        }
+
+        .loading-text {
+          color: var(--text-secondary);
+          font-weight: 800;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          font-size: 0.85rem;
+        }
+      `}</style>
+
       <Sidebar
         activeView={activeView}
         setActiveView={setActiveView}
@@ -342,142 +556,81 @@ function AppContent() {
         userRole={user?.role}
         onLogout={logout}
       />
+      
       {isSidebarOpen && (
         <button
           className="sidebar-backdrop"
-          aria-label="Close navigation"
+          aria-label="Close navigation overlay"
           onClick={() => setIsSidebarOpen(false)}
         />
       )}
 
-      <main className="app-main" style={{ flex: 1, minHeight: '100vh', position: 'relative' }}>
-        {/* Top Header Bar */}
-        <header
-          className="app-topbar"
-          style={{
-            height: '70px',
-            borderBottom: '1px solid var(--border)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '0 2rem',
-            position: 'sticky',
-            top: 0,
-            background: theme === 'dark' ? 'rgba(11, 11, 11, 0.72)' : 'rgba(255, 255, 255, 0.72)',
-            backdropFilter: 'blur(22px)',
-            zIndex: 10,
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center' }}>
+      <main className="app-main-content">
+        <header className="app-topbar" role="banner">
+          <div className="topbar-left">
             <button
               className="mobile-menu-button"
-              aria-label="Open navigation"
+              aria-label="Open navigation menu"
               onClick={() => setIsSidebarOpen(true)}
             >
-              <Menu size={22} />
+              <Menu size={24} aria-hidden="true" />
             </button>
 
             <button
-              title="Quick Add"
-              style={{
-                width: '38px',
-                height: '38px',
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                background: 'var(--primary)',
-                color: 'white',
-                boxShadow: '0 4px 12px rgba(0, 113, 227, 0.3)',
-                marginLeft: '0.75rem',
-              }}
+              aria-label="Initialize new liability entry"
+              className="quick-add-btn"
               onClick={() => {
                 setActiveView('bills');
-                addToast('Opening Bill Manager...', 'info');
+                addToast('Accessing Financial Matrix...', 'info');
               }}
             >
-              <Plus size={20} strokeWidth={3} />
+              <Plus size={24} strokeWidth={3} aria-hidden="true" />
             </button>
           </div>
 
-          {/* Global Search */}
-          <div className="search-field" style={{ maxWidth: '400px', marginLeft: '1rem', display: 'flex' }}>
-            <Search size={18} />
-            <input 
-              type="text" 
-              placeholder="Search bills, vendors..." 
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+          <div className="topbar-search-container">
+            <div className="search-field" style={{ width: '100%', margin: 0 }}>
+              <Search size={20} aria-hidden="true" />
+              <label htmlFor="global-app-search" className="sr-only">Search systems</label>
+              <input 
+                id="global-app-search"
+                type="text" 
+                placeholder="Synchronize search query..." 
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginLeft: 'auto' }}>
-            {/* Theme Toggle */}
+          <div className="topbar-right">
             <button
               onClick={toggleTheme}
-              style={{
-                width: '40px',
-                height: '40px',
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'var(--text-secondary)',
-                border: '1px solid var(--border)',
-                background: 'var(--surface)',
-                transition: 'all 0.2s ease',
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--surface-soft)')}
-              onMouseLeave={(e) => (e.currentTarget.style.background = 'var(--surface)')}
+              className="theme-toggle-btn"
+              aria-label={theme === 'light' ? 'Enable dark mode' : 'Enable light mode'}
             >
-              {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
+              {theme === 'light' ? <Moon size={22} aria-hidden="true" /> : <Sun size={22} aria-hidden="true" />}
             </button>
 
-            <div style={{ position: 'relative', cursor: 'pointer', padding: '0.5rem' }}>
-              <Bell size={22} color="var(--text-secondary)" />
+            <button 
+              className="notification-bell-btn"
+              aria-label={`${stats.overdueCount} system alerts requiring attention`}
+              onClick={() => setActiveView('alerts')}
+            >
+              <Bell size={22} aria-hidden="true" />
               {stats.overdueCount > 0 && (
-                <span
-                  style={{
-                    position: 'absolute',
-                    top: '2px',
-                    right: '2px',
-                    background: 'var(--status-overdue)',
-                    color: 'white',
-                    fontSize: '10px',
-                    fontWeight: 700,
-                    width: '18px',
-                    height: '18px',
-                    borderRadius: '50%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    border: '2px solid white',
-                  }}
-                >
+                <span className="notification-badge">
                   {stats.overdueCount}
                 </span>
               )}
-            </div>
+            </button>
             
             <button
               onClick={logout}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                padding: '0.5rem 0.85rem',
-                borderRadius: '0.5rem',
-                border: '1px solid #fee2e2',
-                background: '#fef2f2',
-                color: '#dc2626',
-                cursor: 'pointer',
-                fontSize: '0.85rem',
-                fontWeight: 600,
-                transition: 'all 0.2s ease',
-              }}
+              className="logout-btn-premium"
+              aria-label="Terminate secure session"
             >
-              <LogOut size={16} />
-              <span>Log Out</span>
+              <LogOut size={18} aria-hidden="true" />
+              <span>TERMINATE</span>
             </button>
           </div>
         </header>
@@ -485,10 +638,10 @@ function AppContent() {
         <AnimatePresence mode="wait">
           <motion.div
             key={activeView}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2 }}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
           >
             {renderContent()}
           </motion.div>
@@ -503,10 +656,10 @@ function App() {
 
   if (isLoading) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: '#f3f4f6' }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>🔄</div>
-          <p style={{ color: '#6b7280', fontSize: '1rem' }}>Loading...</p>
+      <div className="app-loading-screen" aria-busy="true" aria-live="polite">
+        <div className="app-loading-content">
+          <div className="loading-pulse" aria-hidden="true" />
+          <p className="loading-text">Synchronizing Global Systems...</p>
         </div>
       </div>
     )

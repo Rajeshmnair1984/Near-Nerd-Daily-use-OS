@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { ReactNode, useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -13,12 +13,67 @@ interface ModalProps {
 
 export function Modal({ isOpen, onClose, title, children, footer, maxWidth = '500px' }: ModalProps) {
   const titleId = title ? `modal-title-${title.replace(/\s+/g, '-').toLowerCase()}` : undefined;
+  const modalRef = useRef<HTMLDivElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      previousFocusRef.current = document.activeElement as HTMLElement;
+      
+      const handleEscape = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') onClose();
+      };
+
+      const handleTab = (e: KeyboardEvent) => {
+        if (e.key === 'Tab' && modalRef.current) {
+          const focusableElements = modalRef.current.querySelectorAll(
+            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+          );
+          const firstElement = focusableElements[0] as HTMLElement;
+          const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
+
+          if (e.shiftKey) {
+            if (document.activeElement === firstElement) {
+              lastElement.focus();
+              e.preventDefault();
+            }
+          } else {
+            if (document.activeElement === lastElement) {
+              firstElement.focus();
+              e.preventDefault();
+            }
+          }
+        }
+      };
+
+      document.addEventListener('keydown', handleEscape);
+      document.addEventListener('keydown', handleTab);
+
+      // Small delay to allow framer-motion to start and ensure focus works
+      const focusTimer = setTimeout(() => {
+        if (modalRef.current) {
+          const firstFocusable = modalRef.current.querySelector(
+            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+          ) as HTMLElement;
+          firstFocusable?.focus();
+        }
+      }, 50);
+
+      return () => {
+        document.removeEventListener('keydown', handleEscape);
+        document.removeEventListener('keydown', handleTab);
+        clearTimeout(focusTimer);
+        previousFocusRef.current?.focus();
+      };
+    }
+  }, [isOpen, onClose]);
 
   return (
     <AnimatePresence>
       {isOpen && (
         <div
           className="modal-overlay-premium"
+          role="presentation"
           onClick={onClose}
         >
           <style>{`
@@ -36,6 +91,7 @@ export function Modal({ isOpen, onClose, title, children, footer, maxWidth = '50
 
             .modal-shell-premium {
               width: 100%;
+              max-width: var(--modal-width, 500px);
               max-height: 95vh;
               overflow: hidden;
               display: flex;
@@ -73,26 +129,40 @@ export function Modal({ isOpen, onClose, title, children, footer, maxWidth = '50
             .modal-title-text {
               font-size: 1.25rem;
               font-weight: 800;
+              margin: 0;
             }
 
             .modal-close-btn {
               border-radius: 50%;
               padding: 0.4rem;
               transition: var(--transition);
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              border: none;
+              cursor: pointer;
             }
 
             .modal-close-btn-with-title {
               background: var(--surface);
+              color: var(--text-primary);
             }
 
             .modal-close-btn-no-title {
               background: rgba(0,0,0,0.05);
               backdrop-filter: blur(8px);
+              color: var(--text-primary);
+            }
+
+            .modal-close-btn:hover {
+              background: var(--surface-soft);
+              color: var(--primary);
             }
 
             .modal-content-area {
               flex: 1;
               overflow-y: auto;
+              padding-top: var(--modal-content-padding, 0);
             }
 
             .modal-footer-premium {
@@ -104,11 +174,15 @@ export function Modal({ isOpen, onClose, title, children, footer, maxWidth = '50
             }
           `}</style>
           <motion.div
+            ref={modalRef}
             initial={{ scale: 0.95, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 20 }}
             className="glass-card modal-shell-premium"
-            style={{ maxWidth }}
+            style={{ 
+              '--modal-width': maxWidth,
+              '--modal-content-padding': title ? 0 : '1rem'
+            } as React.CSSProperties}
             onClick={(e) => e.stopPropagation()}
             role="dialog"
             aria-modal="true"
@@ -120,14 +194,13 @@ export function Modal({ isOpen, onClose, title, children, footer, maxWidth = '50
               <button
                 onClick={onClose}
                 className={`icon-button modal-close-btn ${title ? 'modal-close-btn-with-title' : 'modal-close-btn-no-title'}`}
-                title="Close modal"
                 aria-label="Close modal"
               >
-                <X size={20} />
+                <X size={20} aria-hidden="true" />
               </button>
             </div>
 
-            <div className="modal-content-area" style={{ paddingTop: title ? 0 : '1rem' }}>
+            <div className="modal-content-area">
               {children}
             </div>
 

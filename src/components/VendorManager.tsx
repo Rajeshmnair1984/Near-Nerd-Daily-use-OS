@@ -335,10 +335,9 @@ function VendorManager({ vendors, onAddVendor, onUpdateVendor, onDeleteVendor, l
         .vendor-matrix-page .vendor-notes {
           font-size: 0.85rem;
           color: var(--text-secondary);
-          line-clamp: 2;
           display: -webkit-box;
-          WebkitLineClamp: 2;
-          WebkitBoxOrient: vertical;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
           overflow: hidden;
         }
 

@@ -333,39 +333,7 @@ function BillManager({
           border-color: var(--primary);
           color: var(--primary);
         }
-      `}</style>
 
-      <header className="page-hero">
-        <div className="hero-content">
-          <p className="eyebrow">Financial Orchestration</p>
-          <h1>Bill Management</h1>
-          <p>Global oversight of commitments, recurring liabilities, and location-based operational expenses.</p>
-        </div>
-        <button className="premium-button button-primary" onClick={() => setShowModal(true)}>
-          <Plus size={20} />
-          <span>INITIALIZE NEW BILL</span>
-        </button>
-      </header>
-
-      <div className="metric-strip">
-        <div className="metric-card">
-          <div className="metric-icon"><Wallet size={24} /></div>
-          <div className="metric-info">
-            <span>Total Liabilities</span>
-            <strong>{formatCurrency(stats.total)}</strong>
-          </div>
-        </div>
-        <div className="metric-card">
-          <div className="metric-icon"><CreditCard size={24} /></div>
-          <div className="metric-info">
-            <span>Pending Clearance</span>
-            <strong>{formatCurrency(stats.pending)}</strong>
-          </div>
-        </div>
-        <div className="metric-card">
-          <div className="metric-icon"><PieChart size={24} /></div>
-          <div className="metric-info">
-            <span>High Risk (Overdue)</span>
         .bill-matrix-page .overdue-text {
           color: var(--error);
         }
@@ -455,6 +423,7 @@ function BillManager({
           border: none;
           cursor: pointer;
           font-weight: 800;
+          background: none;
         }
 
         .bill-matrix-page .action-group {
@@ -468,11 +437,13 @@ function BillManager({
 
         .bill-matrix-page .empty-state-container {
           padding: 4rem 0;
+          text-align: center;
         }
 
         .bill-matrix-page .empty-state-icon {
           opacity: 0.1;
           margin-bottom: 1rem;
+          margin-inline: auto;
         }
 
         .bill-matrix-page .empty-state-title {
@@ -482,37 +453,47 @@ function BillManager({
         .bill-matrix-page .empty-state-sub {
           color: var(--text-secondary);
         }
+
+        .bill-matrix-page .icon-overdue {
+          background: rgba(217, 45, 32, 0.1);
+          color: var(--error);
+        }
+
+        .bill-matrix-page .icon-normal {
+          background: rgba(0, 113, 227, 0.1);
+          color: var(--primary);
+        }
       `}</style>
 
       <header className="page-hero">
         <div className="hero-content">
           <p className="eyebrow">Financial Orchestration</p>
-          <h1>Bill Management</h1>
+          <h1 id="bill-manager-title">Bill Management</h1>
           <p>Global oversight of commitments, recurring liabilities, and location-based operational expenses.</p>
         </div>
-        <button className="premium-button button-primary" onClick={() => setShowModal(true)} title="Create new bill entry">
+        <button className="premium-button button-primary" onClick={() => setShowModal(true)} aria-label="Initialize new bill">
           <Plus size={20} aria-hidden="true" />
           <span>INITIALIZE NEW BILL</span>
         </button>
       </header>
 
-      <div className="metric-strip">
-        <div className="metric-card">
-          <div className="metric-icon"><Wallet size={24} aria-hidden="true" /></div>
+      <div className="metric-strip" role="list" aria-label="Financial summaries">
+        <div className="metric-card" role="listitem">
+          <div className="metric-icon" aria-hidden="true"><Wallet size={24} /></div>
           <div className="metric-info">
             <span>Total Liabilities</span>
             <strong>{formatCurrency(stats.total)}</strong>
           </div>
         </div>
-        <div className="metric-card">
-          <div className="metric-icon"><CreditCard size={24} aria-hidden="true" /></div>
+        <div className="metric-card" role="listitem">
+          <div className="metric-icon" aria-hidden="true"><CreditCard size={24} /></div>
           <div className="metric-info">
             <span>Pending Clearance</span>
             <strong>{formatCurrency(stats.pending)}</strong>
           </div>
         </div>
-        <div className="metric-card">
-          <div className="metric-icon"><PieChart size={24} aria-hidden="true" /></div>
+        <div className="metric-card" role="listitem">
+          <div className="metric-icon" aria-hidden="true"><PieChart size={24} /></div>
           <div className="metric-info">
             <span>High Risk (Overdue)</span>
             <strong className="overdue-text">{formatCurrency(stats.overdue)}</strong>
@@ -520,7 +501,7 @@ function BillManager({
         </div>
       </div>
 
-      <section className="panel bill-panel">
+      <section className="panel bill-panel" aria-labelledby="bill-manager-title">
         <ErrorBanner error={error} onDismiss={() => setError(null)} />
 
         <div className="bill-toolbar-premium">
@@ -532,7 +513,7 @@ function BillManager({
                 placeholder="Locate liabilities by name, location, or category..."
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
-                title="Search bills"
+                aria-label="Search liabilities"
               />
             </div>
             
@@ -552,8 +533,8 @@ function BillManager({
             <button 
               className={`export-button ${showFilters ? 'active' : ''}`}
               onClick={() => setShowFilters(!showFilters)}
-              title={showFilters ? 'Hide filters' : 'Show filters'}
               aria-expanded={showFilters}
+              aria-label={showFilters ? 'Hide advanced filters' : 'Show advanced filters'}
             >
               <Filter size={18} aria-hidden="true" />
               {showFilters ? 'HIDE FILTERS' : 'ADVANCED FILTERS'}
@@ -602,7 +583,7 @@ function BillManager({
                       <button 
                         onClick={() => { setFilterLocation('All'); setFilterVendor('All'); setFilterCategory('All'); setDateRangeFrom(''); setDateRangeTo(''); }}
                         className="export-button reset-button"
-                        title="Reset all filters"
+                        aria-label="Reset all filter coordinates"
                       >
                         <X size={14} aria-hidden="true" /> RESET COORDINATES
                       </button>
@@ -614,22 +595,22 @@ function BillManager({
           </AnimatePresence>
 
           <div className="stats-row">
-            <p className="stats-text">
+            <p className="stats-text" role="status">
               IDENTIFIED <span className="stats-count">{filteredBills.length}</span> LIABILITIES
             </p>
-            <div className="export-group" role="group" aria-label="Export options">
-              <button className="export-button" onClick={() => exportService.exportBillsToCSV(filteredBills)} title="Export to CSV"><Download size={14} aria-hidden="true" /> CSV</button>
-              <button className="export-button" onClick={() => exportService.exportBillsSummaryToCSV(filteredBills)} title="Export summary to CSV"><Download size={14} aria-hidden="true" /> SUMMARY</button>
-              <button className="export-button" onClick={() => exportService.exportBillsToText(filteredBills)} title="Export to text report"><Download size={14} aria-hidden="true" /> REPORT</button>
+            <div className="export-group" role="group" aria-label="Export orchestration data">
+              <button className="export-button" onClick={() => exportService.exportBillsToCSV(filteredBills)} aria-label="Export to CSV"><Download size={14} aria-hidden="true" /> CSV</button>
+              <button className="export-button" onClick={() => exportService.exportBillsSummaryToCSV(filteredBills)} aria-label="Export summary to CSV"><Download size={14} aria-hidden="true" /> SUMMARY</button>
+              <button className="export-button" onClick={() => exportService.exportBillsToText(filteredBills)} aria-label="Export to text report"><Download size={14} aria-hidden="true" /> REPORT</button>
             </div>
           </div>
         </div>
 
         {loading ? (
-          <div className="empty-state" aria-busy="true">Synchronizing Financial Matrix...</div>
+          <div className="empty-state" aria-busy="true" aria-live="polite">Synchronizing Financial Matrix...</div>
         ) : (
           <div className="table-wrap">
-            <table className="premium-table">
+            <table className="premium-table" aria-label="Liabilities matrix">
               <thead>
                 <tr>
                   <th scope="col">Charge Identity</th>
@@ -637,7 +618,7 @@ function BillManager({
                   <th scope="col">Amount</th>
                   <th scope="col">Temporal Coordinate</th>
                   <th scope="col">Status</th>
-                  <th scope="col" aria-label="Actions" />
+                  <th scope="col"><span className="sr-only">Actions</span></th>
                 </tr>
               </thead>
               <tbody>
@@ -650,8 +631,9 @@ function BillManager({
                         <div className="bill-title">
                           <span 
                             className={`bill-icon bill-icon-status ${isOverdue ? 'icon-overdue' : 'icon-normal'}`}
+                            aria-hidden="true"
                           >
-                            {bill.is_recurring ? <Repeat2 size={18} aria-hidden="true" /> : <Receipt size={18} aria-hidden="true" />}
+                            {bill.is_recurring ? <Repeat2 size={18} /> : <Receipt size={18} />}
                           </span>
                           <span>
                             <strong className="title-main">{bill.charge_name}</strong>
@@ -680,7 +662,7 @@ function BillManager({
                           value={bill.status}
                           onChange={(event) => onUpdateStatus(bill.id, event.target.value as BillStatus)}
                           className={`status-badge status-${bill.status.toLowerCase()} status-select`}
-                          aria-label={`Change status for ${bill.charge_name}`}
+                          aria-label={`Update status for ${bill.charge_name}`}
                         >
                           <option value="Paid">PAID</option>
                           <option value="Pending">PENDING</option>
@@ -692,8 +674,7 @@ function BillManager({
                           <button
                             className="icon-button edit-button"
                             onClick={() => setEditingBill(bill)}
-                            title={`Edit liability ${bill.charge_name}`}
-                            aria-label={`Edit ${bill.charge_name}`}
+                            aria-label={`Edit liability ${bill.charge_name}`}
                           >
                             <Edit size={16} aria-hidden="true" />
                           </button>
@@ -701,8 +682,7 @@ function BillManager({
                             className="icon-button danger"
                             disabled={deleteLoading === bill.id}
                             onClick={() => setConfirmDelete(bill.id)}
-                            title={`Archive liability ${bill.charge_name}`}
-                            aria-label={`Archive ${bill.charge_name}`}
+                            aria-label={`Archive liability ${bill.charge_name}`}
                           >
                             <Trash2 size={16} aria-hidden="true" />
                           </button>
@@ -724,23 +704,6 @@ function BillManager({
           </div>
         )}
       </section>
-
-      <style>{`
-        .bill-matrix-page .filter-actions-box {
-          display: flex;
-          align-items: flex-end;
-        }
-
-        .bill-matrix-page .icon-overdue {
-          background: rgba(217, 45, 32, 0.1);
-          color: var(--error);
-        }
-
-        .bill-matrix-page .icon-normal {
-          background: rgba(0, 113, 227, 0.1);
-          color: var(--primary);
-        }
-      `}</style>
 
       <Modal isOpen={showModal} onClose={() => setShowModal(false)} maxWidth="1000px">
         <BillForm

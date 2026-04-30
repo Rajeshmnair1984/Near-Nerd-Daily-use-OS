@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, MapPin, Receipt, Wallet, Clock, Zap } from 'lucide-react'
 import { Bill, UpdateBillInput } from '@/types/bill'
@@ -43,6 +43,14 @@ export default function BillEditForm({ bill, locations, vendors, onSave, onCance
 
   const [error, setError] = useState<string | null>(null)
 
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onCancel();
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [onCancel]);
+
   const taxTotal = useMemo(() => {
     const gst = formData.gst_amount || 0
     const pst = formData.pst_amount || 0
@@ -79,10 +87,10 @@ export default function BillEditForm({ bill, locations, vendors, onSave, onCance
   }
 
   const tabs: { id: TabType; label: string; icon: React.ReactNode }[] = [
-    { id: 'identity', label: 'Identity', icon: <Receipt size={18} /> },
-    { id: 'financials', label: 'Financials', icon: <Wallet size={18} /> },
-    { id: 'schedule', label: 'Schedule', icon: <Clock size={18} /> },
-    { id: 'logistics', label: 'Logistics', icon: <MapPin size={18} /> },
+    { id: 'identity', label: 'Identity', icon: <Receipt size={18} aria-hidden="true" /> },
+    { id: 'financials', label: 'Financials', icon: <Wallet size={18} aria-hidden="true" /> },
+    { id: 'schedule', label: 'Schedule', icon: <Clock size={18} aria-hidden="true" /> },
+    { id: 'logistics', label: 'Logistics', icon: <MapPin size={18} aria-hidden="true" /> },
   ];
 
   return (
@@ -90,17 +98,8 @@ export default function BillEditForm({ bill, locations, vendors, onSave, onCance
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      style={{
-        position: 'fixed',
-        inset: 0,
-        background: 'rgba(0, 0, 0, 0.85)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 1000,
-        padding: '1rem',
-        backdropFilter: 'blur(12px)',
-      }}
+      className="bill-edit-overlay"
+      role="presentation"
       onClick={onCancel}
     >
       <motion.div
@@ -109,8 +108,23 @@ export default function BillEditForm({ bill, locations, vendors, onSave, onCance
         exit={{ scale: 0.95, opacity: 0, y: 20 }}
         onClick={(e) => e.stopPropagation()}
         className="bill-edit-container"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="bill-edit-title"
       >
         <style>{`
+          .bill-edit-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 1rem;
+            backdrop-filter: blur(12px);
+          }
+
           .bill-edit-container {
             background: var(--bg-card);
             border-radius: 24px;
@@ -169,6 +183,9 @@ export default function BillEditForm({ bill, locations, vendors, onSave, onCance
             transition: var(--transition);
             text-align: left;
             width: 100%;
+            border: none;
+            background: none;
+            cursor: pointer;
           }
 
           .tab-button:hover {
@@ -264,7 +281,7 @@ export default function BillEditForm({ bill, locations, vendors, onSave, onCance
             margin-top: auto;
             padding: 1rem;
             background: var(--surface);
-            borderRadius: 12px;
+            border-radius: 12px;
             border: 1px solid var(--border);
             text-align: center;
           }
@@ -363,39 +380,41 @@ export default function BillEditForm({ bill, locations, vendors, onSave, onCance
 
         <div className="bill-modal-header">
           <div className="bill-modal-header-left">
-            <div className="header-icon-wrapper">
+            <div className="header-icon-wrapper" aria-hidden="true">
               <Receipt size={20} />
             </div>
-            <h1 className="header-title">Commitment Matrix: <span>{bill.charge_name}</span></h1>
+            <h1 className="header-title" id="bill-edit-title">Commitment Matrix: <span>{bill.charge_name}</span></h1>
           </div>
-          <button onClick={onCancel} className="icon-button close-button" title="Close form">
-            <X size={20} />
+          <button onClick={onCancel} className="icon-button close-button" aria-label="Close form">
+            <X size={20} aria-hidden="true" />
           </button>
         </div>
 
         <div className="bill-modal-body">
-          <aside className="bill-modal-sidebar">
+          <aside className="bill-modal-sidebar" role="tablist" aria-label="Bill sections">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
+                role="tab"
+                aria-selected={activeTab === tab.id}
+                aria-controls={`section-${tab.id}`}
                 className={`tab-button ${activeTab === tab.id ? 'active' : ''}`}
                 onClick={() => setActiveTab(tab.id)}
-                title={`Go to ${tab.label} section`}
               >
                 {tab.icon}
                 {tab.label}
               </button>
             ))}
             
-            <div className="sidebar-footer">
-               <Zap size={24} color="var(--primary)" className="sidebar-footer-icon" />
+            <div className="sidebar-footer" role="status">
+               <Zap size={24} color="var(--primary)" className="sidebar-footer-icon" aria-hidden="true" />
                <p className="sidebar-footer-text">Ledger Sync: Online</p>
             </div>
           </aside>
 
           <main className="bill-modal-content">
             {error && (
-              <div className="error-container">
+              <div className="error-container" role="alert">
                 {error}
               </div>
             )}
@@ -403,22 +422,29 @@ export default function BillEditForm({ bill, locations, vendors, onSave, onCance
             <form id="bill-edit-form" onSubmit={handleSubmit}>
               <AnimatePresence mode="wait">
                 {activeTab === 'identity' && (
-                  <motion.div key="identity" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+                  <motion.div 
+                    key="identity" 
+                    id="section-identity"
+                    role="tabpanel"
+                    initial={{ opacity: 0, y: 10 }} 
+                    animate={{ opacity: 1, y: 0 }} 
+                    exit={{ opacity: 0, y: -10 }}
+                  >
                     <div className="section-header">
-                      <h2><Receipt size={22} className="text-primary" /> Charge Identity</h2>
+                      <h2><Receipt size={22} className="text-primary" aria-hidden="true" /> Charge Identity</h2>
                     </div>
                     <div className="form-grid">
                       <div className="form-group full-width">
                         <label className="form-label" htmlFor="bill-name">BILL NAME / CHARGE IDENTITY</label>
-                        <input id="bill-name" title="Bill Name" className="form-input" value={formData.charge_name} onChange={(e) => handleInputChange('charge_name', e.target.value)} required />
+                        <input id="bill-name" className="form-input" value={formData.charge_name} onChange={(e) => handleInputChange('charge_name', e.target.value)} required aria-required="true" />
                       </div>
                       <div className="form-group">
                         <label className="form-label" htmlFor="invoice-number">INVOICE NUMBER</label>
-                        <input id="invoice-number" title="Invoice Number" className="form-input" value={formData.invoice_number || ''} onChange={(e) => handleInputChange('invoice_number', e.target.value)} placeholder="INV-0000" />
+                        <input id="invoice-number" className="form-input" value={formData.invoice_number || ''} onChange={(e) => handleInputChange('invoice_number', e.target.value)} placeholder="INV-0000" />
                       </div>
                       <div className="form-group">
                         <label className="form-label" htmlFor="category-matrix">CATEGORY MATRIX</label>
-                        <select id="category-matrix" title="Category" className="form-select" value={formData.category} onChange={(e) => handleInputChange('category', e.target.value)}>
+                        <select id="category-matrix" className="form-select" value={formData.category} onChange={(e) => handleInputChange('category', e.target.value)}>
                           <option value="Rent">Rent</option>
                           <option value="Utilities">Utilities</option>
                           <option value="Insurance">Insurance</option>
@@ -428,7 +454,7 @@ export default function BillEditForm({ bill, locations, vendors, onSave, onCance
                       </div>
                       <div className="form-group full-width">
                         <label className="form-label" htmlFor="settlement-status">SETTLEMENT STATUS</label>
-                        <select id="settlement-status" title="Status" className="form-select" value={formData.status} onChange={(e) => handleInputChange('status', e.target.value)}>
+                        <select id="settlement-status" className="form-select" value={formData.status} onChange={(e) => handleInputChange('status', e.target.value)}>
                           <option value="Pending">Pending Orchestration</option>
                           <option value="Paid">Settled (Paid)</option>
                           <option value="Overdue">High Risk (Overdue)</option>
@@ -439,29 +465,36 @@ export default function BillEditForm({ bill, locations, vendors, onSave, onCance
                 )}
 
                 {activeTab === 'financials' && (
-                  <motion.div key="financials" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+                  <motion.div 
+                    key="financials" 
+                    id="section-financials"
+                    role="tabpanel"
+                    initial={{ opacity: 0, y: 10 }} 
+                    animate={{ opacity: 1, y: 0 }} 
+                    exit={{ opacity: 0, y: -10 }}
+                  >
                     <div className="section-header">
-                      <h2><Wallet size={22} /> Financial Coordinates</h2>
+                      <h2><Wallet size={22} aria-hidden="true" /> Financial Coordinates</h2>
                     </div>
                     <div className="form-grid">
                       <div className="form-group full-width">
                         <label className="form-label" htmlFor="subtotal-matrix">SUBTOTAL (BASE AMOUNT)</label>
                         <div className="input-container">
-                          <span className="input-prefix">$</span>
-                          <input id="subtotal-matrix" title="Subtotal" type="number" step="0.01" className="form-input input-with-prefix" value={formData.subtotal} onChange={(e) => handleInputChange('subtotal', parseFloat(e.target.value) || 0)} required />
+                          <span className="input-prefix" aria-hidden="true">$</span>
+                          <input id="subtotal-matrix" type="number" step="0.01" className="form-input input-with-prefix" value={formData.subtotal} onChange={(e) => handleInputChange('subtotal', parseFloat(e.target.value) || 0)} required aria-required="true" />
                         </div>
                       </div>
                       <div className="form-group">
                         <label className="form-label" htmlFor="gst-amount">GST / VAT (5%)</label>
-                        <input id="gst-amount" title="GST Amount" type="number" step="0.01" className="form-input" value={formData.gst_amount} onChange={(e) => handleInputChange('gst_amount', parseFloat(e.target.value) || 0)} />
+                        <input id="gst-amount" type="number" step="0.01" className="form-input" value={formData.gst_amount} onChange={(e) => handleInputChange('gst_amount', parseFloat(e.target.value) || 0)} />
                       </div>
                       <div className="form-group">
                         <label className="form-label" htmlFor="pst-amount">PST / LOCAL (7%)</label>
-                        <input id="pst-amount" title="PST Amount" type="number" step="0.01" className="form-input" value={formData.pst_amount} onChange={(e) => handleInputChange('pst_amount', parseFloat(e.target.value) || 0)} />
+                        <input id="pst-amount" type="number" step="0.01" className="form-input" value={formData.pst_amount} onChange={(e) => handleInputChange('pst_amount', parseFloat(e.target.value) || 0)} />
                       </div>
                       <div className="form-group full-width">
                         <label className="form-label" htmlFor="payment-instrument">PAYMENT INSTRUMENT</label>
-                        <select id="payment-instrument" title="Payment Method" className="form-select" value={formData.payment_method || ''} onChange={(e) => handleInputChange('payment_method', e.target.value)}>
+                        <select id="payment-instrument" className="form-select" value={formData.payment_method || ''} onChange={(e) => handleInputChange('payment_method', e.target.value)}>
                           <option value="">Select Method</option>
                           <option value="Bank Transfer">Bank Transfer (EFT)</option>
                           <option value="Credit Card">Credit Card</option>
@@ -472,7 +505,7 @@ export default function BillEditForm({ bill, locations, vendors, onSave, onCance
                       </div>
                     </div>
 
-                    <div className="financial-summary">
+                    <div className="financial-summary" role="complementary" aria-label="Financial summary">
                       <div className="summary-row"><span>Subtotal Matrix:</span><span>{formatCurrency(formData.subtotal || 0)}</span></div>
                       <div className="summary-row"><span>Tax Accumulation:</span><span>{formatCurrency(taxTotal)}</span></div>
                       <div className="summary-row total-row"><span>Total Commitment:</span><span>{formatCurrency(totalAmount)}</span></div>
@@ -481,23 +514,30 @@ export default function BillEditForm({ bill, locations, vendors, onSave, onCance
                 )}
 
                 {activeTab === 'schedule' && (
-                  <motion.div key="schedule" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+                  <motion.div 
+                    key="schedule" 
+                    id="section-schedule"
+                    role="tabpanel"
+                    initial={{ opacity: 0, y: 10 }} 
+                    animate={{ opacity: 1, y: 0 }} 
+                    exit={{ opacity: 0, y: -10 }}
+                  >
                     <div className="section-header">
-                      <h2><Clock size={22} /> Temporal Range</h2>
+                      <h2><Clock size={22} aria-hidden="true" /> Temporal Range</h2>
                     </div>
                     <div className="form-grid">
                       <div className="form-group">
                         <label className="form-label" htmlFor="bill-date">INVOICE / BILL DATE</label>
-                        <input id="bill-date" title="Bill Date" type="date" className="form-input" value={formData.date} onChange={(e) => handleInputChange('date', e.target.value)} />
+                        <input id="bill-date" type="date" className="form-input" value={formData.date} onChange={(e) => handleInputChange('date', e.target.value)} />
                       </div>
                       <div className="form-group">
                         <label className="form-label" htmlFor="due-date">DUE DATE</label>
-                        <input id="due-date" title="Due Date" type="date" className="form-input" value={formData.due_date} onChange={(e) => handleInputChange('due_date', e.target.value)} />
+                        <input id="due-date" type="date" className="form-input" value={formData.due_date} onChange={(e) => handleInputChange('due_date', e.target.value)} />
                       </div>
                       
                       <div className="form-group full-width recurring-section">
                         <label className="recurring-label-inner" htmlFor="is-recurring">
-                          <input id="is-recurring" title="Recurring Toggle" type="checkbox" checked={formData.is_recurring} onChange={(e) => handleInputChange('is_recurring', e.target.checked)} className="recurring-checkbox" />
+                          <input id="is-recurring" type="checkbox" checked={formData.is_recurring} onChange={(e) => handleInputChange('is_recurring', e.target.checked)} className="recurring-checkbox" />
                           <div>
                             <p className="recurring-text-main">ENABLE RECURRING ORCHESTRATION</p>
                             <p className="recurring-text-sub">Automatically generate the next liability entry in the ledger.</p>
@@ -509,7 +549,7 @@ export default function BillEditForm({ bill, locations, vendors, onSave, onCance
                         <>
                           <div className="form-group">
                             <label className="form-label" htmlFor="recurring-frequency">RECURRENCE FREQUENCY</label>
-                            <select id="recurring-frequency" title="Frequency" className="form-select" value={formData.recurring_frequency} onChange={(e) => handleInputChange('recurring_frequency', e.target.value)}>
+                            <select id="recurring-frequency" className="form-select" value={formData.recurring_frequency} onChange={(e) => handleInputChange('recurring_frequency', e.target.value)}>
                               <option value="monthly">Monthly</option>
                               <option value="weekly">Weekly</option>
                               <option value="quarterly">Quarterly</option>
@@ -518,7 +558,7 @@ export default function BillEditForm({ bill, locations, vendors, onSave, onCance
                           </div>
                           <div className="form-group">
                             <label className="form-label" htmlFor="recurring-end-date">TERMINATION DATE</label>
-                            <input id="recurring-end-date" title="End Date" type="date" className="form-input" value={formData.recurring_end_date || ''} onChange={(e) => handleInputChange('recurring_end_date', e.target.value)} />
+                            <input id="recurring-end-date" type="date" className="form-input" value={formData.recurring_end_date || ''} onChange={(e) => handleInputChange('recurring_end_date', e.target.value)} />
                           </div>
                         </>
                       )}
@@ -527,27 +567,34 @@ export default function BillEditForm({ bill, locations, vendors, onSave, onCance
                 )}
 
                 {activeTab === 'logistics' && (
-                  <motion.div key="logistics" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+                  <motion.div 
+                    key="logistics" 
+                    id="section-logistics"
+                    role="tabpanel"
+                    initial={{ opacity: 0, y: 10 }} 
+                    animate={{ opacity: 1, y: 0 }} 
+                    exit={{ opacity: 0, y: -10 }}
+                  >
                     <div className="section-header">
-                      <h2><MapPin size={22} /> Logistics & Intelligence</h2>
+                      <h2><MapPin size={22} aria-hidden="true" /> Logistics & Intelligence</h2>
                     </div>
                     <div className="form-grid">
                       <div className="form-group">
                         <label className="form-label" htmlFor="location-coordinate">LOCATION COORDINATE</label>
-                        <select id="location-coordinate" title="Location" className="form-select" value={formData.location_id} onChange={(e) => handleInputChange('location_id', e.target.value)}>
+                        <select id="location-coordinate" className="form-select" value={formData.location_id} onChange={(e) => handleInputChange('location_id', e.target.value)}>
                           {locations.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
                         </select>
                       </div>
                       <div className="form-group">
                         <label className="form-label" htmlFor="vendor-identity">VENDOR IDENTITY</label>
-                        <select id="vendor-identity" title="Vendor" className="form-select" value={formData.vendor_id || ''} onChange={(e) => handleInputChange('vendor_id', e.target.value)}>
+                        <select id="vendor-identity" className="form-select" value={formData.vendor_id || ''} onChange={(e) => handleInputChange('vendor_id', e.target.value)}>
                           <option value="">No Vendor Assigned</option>
                           {vendors.map(v => <option key={v.id} value={v.id}>{v.name}</option>)}
                         </select>
                       </div>
                       <div className="form-group full-width">
                         <label className="form-label" htmlFor="operational-notes">OPERATIONAL NOTES</label>
-                        <textarea id="operational-notes" className="form-textarea textarea-fixed" value={formData.notes || ''} onChange={(e) => handleInputChange('notes', e.target.value)} placeholder="Technical details, dispute logs, or internal comments..." title="Notes" />
+                        <textarea id="operational-notes" className="form-textarea textarea-fixed" value={formData.notes || ''} onChange={(e) => handleInputChange('notes', e.target.value)} placeholder="Technical details, dispute logs, or internal comments..." />
                       </div>
                     </div>
                   </motion.div>

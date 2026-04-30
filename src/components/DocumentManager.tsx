@@ -220,20 +220,6 @@ function DocumentManager({
           gap: 0.6rem;
           transition: var(--transition);
         }
-      `}</style>
-
-      <header className="page-hero">
-        <div className="hero-content">
-          <p className="eyebrow">Intellectual Vault</p>
-          <h1>Document Matrix</h1>
-          <p>Orchestrate leases, insurance protocols, permits, and critical agreements in a secure digital environment.</p>
-        </div>
-        <button className="premium-button button-primary" onClick={() => setIsModalOpen(true)}>
-          <Plus size={20} />
-          <span>INITIALIZE DOCUMENT</span>
-        </button>
-      </header>
-
         .document-vault-page .metric-label {
           font-size: 0.7rem;
           font-weight: 800;
@@ -362,7 +348,6 @@ function DocumentManager({
           font-size: 0.85rem;
           color: var(--text-secondary);
           font-style: italic;
-          line-clamp: 2;
           display: -webkit-box;
           -webkit-line-clamp: 2;
           -webkit-box-orient: vertical;
@@ -496,7 +481,7 @@ function DocumentManager({
         }
 
         .document-vault-page .progress-bar-container {
-          marginTop: 1rem;
+          margin-top: 1rem;
           background: var(--border);
           border-radius: 100px;
           height: 6px;
@@ -512,7 +497,7 @@ function DocumentManager({
         .document-vault-page .modal-footer-btns {
           display: flex;
           gap: 1rem;
-          marginTop: 1rem;
+          margin-top: 1rem;
         }
 
         .document-vault-page .btn-discard {
@@ -532,28 +517,28 @@ function DocumentManager({
           <p>Orchestrate leases, insurance protocols, permits, and critical agreements in a secure digital environment.</p>
         </div>
         <button className="premium-button button-primary" onClick={() => setIsModalOpen(true)} title="Initialize new document">
-          <Plus size={20} />
+          <Plus size={20} aria-hidden="true" />
           <span>INITIALIZE DOCUMENT</span>
         </button>
       </header>
 
-      <div className="metric-strip">
-        <div className="metric-card">
-          <div className="metric-icon"><HardDrive size={22} /></div>
+      <div className="metric-strip" role="list">
+        <div className="metric-card" role="listitem">
+          <div className="metric-icon"><HardDrive size={22} aria-hidden="true" /></div>
           <div>
             <span className="metric-label">Vault Capacity</span>
             <strong className="metric-value">{documents.length} Records</strong>
           </div>
         </div>
-        <div className="metric-card">
-          <div className="metric-icon metric-attention"><Clock size={22} /></div>
+        <div className="metric-card" role="listitem">
+          <div className="metric-icon metric-attention"><Clock size={22} aria-hidden="true" /></div>
           <div>
             <span className="metric-label">Attention Required</span>
             <strong className="metric-value metric-value-attention">{reviewCount} Documents</strong>
           </div>
         </div>
-        <div className="metric-card">
-          <div className="metric-icon metric-matrix"><FileCheck size={22} /></div>
+        <div className="metric-card" role="listitem">
+          <div className="metric-icon metric-matrix"><FileCheck size={22} aria-hidden="true" /></div>
           <div>
             <span className="metric-label">Category Matrix</span>
             <strong className="metric-value">{categoryCount} Types</strong>
@@ -563,31 +548,32 @@ function DocumentManager({
 
       <ErrorBanner error={error} onDismiss={() => setError(null)} />
 
-      <section className="panel" style={{ background: 'transparent', border: 'none', padding: 0 }}>
-        <div className="toolbar-container">
+      <section className="document-panel-container">
+        <div className="toolbar-container" aria-label="Search and filter documents">
           <div className="search-box-premium">
-            <Search size={19} className="text-secondary" />
+            <Search size={19} className="text-secondary" aria-hidden="true" />
+            <label htmlFor="document-search" className="sr-only">Search documents</label>
             <input
+              id="document-search"
               type="text"
               placeholder="Search document vault by title, owner, or status..."
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               className="search-input-premium"
-              title="Search documents"
             />
           </div>
         </div>
 
         {loading ? (
-          <div className="empty-state">Synchronizing Document Vault...</div>
+          <div className="empty-state" aria-busy="true">Synchronizing Document Vault...</div>
         ) : filteredDocuments.length === 0 ? (
           <div className="empty-state empty-state-large">
-            <FileText size={64} className="empty-state-icon-large" />
+            <FileText size={64} className="empty-state-icon-large" aria-hidden="true" />
             <h3 className="empty-state-title-large">No Document Coordinates Identified</h3>
             <p className="empty-state-sub-large">Adjust your search or initialize a new record.</p>
           </div>
         ) : (
-          <div className="document-grid-premium">
+          <div className="document-grid-premium" role="list" aria-label="Document records">
             {filteredDocuments.map((item) => (
               <motion.article 
                 layout
@@ -595,31 +581,34 @@ function DocumentManager({
                 animate={{ opacity: 1, scale: 1 }}
                 className="premium-doc-card" 
                 key={item.id}
+                role="listitem"
+                aria-labelledby={`doc-title-${item.id}`}
               >
                 <div className="card-header">
-                  <div className="doc-type-icon">
+                  <div className="doc-type-icon" aria-hidden="true">
                     <FileText size={22} />
                   </div>
                   <span
                     className={`status-badge status-${item.status.toLowerCase().replace(' ', '-')} card-status-badge`}
+                    role="status"
                   >
                     {item.status.toUpperCase()}
                   </span>
                 </div>
 
                 <div>
-                  <h2 className="card-title">{item.title}</h2>
+                  <h2 className="card-title" id={`doc-title-${item.id}`}>{item.title}</h2>
                   <p className="card-category">{item.category}</p>
                 </div>
 
                 <div className="card-logistics">
                   <div className="logistics-item">
-                    <Shield size={14} className="text-secondary" />
-                    <span className="logistics-label">Owner: <span className="logistics-value">{item.owner || 'Unassigned'}</span></span>
+                    <Shield size={14} className="text-secondary" aria-hidden="true" />
+                    <span className="logistics-label">Owner: <span className="logistics-value" aria-label={`Owner: ${item.owner || 'Unassigned'}`}>{item.owner || 'Unassigned'}</span></span>
                   </div>
                   <div className="logistics-item">
-                    <Clock size={14} className="text-secondary" />
-                    <span className="logistics-label">Renewal: <span className={`logistics-value ${item.status === 'Needs Review' ? 'renewal-alert' : ''}`}>{item.renewal_date || 'N/A'}</span></span>
+                    <Clock size={14} className="text-secondary" aria-hidden="true" />
+                    <span className="logistics-label">Renewal: <span className={`logistics-value ${item.status === 'Needs Review' ? 'renewal-alert' : ''}`} aria-label={`Renewal date: ${item.renewal_date || 'N/A'}`}>{item.renewal_date || 'N/A'}</span></span>
                   </div>
                 </div>
 
@@ -637,24 +626,27 @@ function DocumentManager({
                       rel="noreferrer"
                       className="button-primary open-vault-link"
                       title="Open file in vault"
+                      aria-label={`Open file for ${item.title}`}
                     >
-                      <ExternalLink size={14} /> OPEN VAULT
+                      <ExternalLink size={14} aria-hidden="true" /> OPEN VAULT
                     </a>
                   )}
                   <button
                     className="icon-button edit-icon-button"
                     onClick={() => setEditingDocument(item)}
-                    title="Edit document"
+                    title={`Edit ${item.title}`}
+                    aria-label={`Edit ${item.title}`}
                   >
-                    <Edit size={16} />
+                    <Edit size={16} aria-hidden="true" />
                   </button>
                   <button
                     className="icon-button danger delete-icon-button"
                     disabled={deleteLoading === item.id}
                     onClick={() => setConfirmDelete(item.id)}
-                    title="Purge document"
+                    title={`Purge ${item.title}`}
+                    aria-label={`Archive ${item.title}`}
                   >
-                    <Trash2 size={16} />
+                    <Trash2 size={16} aria-hidden="true" />
                   </button>
                 </div>
               </motion.article>
@@ -666,7 +658,7 @@ function DocumentManager({
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} maxWidth="700px">
         <div className="init-modal-container">
           <div className="init-header">
-            <div className="init-icon-wrapper">
+            <div className="init-icon-wrapper" aria-hidden="true">
               <Plus size={24} className="init-icon" />
             </div>
             <div>
@@ -682,10 +674,10 @@ function DocumentManager({
                 id="new-doc-title"
                 className="form-input"
                 required
+                aria-required="true"
                 placeholder="e.g., Master Services Agreement 2024"
                 value={document.title}
                 onChange={(event) => setDocument({ ...document, title: event.target.value })}
-                title="Document Title"
               />
             </div>
 
@@ -696,10 +688,10 @@ function DocumentManager({
                   id="new-doc-category"
                   className="form-input"
                   required
+                  aria-required="true"
                   placeholder="Lease, Insurance, Permit..."
                   value={document.category}
                   onChange={(event) => setDocument({ ...document, category: event.target.value })}
-                  title="Category"
                 />
               </div>
               <div className="form-group">
@@ -711,7 +703,6 @@ function DocumentManager({
                   onChange={(event) =>
                     setDocument({ ...document, status: event.target.value as DocumentRecord['status'] })
                   }
-                  title="Status"
                 >
                   <option value="Active">Active / Valid</option>
                   <option value="Needs Review">Needs Attention</option>
@@ -729,7 +720,6 @@ function DocumentManager({
                   placeholder="Responsible Entity"
                   value={document.owner}
                   onChange={(event) => setDocument({ ...document, owner: event.target.value })}
-                  title="Owner"
                 />
               </div>
               <div className="form-group">
@@ -740,7 +730,6 @@ function DocumentManager({
                   type="date"
                   value={document.renewal_date}
                   onChange={(event) => setDocument({ ...document, renewal_date: event.target.value })}
-                  title="Renewal Date"
                 />
               </div>
             </div>
@@ -748,7 +737,7 @@ function DocumentManager({
             <div className="form-group">
               <label className="form-label">FILE ORCHESTRATION</label>
               <label className={`upload-box ${uploadFile ? 'upload-box-active' : 'upload-box-inactive'}`}>
-                <Upload size={32} color={uploadFile ? 'var(--primary)' : 'var(--text-secondary)'} className="upload-icon" />
+                <Upload size={32} color={uploadFile ? 'var(--primary)' : 'var(--text-secondary)'} className="upload-icon" aria-hidden="true" />
                 <span className={`upload-text-main ${uploadFile ? 'upload-text-main-active' : 'upload-text-main-inactive'}`}>
                   {uploadFile ? uploadFile.name : 'CLICK TO UPLOAD DIGITAL ASSET'}
                 </span>
@@ -758,11 +747,18 @@ function DocumentManager({
                   onChange={(event) => setUploadFile(event.target.files?.[0] || null)}
                   className="hidden-file-input"
                   accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg"
-                  title="Upload file"
+                  aria-label="Upload document file"
                 />
               </label>
               {uploadProgress > 0 && uploadProgress < 100 && (
-                <div className="progress-bar-container">
+                <div 
+                  className="progress-bar-container" 
+                  role="progressbar" 
+                  aria-valuenow={uploadProgress} 
+                  aria-valuemin={0} 
+                  aria-valuemax={100}
+                  aria-label="File upload progress"
+                >
                   <div className="progress-bar-fill" style={{ width: `${uploadProgress}%` }} />
                 </div>
               )}
@@ -777,7 +773,6 @@ function DocumentManager({
                 placeholder="https://cloud-storage.com/asset..."
                 value={document.file_url}
                 onChange={(event) => setDocument({ ...document, file_url: event.target.value })}
-                title="External URL"
               />
             </div>
 
@@ -790,50 +785,20 @@ function DocumentManager({
                 placeholder="Internal references, terms, or context..."
                 value={document.notes}
                 onChange={(event) => setDocument({ ...document, notes: event.target.value })}
-                title="Notes"
               />
             </div>
 
             <div className="modal-footer-btns">
-              <button type="button" className="button-secondary btn-discard" onClick={() => setIsModalOpen(false)} title="Discard changes">
+              <button type="button" className="button-secondary btn-discard" onClick={() => setIsModalOpen(false)}>
                 DISCARD
               </button>
-              <button type="submit" className="button-primary btn-commit" disabled={isSaving} title="Commit document to vault">
-                {isSaving ? 'UPLOADING...' : 'COMMIT TO VAULT'}
+              <button type="submit" className="button-primary btn-commit" disabled={isSaving}>
+                {isSaving ? 'INITIALIZING...' : 'COMMIT TO VAULT'}
               </button>
             </div>
           </form>
         </div>
       </Modal>
-
-      <AnimatePresence>
-        {editingDocument && (
-          <DocumentEditForm
-            document={editingDocument}
-            onSave={handleEditDocument}
-            onCancel={() => setEditingDocument(null)}
-            loading={editLoading}
-          />
-        )}
-      </AnimatePresence>
-
-      <ConfirmationModal
-        isOpen={confirmDelete !== null}
-        title="Purge Document"
-        message="Are you sure you want to purge this document record from the vault? This orchestration is irreversible."
-        confirmLabel="Purge"
-        cancelLabel="Keep"
-        isDangerous
-        isLoading={deleteLoading !== null}
-        onConfirm={() => {
-          if (confirmDelete) {
-            handleDeleteDocument(confirmDelete);
-            setConfirmDelete(null);
-          }
-        }}
-        onCancel={() => setConfirmDelete(null)}
-      />
-    </div>
 
       <AnimatePresence>
         {editingDocument && (
