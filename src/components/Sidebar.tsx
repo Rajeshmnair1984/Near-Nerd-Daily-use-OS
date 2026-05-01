@@ -137,7 +137,7 @@ function Sidebar({
           width: 52px;
           height: 52px;
           border-radius: 14px;
-          background: linear-gradient(135deg, var(--primary) 0%, #00c6ff 100%);
+          background: linear-gradient(135deg, var(--primary) 0%, var(--info-bright) 100%);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -438,7 +438,7 @@ function Sidebar({
           <div
             className="status-dot"
             style={{
-              background: isSupabaseConfigured ? "#10b981" : "#f59e0b",
+              background: isSupabaseConfigured ? "var(--success-bright)" : "var(--warning-bright)",
               boxShadow: isSupabaseConfigured
                 ? "0 0 12px rgba(16, 185, 129, 0.4)"
                 : "0 0 12px rgba(245, 158, 11, 0.4)",
@@ -447,7 +447,7 @@ function Sidebar({
           />
           <span
             className="status-text"
-            style={{ color: isSupabaseConfigured ? "#10b981" : "#f59e0b" }}
+            style={{ color: isSupabaseConfigured ? "var(--success-bright)" : "var(--warning-bright)" }}
           >
             {isSupabaseConfigured ? "Cloud Sync Online" : "Local Sandbox"}
           </span>

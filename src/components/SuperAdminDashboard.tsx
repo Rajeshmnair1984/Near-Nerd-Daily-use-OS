@@ -112,7 +112,7 @@ const SuperAdminDashboard = () => {
           font-size: 3rem;
           font-weight: 900;
           margin-bottom: 0.5rem;
-          background: linear-gradient(to right, var(--primary), #a78bfa);
+          background: linear-gradient(to right, var(--primary), var(--info-bright));
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
           letter-spacing: -0.04em;
@@ -226,7 +226,7 @@ const SuperAdminDashboard = () => {
           padding: 0.35rem 0.9rem;
           border-radius: 100px;
           background: rgba(52, 168, 83, 0.1);
-          color: #34a853;
+          color: var(--green-bright);
           font-weight: 800;
           text-transform: uppercase;
         }

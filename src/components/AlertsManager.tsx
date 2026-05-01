@@ -54,7 +54,7 @@ const AlertsManager: FC<AlertsManagerProps> = ({
           title: `Overdue Payment: ${bill.charge_name}`,
           description: `Settlement coordinate: ${bill.date} • Impact: ${formatCurrency(bill.amount)}`,
           icon: AlertCircle,
-          color: "#ef4444",
+          color: "var(--error-bright)",
           actionItem: "SETTLE IMMEDIATELY",
           severity: "high",
         });
@@ -73,7 +73,7 @@ const AlertsManager: FC<AlertsManagerProps> = ({
             title: `Imminent Commitment: ${bill.charge_name}`,
             description: `Timeline coordinate: ${bill.date} • Volume: ${formatCurrency(bill.amount)}`,
             icon: Clock,
-            color: "#f59e0b",
+            color: "var(--warning-bright)",
             actionItem: "ORCHESTRATE PAYMENT",
             severity: "medium",
           });
@@ -90,7 +90,7 @@ const AlertsManager: FC<AlertsManagerProps> = ({
           title: `Vault Review Required: ${doc.title}`,
           description: `Intel Category: ${doc.category}${doc.owner ? ` • Entity: ${doc.owner}` : ""}`,
           icon: FileText,
-          color: "#0071e3",
+          color: "var(--primary)",
           actionItem: "VERIFY INTEL",
           severity: "medium",
         });
@@ -113,7 +113,7 @@ const AlertsManager: FC<AlertsManagerProps> = ({
             title: `Vault Renewal Approaching: ${doc.title}`,
             description: `Renewal coordinate: ${doc.renewal_date} • ${daysUntilRenewal} days remaining`,
             icon: RefreshCw,
-            color: "#34a853",
+            color: "var(--green-bright)",
             actionItem: "EXTEND CLEARANCE",
             severity: "low",
           });

@@ -108,10 +108,10 @@ function LocationManager({
       <style>{`
         .matrix-page .page-hero {
           background: linear-gradient(135deg, var(--surface) 0%, var(--surface-soft) 100%);
-          padding: 3.5rem;
-          border-radius: 40px;
+          padding: 2.5rem;
+          border-radius: 24px;
           border: 1px solid var(--border);
-          margin-bottom: 3.5rem;
+          margin-bottom: 2.5rem;
           display: flex;
           justify-content: space-between;
           align-items: center;
@@ -120,18 +120,18 @@ function LocationManager({
         }
 
         .matrix-page .hero-content h1 {
-          font-size: 4rem;
-          font-weight: 950;
-          letter-spacing: -0.06em;
-          line-height: 0.9;
-          margin-bottom: 1.25rem;
-          background: linear-gradient(to right, var(--text-primary) 20%, var(--primary) 100%);
+          font-size: 3rem;
+          font-weight: 900;
+          letter-spacing: -0.04em;
+          line-height: 1;
+          margin-bottom: 0.75rem;
+          background: linear-gradient(to right, var(--text-primary), var(--primary));
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
         }
 
         .matrix-page .hero-content p {
-          font-size: 1.35rem;
+          font-size: 1.15rem;
           color: var(--text-secondary);
           max-width: 600px;
           font-weight: 600;
@@ -147,12 +147,12 @@ function LocationManager({
 
         .matrix-page .metric-card {
           background: var(--bg-card);
-          padding: 2rem;
-          border-radius: 32px;
+          padding: 1.5rem;
+          border-radius: 20px;
           border: 1px solid var(--border);
           display: flex;
           align-items: center;
-          gap: 1.5rem;
+          gap: 1.25rem;
           box-shadow: var(--shadow-sm);
           transition: var(--transition);
         }
@@ -164,15 +164,14 @@ function LocationManager({
         }
 
         .matrix-page .metric-icon {
-          width: 64px;
-          height: 64px;
-          border-radius: 20px;
-          background: linear-gradient(135deg, rgba(0, 113, 227, 0.15), rgba(0, 113, 227, 0.05));
+          width: 54px;
+          height: 54px;
+          border-radius: 16px;
+          background: rgba(0, 113, 227, 0.08);
           color: var(--primary);
           display: flex;
           align-items: center;
           justify-content: center;
-          border: 1px solid rgba(0, 113, 227, 0.2);
         }
 
         .matrix-page .metric-info span {
@@ -187,11 +186,11 @@ function LocationManager({
 
         .matrix-page .metric-info strong {
           display: block;
-          font-size: 2.5rem;
-          font-weight: 950;
+          font-size: 1.75rem;
+          font-weight: 900;
           color: var(--text-primary);
           line-height: 1;
-          letter-spacing: -0.04em;
+          letter-spacing: -0.02em;
         }
 
         .matrix-page .asset-grid {
@@ -202,12 +201,12 @@ function LocationManager({
 
         .matrix-page .asset-card {
           background: var(--bg-card);
-          border-radius: 32px;
+          border-radius: 24px;
           border: 1px solid var(--border);
-          padding: 2.25rem;
+          padding: 1.75rem;
           display: flex;
           flex-direction: column;
-          gap: 1.75rem;
+          gap: 1.5rem;
           position: relative;
           transition: var(--transition);
           overflow: hidden;
@@ -240,9 +239,9 @@ function LocationManager({
         }
 
         .matrix-page .asset-icon-box {
-          width: 56px;
-          height: 56px;
-          border-radius: 18px;
+          width: 52px;
+          height: 52px;
+          border-radius: 14px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -250,7 +249,7 @@ function LocationManager({
         }
 
         .matrix-page .asset-title h3 {
-          font-size: 1.5rem;
+          font-size: 1.25rem;
           font-weight: 900;
           color: var(--text-primary);
           margin-bottom: 0.4rem;
@@ -268,9 +267,9 @@ function LocationManager({
           display: flex;
           flex-direction: column;
           gap: 1rem;
-          padding: 1.5rem;
+          padding: 1.25rem;
           background: var(--surface-soft);
-          border-radius: 20px;
+          border-radius: 16px;
           border: 1px solid var(--border);
         }
 
@@ -294,7 +293,7 @@ function LocationManager({
         }
 
         .matrix-page .search-field {
-          padding: 1.25rem 2rem;
+          padding: 0.8rem 1.5rem;
           border-radius: 100px;
           background: var(--surface);
           border: 1px solid var(--border);
@@ -324,8 +323,8 @@ function LocationManager({
           letter-spacing: 0.1em;
           text-transform: uppercase;
           color: var(--text-secondary);
-          margin-top: 2rem;
-          font-size: 0.85rem;
+          margin-top: 1.5rem;
+          font-size: 0.8rem;
         }
 
         .matrix-page .empty-state-wrap {
@@ -343,9 +342,9 @@ function LocationManager({
         }
 
         .matrix-page .empty-title {
-          font-size: 2.5rem;
-          font-weight: 950;
-          letter-spacing: -0.04em;
+          font-size: 2rem;
+          font-weight: 900;
+          letter-spacing: -0.03em;
           margin-bottom: 1rem;
         }
 
@@ -361,7 +360,7 @@ function LocationManager({
           background: var(--primary);
           color: white;
           border-radius: 100px;
-          font-weight: 950;
+          font-weight: 900;
           font-size: 1.05rem;
           display: flex;
           align-items: center;
@@ -381,7 +380,7 @@ function LocationManager({
         .matrix-page .manage-btn {
           flex: 1;
           height: 3.5rem;
-          border-radius: 18px;
+          border-radius: 14px;
           font-size: 0.95rem;
           font-weight: 900;
           display: flex;
@@ -394,7 +393,7 @@ function LocationManager({
         .matrix-page .delete-btn {
           width: 3.5rem;
           height: 3.5rem;
-          border-radius: 18px;
+          border-radius: 14px;
           background: rgba(217, 45, 32, 0.05);
           color: var(--error);
           display: flex;

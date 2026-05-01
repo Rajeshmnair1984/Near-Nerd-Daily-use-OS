@@ -186,7 +186,7 @@ function SettingsView({
         .settings-premium-page .saved-status {
           padding: 0.75rem 1.5rem;
           background: rgba(52, 168, 83, 0.1);
-          color: #34a853;
+          color: var(--green-bright);
           border-radius: 100px;
           font-weight: 800;
           font-size: 0.85rem;
@@ -205,9 +205,9 @@ function SettingsView({
         }
 
         .settings-premium-page .icon-blue { background: rgba(0, 113, 227, 0.1); color: var(--primary); }
-        .settings-premium-page .icon-orange { background: rgba(255, 149, 0, 0.1); color: #ff9500; }
-        .settings-premium-page .icon-red { background: rgba(255, 76, 0, 0.1); color: #ff4c00; }
-        .settings-premium-page .icon-green { background: rgba(52, 168, 83, 0.1); color: #34a853; }
+        .settings-premium-page .icon-orange { background: rgba(255, 149, 0, 0.1); color: var(--orange-bright); }
+        .settings-premium-page .icon-red { background: rgba(255, 76, 0, 0.1); color: var(--error-bright); }
+        .settings-premium-page .icon-green { background: rgba(52, 168, 83, 0.1); color: var(--green-bright); }
 
         .settings-premium-page .settings-form {
           display: flex;
@@ -319,7 +319,7 @@ function SettingsView({
         }
 
         .settings-premium-page .health-optimized {
-          color: #34a853;
+          color: var(--green-bright);
         }
 
         .settings-premium-page .supabase-banner {

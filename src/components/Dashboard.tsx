@@ -147,10 +147,10 @@ function Dashboard({ stats, bills, loading }: DashboardProps) {
       <style>{`
         .dashboard-premium-page .page-hero {
           background: linear-gradient(135deg, var(--surface) 0%, var(--surface-soft) 100%);
-          padding: 3.5rem;
-          border-radius: 40px;
+          padding: 2.5rem;
+          border-radius: 24px;
           border: 1px solid var(--border);
-          margin-bottom: 3.5rem;
+          margin-bottom: 2.5rem;
           display: flex;
           justify-content: space-between;
           align-items: center;
@@ -172,12 +172,12 @@ function Dashboard({ stats, bills, loading }: DashboardProps) {
         }
 
         .dashboard-premium-page .hero-content h1 {
-          font-size: 4rem;
-          font-weight: 950;
-          letter-spacing: -0.06em;
-          line-height: 0.9;
-          margin-bottom: 1.25rem;
-          background: linear-gradient(to right, var(--text-primary) 20%, var(--primary) 100%);
+          font-size: 3rem;
+          font-weight: 900;
+          letter-spacing: -0.04em;
+          line-height: 1;
+          margin-bottom: 0.75rem;
+          background: linear-gradient(to right, var(--text-primary), var(--primary));
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
           z-index: 1;
@@ -185,9 +185,9 @@ function Dashboard({ stats, bills, loading }: DashboardProps) {
         }
 
         .dashboard-premium-page .hero-content p {
-          font-size: 1.35rem;
+          font-size: 1.15rem;
           color: var(--text-secondary);
-          max-width: 550px;
+          max-width: 600px;
           font-weight: 600;
           z-index: 1;
           position: relative;
@@ -196,10 +196,10 @@ function Dashboard({ stats, bills, loading }: DashboardProps) {
 
         .dashboard-premium-page .hero-eyebrow {
           color: var(--primary);
-          font-weight: 950;
-          letter-spacing: 0.2em;
+          font-weight: 800;
+          letter-spacing: 0.1em;
           text-transform: uppercase;
-          font-size: 0.85rem;
+          font-size: 0.8rem;
           margin-bottom: 0.5rem;
           display: block;
         }
@@ -223,19 +223,19 @@ function Dashboard({ stats, bills, loading }: DashboardProps) {
           display: flex;
           align-items: center;
           gap: 0.6rem;
-          color: #10b981;
+          color: var(--success-bright);
           font-weight: 950;
           font-size: 1.15rem;
         }
 
         .stat-card-shell {
-          padding: 2.25rem;
+          padding: 1.5rem;
           flex: 1;
-          min-width: 320px;
+          min-width: 280px;
           position: relative;
           overflow: hidden;
           background: var(--bg-card);
-          border-radius: 32px;
+          border-radius: 20px;
           border: 1px solid var(--border);
           transition: var(--transition);
         }
@@ -257,13 +257,13 @@ function Dashboard({ stats, bills, loading }: DashboardProps) {
         .stat-card-header {
           display: flex;
           justify-content: space-between;
-          margin-bottom: 1.75rem;
+          margin-bottom: 1.25rem;
         }
 
         .stat-card-icon-box {
-          width: 56px;
-          height: 56px;
-          border-radius: 18px;
+          width: 48px;
+          height: 48px;
+          border-radius: 14px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -283,8 +283,8 @@ function Dashboard({ stats, bills, loading }: DashboardProps) {
           height: fit-content;
         }
 
-        .trend-up { color: #10b981; background: rgba(16, 185, 129, 0.12); }
-        .trend-down { color: #ef4444; background: rgba(239, 68, 68, 0.12); }
+        .trend-up { color: var(--success-bright); background: rgba(16, 185, 129, 0.12); }
+        .trend-down { color: var(--error-bright); background: rgba(239, 68, 68, 0.12); }
 
         .stat-label-text {
           color: var(--text-secondary);
@@ -296,9 +296,9 @@ function Dashboard({ stats, bills, loading }: DashboardProps) {
         }
 
         .stat-value-text {
-          font-size: 2.75rem;
-          font-weight: 950;
-          letter-spacing: -0.04em;
+          font-size: 2rem;
+          font-weight: 900;
+          letter-spacing: -0.02em;
           color: var(--text-primary);
           line-height: 1;
         }
@@ -312,9 +312,9 @@ function Dashboard({ stats, bills, loading }: DashboardProps) {
 
         .chart-container-premium {
           background: var(--bg-card);
-          border-radius: 36px;
+          border-radius: 24px;
           border: 1px solid var(--border);
-          padding: 2.5rem;
+          padding: 2rem;
           box-shadow: var(--shadow-sm);
         }
 
@@ -322,7 +322,7 @@ function Dashboard({ stats, bills, loading }: DashboardProps) {
           display: flex;
           justify-content: space-between;
           align-items: flex-start;
-          margin-bottom: 3rem;
+          margin-bottom: 2rem;
         }
 
         .chart-header-premium h3 {
@@ -350,13 +350,13 @@ function Dashboard({ stats, bills, loading }: DashboardProps) {
 
         .activity-card-premium {
           background: var(--surface-soft);
-          border-radius: 24px;
-          padding: 1.5rem;
+          border-radius: 20px;
+          padding: 1.25rem;
           border: 1px solid var(--border);
           display: grid;
           grid-template-columns: auto 1fr auto;
           align-items: center;
-          gap: 1.5rem;
+          gap: 1.25rem;
           transition: var(--transition);
           margin-bottom: 1rem;
         }
@@ -369,9 +369,9 @@ function Dashboard({ stats, bills, loading }: DashboardProps) {
         }
 
         .activity-icon-box {
-          width: 52px;
-          height: 52px;
-          border-radius: 16px;
+          width: 48px;
+          height: 48px;
+          border-radius: 14px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -466,10 +466,10 @@ function Dashboard({ stats, bills, loading }: DashboardProps) {
         }
 
         .dashboard-loading-title {
-          font-weight: 950;
-          letter-spacing: 0.2em;
+          font-weight: 900;
+          letter-spacing: 0.1em;
           color: var(--text-secondary);
-          font-size: 1rem;
+          font-size: 0.9rem;
         }
       `}</style>
 
@@ -519,7 +519,7 @@ function Dashboard({ stats, bills, loading }: DashboardProps) {
               title="Liquidity Deployment"
               value={stats.totalPaid}
               icon={CheckCircle2}
-              color="#10b981"
+              color="var(--success-bright)"
               trend={12}
               subtitle="Volume of successfully settled commitments"
             />
@@ -527,7 +527,7 @@ function Dashboard({ stats, bills, loading }: DashboardProps) {
               title="Active Commitments"
               value={stats.totalPending}
               icon={Clock}
-              color="#f59e0b"
+              color="var(--warning-bright)"
               trend={-5}
               subtitle="Pending infrastructure settlements"
             />
@@ -535,7 +535,7 @@ function Dashboard({ stats, bills, loading }: DashboardProps) {
               title="Risk Matrix Value"
               value={stats.totalOverdue}
               icon={AlertCircle}
-              color="#ef4444"
+              color="var(--error-bright)"
               trend={8}
               subtitle="Intervention required immediately"
             />
@@ -585,12 +585,12 @@ function Dashboard({ stats, bills, loading }: DashboardProps) {
                       >
                         <stop
                           offset="5%"
-                          stopColor="#10b981"
+                          stopColor="var(--success-bright)"
                           stopOpacity={0.3}
                         />
                         <stop
                           offset="95%"
-                          stopColor="#10b981"
+                          stopColor="var(--success-bright)"
                           stopOpacity={0}
                         />
                       </linearGradient>
@@ -603,12 +603,12 @@ function Dashboard({ stats, bills, loading }: DashboardProps) {
                       >
                         <stop
                           offset="5%"
-                          stopColor="#f59e0b"
+                          stopColor="var(--warning-bright)"
                           stopOpacity={0.3}
                         />
                         <stop
                           offset="95%"
-                          stopColor="#f59e0b"
+                          stopColor="var(--warning-bright)"
                           stopOpacity={0}
                         />
                       </linearGradient>
@@ -646,7 +646,7 @@ function Dashboard({ stats, bills, loading }: DashboardProps) {
                     <Area
                       type="monotone"
                       dataKey="paid"
-                      stroke="#10b981"
+                      stroke="var(--success-bright)"
                       fillOpacity={1}
                       fill="url(#colorPaid)"
                       strokeWidth={4}
@@ -654,7 +654,7 @@ function Dashboard({ stats, bills, loading }: DashboardProps) {
                     <Area
                       type="monotone"
                       dataKey="pending"
-                      stroke="#f59e0b"
+                      stroke="var(--warning-bright)"
                       fillOpacity={1}
                       fill="url(#colorPending)"
                       strokeWidth={4}
@@ -783,7 +783,7 @@ function Dashboard({ stats, bills, loading }: DashboardProps) {
                               : "rgba(0, 113, 227, 0.12)",
                           color:
                             bill.status === "Paid"
-                              ? "#10b981"
+                              ? "var(--success-bright)"
                               : "var(--primary)",
                         }}
                       >

@@ -235,8 +235,8 @@ function VendorManager({
         }
 
         .vendor-matrix-page .metric-icon-blue { background: rgba(0, 113, 227, 0.08); color: var(--primary); }
-        .vendor-matrix-page .metric-icon-green { background: rgba(52, 168, 83, 0.08); color: #34a853; }
-        .vendor-matrix-page .metric-icon-orange { background: rgba(255, 149, 0, 0.08); color: #ff9500; }
+        .vendor-matrix-page .metric-icon-green { background: rgba(52, 168, 83, 0.08); color: var(--green-bright); }
+        .vendor-matrix-page .metric-icon-orange { background: rgba(255, 149, 0, 0.08); color: var(--orange-bright); }
 
         .vendor-matrix-page .metric-label {
           display: block;

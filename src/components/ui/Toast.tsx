@@ -48,10 +48,10 @@ export function Toast() {
           border: 1px solid var(--border);
         }
 
-        .toast-item-success { border-color: rgba(16, 185, 129, 0.4); color: #10b981; }
-        .toast-item-error { border-color: rgba(239, 68, 68, 0.4); color: #ef4444; }
-        .toast-item-warning { border-color: rgba(245, 158, 11, 0.4); color: #f59e0b; }
-        .toast-item-info { border-color: rgba(59, 130, 246, 0.4); color: #3b82f6; }
+        .toast-item-success { border-color: rgba(16, 185, 129, 0.4); color: var(--success-bright); }
+        .toast-item-error { border-color: rgba(239, 68, 68, 0.4); color: var(--error-bright); }
+        .toast-item-warning { border-color: rgba(245, 158, 11, 0.4); color: var(--warning-bright); }
+        .toast-item-info { border-color: rgba(59, 130, 246, 0.4); color: var(--info-bright); }
 
         .toast-message-text {
           flex: 1;

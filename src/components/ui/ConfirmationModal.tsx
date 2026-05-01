@@ -100,7 +100,7 @@ export function ConfirmationModal({
                 style={{
                   padding: "0.75rem 1.5rem",
                   borderRadius: "6px",
-                  background: isDangerous ? "#ef4444" : "var(--primary)",
+                  background: isDangerous ? "var(--error-bright)" : "var(--primary)",
                   border: "none",
                   color: "white",
                   cursor: isLoading ? "not-allowed" : "pointer",

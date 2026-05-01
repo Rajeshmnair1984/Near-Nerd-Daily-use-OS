@@ -269,7 +269,7 @@ function DocumentManager({
 
         .document-vault-page .metric-matrix {
           background: rgba(52, 168, 83, 0.08);
-          color: #34a853;
+          color: var(--green-bright);
         }
 
         .document-vault-page .toolbar-container {
