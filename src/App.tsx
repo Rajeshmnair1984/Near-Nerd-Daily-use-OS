@@ -428,6 +428,7 @@ function AppContent() {
         }
 
         .app-main-content {
+          margin-left: 320px;
           flex: 1;
           min-height: 100vh;
           position: relative;

@@ -899,6 +899,10 @@ textarea::placeholder {
     margin-left: 0;
   }
 
+  .app-main-content {
+    margin-left: 0;
+  }
+
   .page-shell {
     padding: 1.25rem;
   }
@@ -913,13 +917,13 @@ textarea::placeholder {
     grid-template-columns: 1fr !important;
   }
 
-  .app-sidebar {
+  .app-sidebar-premium {
     transform: translateX(-100%);
     transition: transform 0.25s ease;
     box-shadow: 20px 0 60px rgba(0, 0, 0, 0.35);
   }
 
-  .app-sidebar.is-open {
+  .app-sidebar-premium.is-open {
     transform: translateX(0);
   }
 

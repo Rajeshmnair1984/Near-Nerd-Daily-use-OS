@@ -329,6 +329,16 @@ function Sidebar({
           70% { transform: scale(2); opacity: 0; }
           100% { transform: scale(1); opacity: 0; }
         }
+
+        @media (max-width: 900px) {
+          .app-sidebar-premium {
+            transform: translateX(-100%);
+          }
+
+          .app-sidebar-premium.is-open {
+            transform: translateX(0);
+          }
+        }
       `}</style>
 
       {/* Brand Header */}
